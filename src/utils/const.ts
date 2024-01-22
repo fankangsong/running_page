@@ -32,13 +32,9 @@ const USE_DASH_LINE = true;
 // styling: route line opacity: [0, 1]
 const LINE_OPACITY = 0.4;
 // styling: map height
-const MAP_HEIGHT = 600;
+const MAP_HEIGHT = 300;
 //set to `false` if you want to hide the road label characters
 const ROAD_LABEL_DISPLAY = true;
-//set to `true` if you want to display only the routes without showing the map.
-const PRIVACY_MODE = false;
-//set to `false` if you want to make light off as default, only effect when `PRIVACY_MODE` = false
-const LIGHTS_ON = true;
 
 // IF you outside China please make sure IS_CHINESE = false
 const IS_CHINESE = true;
@@ -90,8 +86,6 @@ export {
   USE_DASH_LINE,
   LINE_OPACITY,
   MAP_HEIGHT,
-  PRIVACY_MODE,
-  LIGHTS_ON,
 };
 
 const nike = 'rgb(224,237,94)'; // if you want change the main color change here src/styles/variables.scss

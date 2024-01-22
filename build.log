@@ -1,0 +1,1036 @@
+Access ok
+Start syncing
+......../usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type github with 82 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type grid with 4 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+/root/running_page/build.sh: 13: /root/running_page/build.sh: pnpm: not found
+Access ok
+Start syncing
+......../usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type github with 82 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type grid with 4 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+/root/running_page/build.sh: 13: /root/running_page/build.sh: pnpm: not found
+/root/running_page/build.sh: 7: /root/running_page/build.sh: python3: not found
+/root/running_page/build.sh: 9: /root/running_page/build.sh: python3: not found
+/root/running_page/build.sh: 11: /root/running_page/build.sh: python3: not found
+/root/running_page/build.sh: 13: /root/running_page/build.sh: python3: not found
+ WARN  Unsupported engine: wanted: {"node":">=18"} (current: {"node":"v16.20.2","pnpm":"8.7.0"})
+
+> yihong.run@1.0.0 build /root/running_page
+> vite build
+
+ ELIFECYCLE  Command failed with exit code -2.
+/root/running_page/build.sh: 17: /root/running_page/build.sh: scp: not found
+Access ok
+Start syncing
+......../usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type github with 82 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type grid with 4 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+/root/.nvm/versions/node/v16.20.2/lib/node_modules/corepack/dist/lib/corepack.cjs:5300
+      for await (const chunk of stream) {
+          ^^^^^
+
+SyntaxError: Unexpected reserved word
+    at createScript (vm.js:80:10)
+    at Object.runInThisContext (vm.js:139:10)
+    at Module._compile (module.js:616:28)
+    at Object.Module._extensions..js (module.js:663:10)
+    at Module.load (module.js:565:32)
+    at tryModuleLoad (module.js:505:12)
+    at Function.Module._load (module.js:497:3)
+    at Module.require (module.js:596:17)
+    at require (internal/module.js:11:18)
+    at Object.<anonymous> (/root/.nvm/versions/node/v16.20.2/lib/node_modules/corepack/dist/pnpm.js:2:1)
+All tracks: 113
+After filter tracks: 112
+Creating poster of type github with 82 tracks and storing it in file assets/github.svg...
+All tracks: 113
+After filter tracks: 112
+Creating poster of type grid with 4 tracks and storing it in file assets/grid.svg...
+All tracks: 113
+After filter tracks: 112
+All tracks: 113
+After filter tracks: 112
+Creating poster of type github with 82 tracks and storing it in file assets/github.svg...
+All tracks: 113
+After filter tracks: 112
+Creating poster of type grid with 4 tracks and storing it in file assets/grid.svg...
+All tracks: 113
+After filter tracks: 112
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type github with 82 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type grid with 4 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+build.sh: 13: build.sh: npm: not found
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type github with 82 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type grid with 4 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+
+> yihong.run@1.0.0 build
+> vite build
+
+vite v4.4.9 building for production...
+transforming...
+✓ 159 modules transformed.
+rendering chunks...
+warnings when minifying css:
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:1358:7:
+      1358 │ .cf { *zoom: 1; }
+           ╵        ~~~~
+
+
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:6091:3:
+      6091 │   *zoom: 1;
+           ╵    ~~~~
+
+
+computing gzip size...
+dist/index.html                         0.66 kB │ gzip:   0.34 kB
+dist/assets/end-a91503f9.svg            1.71 kB │ gzip:   0.67 kB
+dist/manifest.json                      4.93 kB │ gzip:   0.71 kB
+dist/assets/start-2a9d06f3.svg          6.56 kB │ gzip:   2.89 kB
+dist/assets/year_2024-57035801.svg      6.76 kB │ gzip:   2.05 kB
+dist/assets/year_2022-3a04b656.svg     10.15 kB │ gzip:   3.64 kB
+dist/assets/year_2021-ca76c381.svg     11.14 kB │ gzip:   4.11 kB
+dist/assets/year_2023-893d41f3.svg     12.39 kB │ gzip:   4.57 kB
+dist/assets/year_2012-a096ccf9.svg     20.54 kB │ gzip:   7.95 kB
+dist/assets/year_2015-37392634.svg     34.54 kB │ gzip:  13.59 kB
+dist/assets/grid-ee958f32.svg          37.93 kB │ gzip:  17.49 kB
+dist/assets/year_2014-0989ebca.svg     39.36 kB │ gzip:  15.45 kB
+dist/assets/year_2018-1170f4d3.svg     40.69 kB │ gzip:  15.37 kB
+dist/assets/year_2013-7e38c907.svg     41.04 kB │ gzip:  16.13 kB
+dist/assets/year_2017-6f8d3cf1.svg     44.44 kB │ gzip:  17.42 kB
+dist/assets/year_2016-994e76d4.svg     46.75 kB │ gzip:  18.03 kB
+dist/assets/year_2019-711e45c8.svg     64.86 kB │ gzip:  24.56 kB
+dist/assets/year_2020-a868b70d.svg     74.02 kB │ gzip:  28.31 kB
+dist/assets/github-bfd341f5.svg       150.62 kB │ gzip:  11.54 kB
+dist/assets/index-c2f46f52.css        199.39 kB │ gzip:  32.67 kB
+dist/assets/year_2024-286b462c.js       5.27 kB │ gzip:   1.15 kB
+dist/assets/year_2022-423531b0.js       6.74 kB │ gzip:   1.69 kB
+dist/assets/year_2021-ee919e25.js       7.20 kB │ gzip:   1.89 kB
+dist/assets/year_2023-36191b91.js       7.61 kB │ gzip:   1.95 kB
+dist/assets/grid.svg-7f29e32f.js        9.42 kB │ gzip:   3.76 kB
+dist/assets/year_2012-72f08ee5.js      11.20 kB │ gzip:   3.09 kB
+dist/assets/year_2015-e0c5f599.js      17.11 kB │ gzip:   4.70 kB
+dist/assets/year_2014-9c77e3ed.js      18.93 kB │ gzip:   5.14 kB
+dist/assets/year_2018-58759540.js      19.22 kB │ gzip:   5.09 kB
+dist/assets/year_2013-ab25ec47.js      19.86 kB │ gzip:   5.50 kB
+dist/assets/year_2017-bd298de9.js      21.06 kB │ gzip:   5.62 kB
+dist/assets/year_2016-a0a66092.js      22.12 kB │ gzip:   6.10 kB
+dist/assets/year_2019-6a432f6a.js      29.23 kB │ gzip:   7.49 kB
+dist/assets/year_2020-b89aa0b2.js      33.94 kB │ gzip:   9.41 kB
+dist/assets/activities-da32e4de.js     69.59 kB │ gzip:  33.12 kB
+dist/assets/index-9d58026d.js          95.24 kB │ gzip:  27.77 kB
+dist/assets/github.svg-a49a304a.js    167.91 kB │ gzip:  12.02 kB
+dist/assets/vendors-f26d4cd0.js     1,263.45 kB │ gzip: 366.91 kB
+
+(!) Some chunks are larger than 500 kBs after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 24.19s
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type github with 82 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type grid with 4 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+
+> yihong.run@1.0.0 build
+> vite build
+
+vite v4.4.9 building for production...
+transforming...
+✓ 159 modules transformed.
+rendering chunks...
+warnings when minifying css:
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:1358:7:
+      1358 │ .cf { *zoom: 1; }
+           ╵        ~~~~
+
+
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:6091:3:
+      6091 │   *zoom: 1;
+           ╵    ~~~~
+
+
+computing gzip size...
+dist/index.html                         0.66 kB │ gzip:   0.34 kB
+dist/assets/end-a91503f9.svg            1.71 kB │ gzip:   0.67 kB
+dist/manifest.json                      4.93 kB │ gzip:   0.71 kB
+dist/assets/start-2a9d06f3.svg          6.56 kB │ gzip:   2.89 kB
+dist/assets/year_2024-57035801.svg      6.76 kB │ gzip:   2.05 kB
+dist/assets/year_2022-3a04b656.svg     10.15 kB │ gzip:   3.64 kB
+dist/assets/year_2021-ca76c381.svg     11.14 kB │ gzip:   4.11 kB
+dist/assets/year_2023-893d41f3.svg     12.39 kB │ gzip:   4.57 kB
+dist/assets/year_2012-a096ccf9.svg     20.54 kB │ gzip:   7.95 kB
+dist/assets/year_2015-37392634.svg     34.54 kB │ gzip:  13.59 kB
+dist/assets/grid-ee958f32.svg          37.93 kB │ gzip:  17.49 kB
+dist/assets/year_2014-0989ebca.svg     39.36 kB │ gzip:  15.45 kB
+dist/assets/year_2018-1170f4d3.svg     40.69 kB │ gzip:  15.37 kB
+dist/assets/year_2013-7e38c907.svg     41.04 kB │ gzip:  16.13 kB
+dist/assets/year_2017-6f8d3cf1.svg     44.44 kB │ gzip:  17.42 kB
+dist/assets/year_2016-994e76d4.svg     46.75 kB │ gzip:  18.03 kB
+dist/assets/year_2019-711e45c8.svg     64.86 kB │ gzip:  24.56 kB
+dist/assets/year_2020-a868b70d.svg     74.02 kB │ gzip:  28.31 kB
+dist/assets/github-bfd341f5.svg       150.62 kB │ gzip:  11.54 kB
+dist/assets/index-c2f46f52.css        199.39 kB │ gzip:  32.67 kB
+dist/assets/year_2024-286b462c.js       5.27 kB │ gzip:   1.15 kB
+dist/assets/year_2022-423531b0.js       6.74 kB │ gzip:   1.69 kB
+dist/assets/year_2021-ee919e25.js       7.20 kB │ gzip:   1.89 kB
+dist/assets/year_2023-36191b91.js       7.61 kB │ gzip:   1.95 kB
+dist/assets/grid.svg-7f29e32f.js        9.42 kB │ gzip:   3.76 kB
+dist/assets/year_2012-72f08ee5.js      11.20 kB │ gzip:   3.09 kB
+dist/assets/year_2015-e0c5f599.js      17.11 kB │ gzip:   4.70 kB
+dist/assets/year_2014-9c77e3ed.js      18.93 kB │ gzip:   5.14 kB
+dist/assets/year_2018-58759540.js      19.22 kB │ gzip:   5.09 kB
+dist/assets/year_2013-ab25ec47.js      19.86 kB │ gzip:   5.50 kB
+dist/assets/year_2017-bd298de9.js      21.06 kB │ gzip:   5.62 kB
+dist/assets/year_2016-a0a66092.js      22.12 kB │ gzip:   6.10 kB
+dist/assets/year_2019-6a432f6a.js      29.23 kB │ gzip:   7.49 kB
+dist/assets/year_2020-b89aa0b2.js      33.94 kB │ gzip:   9.41 kB
+dist/assets/activities-da32e4de.js     69.59 kB │ gzip:  33.12 kB
+dist/assets/index-9d58026d.js          95.24 kB │ gzip:  27.77 kB
+dist/assets/github.svg-a49a304a.js    167.91 kB │ gzip:  12.02 kB
+dist/assets/vendors-f26d4cd0.js     1,263.45 kB │ gzip: 366.91 kB
+
+(!) Some chunks are larger than 500 kBs after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 20.31s
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type github with 82 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+Creating poster of type grid with 4 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 113
+After filter tracks: 112
+
+> yihong.run@1.0.0 build
+> vite build
+
+vite v4.4.9 building for production...
+transforming...
+✓ 159 modules transformed.
+rendering chunks...
+warnings when minifying css:
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:1358:7:
+      1358 │ .cf { *zoom: 1; }
+           ╵        ~~~~
+
+
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:6091:3:
+      6091 │   *zoom: 1;
+           ╵    ~~~~
+
+
+computing gzip size...
+dist/index.html                         0.66 kB │ gzip:   0.34 kB
+dist/assets/end-a91503f9.svg            1.71 kB │ gzip:   0.67 kB
+dist/manifest.json                      4.93 kB │ gzip:   0.71 kB
+dist/assets/start-2a9d06f3.svg          6.56 kB │ gzip:   2.89 kB
+dist/assets/year_2024-57035801.svg      6.76 kB │ gzip:   2.05 kB
+dist/assets/year_2022-3a04b656.svg     10.15 kB │ gzip:   3.64 kB
+dist/assets/year_2021-ca76c381.svg     11.14 kB │ gzip:   4.11 kB
+dist/assets/year_2023-893d41f3.svg     12.39 kB │ gzip:   4.57 kB
+dist/assets/year_2012-a096ccf9.svg     20.54 kB │ gzip:   7.95 kB
+dist/assets/year_2015-37392634.svg     34.54 kB │ gzip:  13.59 kB
+dist/assets/grid-ee958f32.svg          37.93 kB │ gzip:  17.49 kB
+dist/assets/year_2014-0989ebca.svg     39.36 kB │ gzip:  15.45 kB
+dist/assets/year_2018-1170f4d3.svg     40.69 kB │ gzip:  15.37 kB
+dist/assets/year_2013-7e38c907.svg     41.04 kB │ gzip:  16.13 kB
+dist/assets/year_2017-6f8d3cf1.svg     44.44 kB │ gzip:  17.42 kB
+dist/assets/year_2016-994e76d4.svg     46.75 kB │ gzip:  18.03 kB
+dist/assets/year_2019-711e45c8.svg     64.86 kB │ gzip:  24.56 kB
+dist/assets/year_2020-a868b70d.svg     74.02 kB │ gzip:  28.31 kB
+dist/assets/github-bfd341f5.svg       150.62 kB │ gzip:  11.54 kB
+dist/assets/index-c2f46f52.css        199.39 kB │ gzip:  32.67 kB
+dist/assets/year_2024-286b462c.js       5.27 kB │ gzip:   1.15 kB
+dist/assets/year_2022-423531b0.js       6.74 kB │ gzip:   1.69 kB
+dist/assets/year_2021-ee919e25.js       7.20 kB │ gzip:   1.89 kB
+dist/assets/year_2023-36191b91.js       7.61 kB │ gzip:   1.95 kB
+dist/assets/grid.svg-7f29e32f.js        9.42 kB │ gzip:   3.76 kB
+dist/assets/year_2012-72f08ee5.js      11.20 kB │ gzip:   3.09 kB
+dist/assets/year_2015-e0c5f599.js      17.11 kB │ gzip:   4.70 kB
+dist/assets/year_2014-9c77e3ed.js      18.93 kB │ gzip:   5.14 kB
+dist/assets/year_2018-58759540.js      19.22 kB │ gzip:   5.09 kB
+dist/assets/year_2013-ab25ec47.js      19.86 kB │ gzip:   5.50 kB
+dist/assets/year_2017-bd298de9.js      21.06 kB │ gzip:   5.62 kB
+dist/assets/year_2016-a0a66092.js      22.12 kB │ gzip:   6.10 kB
+dist/assets/year_2019-6a432f6a.js      29.23 kB │ gzip:   7.49 kB
+dist/assets/year_2020-b89aa0b2.js      33.94 kB │ gzip:   9.41 kB
+dist/assets/activities-da32e4de.js     69.59 kB │ gzip:  33.12 kB
+dist/assets/index-9d58026d.js          95.24 kB │ gzip:  27.77 kB
+dist/assets/github.svg-a49a304a.js    167.91 kB │ gzip:  12.02 kB
+dist/assets/vendors-f26d4cd0.js     1,263.45 kB │ gzip: 366.91 kB
+
+(!) Some chunks are larger than 500 kBs after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 20.18s
+Access ok
+Start syncing
+........+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 114
+After filter tracks: 113
+Creating poster of type github with 83 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 114
+After filter tracks: 113
+Creating poster of type grid with 4 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 114
+After filter tracks: 113
+
+> yihong.run@1.0.0 build
+> vite build
+
+vite v4.4.9 building for production...
+transforming...
+✓ 159 modules transformed.
+rendering chunks...
+warnings when minifying css:
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:1358:7:
+      1358 │ .cf { *zoom: 1; }
+           ╵        ~~~~
+
+
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:6091:3:
+      6091 │   *zoom: 1;
+           ╵    ~~~~
+
+
+computing gzip size...
+dist/index.html                         0.65 kB │ gzip:   0.34 kB
+dist/assets/end-a91503f9.svg            1.71 kB │ gzip:   0.67 kB
+dist/manifest.json                      4.93 kB │ gzip:   0.71 kB
+dist/assets/start-2a9d06f3.svg          6.56 kB │ gzip:   2.89 kB
+dist/assets/year_2024-94d9dde2.svg      7.00 kB │ gzip:   2.15 kB
+dist/assets/year_2022-3a04b656.svg     10.15 kB │ gzip:   3.64 kB
+dist/assets/year_2021-ca76c381.svg     11.14 kB │ gzip:   4.11 kB
+dist/assets/year_2023-893d41f3.svg     12.39 kB │ gzip:   4.57 kB
+dist/assets/year_2012-a096ccf9.svg     20.54 kB │ gzip:   7.95 kB
+dist/assets/year_2015-37392634.svg     34.54 kB │ gzip:  13.59 kB
+dist/assets/grid-ee958f32.svg          37.93 kB │ gzip:  17.49 kB
+dist/assets/year_2014-0989ebca.svg     39.36 kB │ gzip:  15.45 kB
+dist/assets/year_2018-1170f4d3.svg     40.69 kB │ gzip:  15.37 kB
+dist/assets/year_2013-7e38c907.svg     41.04 kB │ gzip:  16.13 kB
+dist/assets/year_2017-6f8d3cf1.svg     44.44 kB │ gzip:  17.42 kB
+dist/assets/year_2016-994e76d4.svg     46.75 kB │ gzip:  18.03 kB
+dist/assets/year_2019-711e45c8.svg     64.86 kB │ gzip:  24.56 kB
+dist/assets/year_2020-a868b70d.svg     74.02 kB │ gzip:  28.31 kB
+dist/assets/github-ed9c2bb1.svg       150.63 kB │ gzip:  11.54 kB
+dist/assets/index-c2f46f52.css        199.39 kB │ gzip:  32.67 kB
+dist/assets/year_2024-49e1cc3e.js       5.37 kB │ gzip:   1.19 kB
+dist/assets/year_2022-423531b0.js       6.74 kB │ gzip:   1.69 kB
+dist/assets/year_2021-ee919e25.js       7.20 kB │ gzip:   1.89 kB
+dist/assets/year_2023-36191b91.js       7.61 kB │ gzip:   1.95 kB
+dist/assets/grid.svg-7f29e32f.js        9.42 kB │ gzip:   3.76 kB
+dist/assets/year_2012-72f08ee5.js      11.20 kB │ gzip:   3.09 kB
+dist/assets/year_2015-e0c5f599.js      17.11 kB │ gzip:   4.70 kB
+dist/assets/year_2014-9c77e3ed.js      18.93 kB │ gzip:   5.14 kB
+dist/assets/year_2018-58759540.js      19.22 kB │ gzip:   5.09 kB
+dist/assets/year_2013-ab25ec47.js      19.86 kB │ gzip:   5.50 kB
+dist/assets/year_2017-bd298de9.js      21.06 kB │ gzip:   5.62 kB
+dist/assets/year_2016-a0a66092.js      22.12 kB │ gzip:   6.10 kB
+dist/assets/year_2019-6a432f6a.js      29.23 kB │ gzip:   7.49 kB
+dist/assets/year_2020-b89aa0b2.js      33.94 kB │ gzip:   9.41 kB
+dist/assets/activities-5283c43e.js     70.47 kB │ gzip:  33.60 kB
+dist/assets/index-6a0ea85b.js          95.24 kB │ gzip:  27.77 kB
+dist/assets/github.svg-8dd01ae8.js    167.92 kB │ gzip:  12.03 kB
+dist/assets/vendors-f26d4cd0.js     1,263.45 kB │ gzip: 366.91 kB
+
+(!) Some chunks are larger than 500 kBs after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 20.50s
+Access ok
+Start syncing
+.../usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 114
+After filter tracks: 113
+Creating poster of type github with 83 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 114
+After filter tracks: 113
+Creating poster of type grid with 4 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 114
+After filter tracks: 113
+
+> yihong.run@1.0.0 build
+> vite build
+
+vite v4.4.9 building for production...
+transforming...
+✓ 159 modules transformed.
+rendering chunks...
+warnings when minifying css:
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:1358:7:
+      1358 │ .cf { *zoom: 1; }
+           ╵        ~~~~
+
+
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:6091:3:
+      6091 │   *zoom: 1;
+           ╵    ~~~~
+
+
+computing gzip size...
+dist/index.html                         0.65 kB │ gzip:   0.34 kB
+dist/assets/end-a91503f9.svg            1.71 kB │ gzip:   0.67 kB
+dist/manifest.json                      4.93 kB │ gzip:   0.71 kB
+dist/assets/start-2a9d06f3.svg          6.56 kB │ gzip:   2.89 kB
+dist/assets/year_2024-94d9dde2.svg      7.00 kB │ gzip:   2.15 kB
+dist/assets/year_2022-3a04b656.svg     10.15 kB │ gzip:   3.64 kB
+dist/assets/year_2021-ca76c381.svg     11.14 kB │ gzip:   4.11 kB
+dist/assets/year_2023-893d41f3.svg     12.39 kB │ gzip:   4.57 kB
+dist/assets/year_2012-a096ccf9.svg     20.54 kB │ gzip:   7.95 kB
+dist/assets/year_2015-37392634.svg     34.54 kB │ gzip:  13.59 kB
+dist/assets/grid-ee958f32.svg          37.93 kB │ gzip:  17.49 kB
+dist/assets/year_2014-0989ebca.svg     39.36 kB │ gzip:  15.45 kB
+dist/assets/year_2018-1170f4d3.svg     40.69 kB │ gzip:  15.37 kB
+dist/assets/year_2013-7e38c907.svg     41.04 kB │ gzip:  16.13 kB
+dist/assets/year_2017-6f8d3cf1.svg     44.44 kB │ gzip:  17.42 kB
+dist/assets/year_2016-994e76d4.svg     46.75 kB │ gzip:  18.03 kB
+dist/assets/year_2019-711e45c8.svg     64.86 kB │ gzip:  24.56 kB
+dist/assets/year_2020-a868b70d.svg     74.02 kB │ gzip:  28.31 kB
+dist/assets/github-ed9c2bb1.svg       150.63 kB │ gzip:  11.54 kB
+dist/assets/index-c2f46f52.css        199.39 kB │ gzip:  32.67 kB
+dist/assets/year_2024-49e1cc3e.js       5.37 kB │ gzip:   1.19 kB
+dist/assets/year_2022-423531b0.js       6.74 kB │ gzip:   1.69 kB
+dist/assets/year_2021-ee919e25.js       7.20 kB │ gzip:   1.89 kB
+dist/assets/year_2023-36191b91.js       7.61 kB │ gzip:   1.95 kB
+dist/assets/grid.svg-7f29e32f.js        9.42 kB │ gzip:   3.76 kB
+dist/assets/year_2012-72f08ee5.js      11.20 kB │ gzip:   3.09 kB
+dist/assets/year_2015-e0c5f599.js      17.11 kB │ gzip:   4.70 kB
+dist/assets/year_2014-9c77e3ed.js      18.93 kB │ gzip:   5.14 kB
+dist/assets/year_2018-58759540.js      19.22 kB │ gzip:   5.09 kB
+dist/assets/year_2013-ab25ec47.js      19.86 kB │ gzip:   5.50 kB
+dist/assets/year_2017-bd298de9.js      21.06 kB │ gzip:   5.62 kB
+dist/assets/year_2016-a0a66092.js      22.12 kB │ gzip:   6.10 kB
+dist/assets/year_2019-6a432f6a.js      29.23 kB │ gzip:   7.49 kB
+dist/assets/year_2020-b89aa0b2.js      33.94 kB │ gzip:   9.41 kB
+dist/assets/activities-5283c43e.js     70.47 kB │ gzip:  33.60 kB
+dist/assets/index-6a0ea85b.js          95.24 kB │ gzip:  27.77 kB
+dist/assets/github.svg-8dd01ae8.js    167.92 kB │ gzip:  12.03 kB
+dist/assets/vendors-f26d4cd0.js     1,263.45 kB │ gzip: 366.91 kB
+
+(!) Some chunks are larger than 500 kBs after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 20.27s
+Access ok
+Start syncing
+.../usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 58
+After filter tracks: 58
+Creating poster of type github with 58 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 58
+After filter tracks: 58
+Creating poster of type grid with 15 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 58
+After filter tracks: 58
+
+> yihong.run@1.0.0 build
+> vite build
+
+vite v4.4.9 building for production...
+transforming...
+✓ 160 modules transformed.
+rendering chunks...
+warnings when minifying css:
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:1385:7:
+      1385 │ .cf { *zoom: 1; }
+           ╵        ~~~~
+
+
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:6118:3:
+      6118 │   *zoom: 1;
+           ╵    ~~~~
+
+
+computing gzip size...
+dist/index.html                         0.64 kB │ gzip:   0.38 kB
+dist/assets/end-a91503f9.svg            1.71 kB │ gzip:   0.67 kB
+dist/manifest.json                      4.93 kB │ gzip:   0.71 kB
+dist/assets/start-2a9d06f3.svg          6.56 kB │ gzip:   2.89 kB
+dist/assets/year_2024-62431747.svg      6.80 kB │ gzip:   2.08 kB
+dist/assets/year_2022-3248faf2.svg      8.95 kB │ gzip:   3.15 kB
+dist/assets/year_2023-b72bbafd.svg     10.40 kB │ gzip:   3.73 kB
+dist/assets/year_2021-148cf391.svg     10.65 kB │ gzip:   3.91 kB
+dist/assets/year_2012-a096ccf9.svg     20.54 kB │ gzip:   7.95 kB
+dist/assets/year_2015-37392634.svg     34.54 kB │ gzip:  13.59 kB
+dist/assets/year_2014-0989ebca.svg     39.36 kB │ gzip:  15.45 kB
+dist/assets/year_2018-1170f4d3.svg     40.69 kB │ gzip:  15.37 kB
+dist/assets/year_2013-7e38c907.svg     41.04 kB │ gzip:  16.13 kB
+dist/assets/year_2017-6f8d3cf1.svg     44.44 kB │ gzip:  17.42 kB
+dist/assets/year_2016-994e76d4.svg     46.75 kB │ gzip:  18.03 kB
+dist/assets/year_2019-711e45c8.svg     64.86 kB │ gzip:  24.56 kB
+dist/assets/year_2020-a868b70d.svg     74.02 kB │ gzip:  28.31 kB
+dist/assets/github-62e85a03.svg       150.47 kB │ gzip:  11.43 kB
+dist/assets/grid-9db43812.svg         167.88 kB │ gzip:  46.02 kB
+dist/assets/index-481dc5ef.css        201.29 kB │ gzip:  33.46 kB
+dist/assets/year_2024-70d38053.js       5.28 kB │ gzip:   1.16 kB
+dist/assets/year_2022-3941051b.js       6.27 kB │ gzip:   1.54 kB
+dist/assets/year_2023-2b363981.js       6.86 kB │ gzip:   1.71 kB
+dist/assets/year_2021-b7a0ee2e.js       7.00 kB │ gzip:   1.82 kB
+dist/assets/year_2012-72f08ee5.js      11.20 kB │ gzip:   3.09 kB
+dist/assets/year_2015-e0c5f599.js      17.11 kB │ gzip:   4.70 kB
+dist/assets/year_2014-9c77e3ed.js      18.93 kB │ gzip:   5.14 kB
+dist/assets/year_2018-58759540.js      19.22 kB │ gzip:   5.09 kB
+dist/assets/year_2013-ab25ec47.js      19.86 kB │ gzip:   5.50 kB
+dist/assets/year_2017-bd298de9.js      21.06 kB │ gzip:   5.62 kB
+dist/assets/year_2016-a0a66092.js      22.12 kB │ gzip:   6.10 kB
+dist/assets/year_2019-6a432f6a.js      29.23 kB │ gzip:   7.49 kB
+dist/assets/year_2020-b89aa0b2.js      33.94 kB │ gzip:   9.41 kB
+dist/assets/grid.svg-d4061514.js       43.71 kB │ gzip:  15.77 kB
+dist/assets/activities-3701a9d0.js     45.55 kB │ gzip:  23.56 kB
+dist/assets/index-fbd454cb.js          96.10 kB │ gzip:  28.10 kB
+dist/assets/github.svg-341b0016.js    167.70 kB │ gzip:  11.91 kB
+dist/assets/vendors-f26d4cd0.js     1,263.45 kB │ gzip: 366.91 kB
+
+(!) Some chunks are larger than 500 kBs after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 24.43s
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    47    0     0  100    47      0     44  0:00:01  0:00:01 --:--:--    45100   363  100   316  100    47    263     39  0:00:01  0:00:01 --:--:--   308
+{"ok":true,"result":{"message_id":2780,"from":{"id":1720428588,"is_bot":true,"first_name":"\u7535\u8111\u5c0f\u52a9\u624b","username":"Fantexiangs_bot"},"chat":{"id":475290138,"first_name":"Colin","username":"imcolinfan","type":"private"},"date":1705225571,"text":"\u8dd1\u6b65\u6570\u636e\u751f\u6210\u6210\u529f"}}Access ok
+Start syncing
+...+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 59
+After filter tracks: 59
+Creating poster of type github with 59 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 59
+After filter tracks: 59
+Creating poster of type grid with 16 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 59
+After filter tracks: 59
+
+> yihong.run@1.0.0 build
+> vite build
+
+vite v4.4.9 building for production...
+transforming...
+✓ 160 modules transformed.
+rendering chunks...
+warnings when minifying css:
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:1385:7:
+      1385 │ .cf { *zoom: 1; }
+           ╵        ~~~~
+
+
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:6118:3:
+      6118 │   *zoom: 1;
+           ╵    ~~~~
+
+
+computing gzip size...
+dist/index.html                         0.64 kB │ gzip:   0.38 kB
+dist/assets/end-a91503f9.svg            1.71 kB │ gzip:   0.67 kB
+dist/manifest.json                      4.93 kB │ gzip:   0.71 kB
+dist/assets/start-2a9d06f3.svg          6.56 kB │ gzip:   2.89 kB
+dist/assets/year_2024-8e65d8d0.svg      7.05 kB │ gzip:   2.19 kB
+dist/assets/year_2022-3248faf2.svg      8.95 kB │ gzip:   3.15 kB
+dist/assets/year_2023-b72bbafd.svg     10.40 kB │ gzip:   3.73 kB
+dist/assets/year_2021-148cf391.svg     10.65 kB │ gzip:   3.91 kB
+dist/assets/year_2012-a096ccf9.svg     20.54 kB │ gzip:   7.95 kB
+dist/assets/year_2015-37392634.svg     34.54 kB │ gzip:  13.59 kB
+dist/assets/year_2014-0989ebca.svg     39.36 kB │ gzip:  15.45 kB
+dist/assets/year_2018-1170f4d3.svg     40.69 kB │ gzip:  15.37 kB
+dist/assets/year_2013-7e38c907.svg     41.04 kB │ gzip:  16.13 kB
+dist/assets/year_2017-6f8d3cf1.svg     44.44 kB │ gzip:  17.42 kB
+dist/assets/year_2016-994e76d4.svg     46.75 kB │ gzip:  18.03 kB
+dist/assets/year_2019-711e45c8.svg     64.86 kB │ gzip:  24.56 kB
+dist/assets/year_2020-a868b70d.svg     74.02 kB │ gzip:  28.31 kB
+dist/assets/github-a0971662.svg       150.47 kB │ gzip:  11.43 kB
+dist/assets/grid-5fa273c8.svg         172.97 kB │ gzip:  48.44 kB
+dist/assets/index-481dc5ef.css        201.29 kB │ gzip:  33.46 kB
+dist/assets/year_2024-1da973a9.js       5.38 kB │ gzip:   1.20 kB
+dist/assets/year_2022-3941051b.js       6.27 kB │ gzip:   1.54 kB
+dist/assets/year_2023-2b363981.js       6.86 kB │ gzip:   1.71 kB
+dist/assets/year_2021-b7a0ee2e.js       7.00 kB │ gzip:   1.82 kB
+dist/assets/year_2012-72f08ee5.js      11.20 kB │ gzip:   3.09 kB
+dist/assets/year_2015-e0c5f599.js      17.11 kB │ gzip:   4.70 kB
+dist/assets/year_2014-9c77e3ed.js      18.93 kB │ gzip:   5.14 kB
+dist/assets/year_2018-58759540.js      19.22 kB │ gzip:   5.09 kB
+dist/assets/year_2013-ab25ec47.js      19.86 kB │ gzip:   5.50 kB
+dist/assets/year_2017-bd298de9.js      21.06 kB │ gzip:   5.62 kB
+dist/assets/year_2016-a0a66092.js      22.12 kB │ gzip:   6.10 kB
+dist/assets/year_2019-6a432f6a.js      29.23 kB │ gzip:   7.49 kB
+dist/assets/year_2020-b89aa0b2.js      33.94 kB │ gzip:   9.41 kB
+dist/assets/grid.svg-5f58e76c.js       45.18 kB │ gzip:  16.30 kB
+dist/assets/activities-e9780ac1.js     46.37 kB │ gzip:  24.00 kB
+dist/assets/index-c6923d5f.js          96.10 kB │ gzip:  28.10 kB
+dist/assets/github.svg-63423684.js    167.71 kB │ gzip:  11.91 kB
+dist/assets/vendors-f26d4cd0.js     1,263.45 kB │ gzip: 366.91 kB
+
+(!) Some chunks are larger than 500 kBs after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 20.44s
+sending incremental file list
+index.html
+            660 100%    0.00kB/s    0:00:00              660 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=40/41)
+manifest.json
+          1,400  28%    1.34MB/s    0:00:00            4,927 100%    4.70MB/s    0:00:00 (xfr#2, to-chk=39/41)
+assets/
+assets/activities-e9780ac1.js
+         32,768  69%    1.56MB/s    0:00:00           46,844 100%    2.03MB/s    0:00:00 (xfr#3, to-chk=36/41)
+assets/end-a91503f9.svg
+            700  40%   31.07kB/s    0:00:00            1,714 100%   76.08kB/s    0:00:00 (xfr#4, to-chk=35/41)
+assets/github-a0971662.svg
+         32,768  21%    1.36MB/s    0:00:00          150,473 100%    5.13MB/s    0:00:00 (xfr#5, to-chk=34/41)
+assets/github.svg-63423684.js
+         32,768  19%    1.08MB/s    0:00:00          167,724 100%    4.85MB/s    0:00:00 (xfr#6, to-chk=33/41)
+assets/grid-5fa273c8.svg
+         32,768  18%  941.18kB/s    0:00:00          172,967 100%    3.93MB/s    0:00:00 (xfr#7, to-chk=32/41)
+assets/grid.svg-5f58e76c.js
+         32,768  72%  695.65kB/s    0:00:00           45,190 100%  919.39kB/s    0:00:00 (xfr#8, to-chk=31/41)
+assets/index-481dc5ef.css
+            700   0%   14.24kB/s    0:00:14          201,293 100%    3.69MB/s    0:00:00 (xfr#9, to-chk=30/41)
+assets/index-c6923d5f.js
+         32,768  32%  603.77kB/s    0:00:00           99,492 100%    1.69MB/s    0:00:00 (xfr#10, to-chk=29/41)
+assets/start-2a9d06f3.svg
+            700  10%   11.99kB/s    0:00:00            6,559 100%  112.37kB/s    0:00:00 (xfr#11, to-chk=28/41)
+assets/vendors-f26d4cd0.js
+          1,120   0%   19.19kB/s    0:01:05        1,263,786 100%   15.45MB/s    0:00:00 (xfr#12, to-chk=27/41)
+assets/year_2012-72f08ee5.js
+            700   6%    8.76kB/s    0:00:01           11,202 100%  140.25kB/s    0:00:00 (xfr#13, to-chk=26/41)
+assets/year_2012-a096ccf9.svg
+            700   3%    8.76kB/s    0:00:02           20,536 100%  257.11kB/s    0:00:00 (xfr#14, to-chk=25/41)
+assets/year_2013-7e38c907.svg
+            700   1%    8.76kB/s    0:00:04           41,036 100%  507.27kB/s    0:00:00 (xfr#15, to-chk=24/41)
+assets/year_2013-ab25ec47.js
+            700   3%    8.65kB/s    0:00:02           19,857 100%  245.46kB/s    0:00:00 (xfr#16, to-chk=23/41)
+assets/year_2014-0989ebca.svg
+            700   1%    8.54kB/s    0:00:04           39,356 100%  480.42kB/s    0:00:00 (xfr#17, to-chk=22/41)
+assets/year_2014-9c77e3ed.js
+            700   3%    8.54kB/s    0:00:02           18,931 100%  228.24kB/s    0:00:00 (xfr#18, to-chk=21/41)
+assets/year_2015-37392634.svg
+            700   2%    8.44kB/s    0:00:04           34,537 100%  416.39kB/s    0:00:00 (xfr#19, to-chk=20/41)
+assets/year_2015-e0c5f599.js
+            700   4%    8.44kB/s    0:00:01           17,107 100%  203.73kB/s    0:00:00 (xfr#20, to-chk=19/41)
+assets/year_2016-994e76d4.svg
+            700   1%    8.34kB/s    0:00:05           46,752 100%  556.78kB/s    0:00:00 (xfr#21, to-chk=18/41)
+assets/year_2016-a0a66092.js
+            700   3%    8.34kB/s    0:00:02           22,118 100%  260.24kB/s    0:00:00 (xfr#22, to-chk=17/41)
+assets/year_2017-6f8d3cf1.svg
+            700   1%    8.24kB/s    0:00:05           44,442 100%  522.90kB/s    0:00:00 (xfr#23, to-chk=16/41)
+assets/year_2017-bd298de9.js
+            700   3%    8.14kB/s    0:00:02           21,058 100%  244.81kB/s    0:00:00 (xfr#24, to-chk=15/41)
+assets/year_2018-1170f4d3.svg
+            700   1%    8.14kB/s    0:00:04           40,691 100%  467.50kB/s    0:00:00 (xfr#25, to-chk=14/41)
+assets/year_2018-58759540.js
+            700   3%    8.04kB/s    0:00:02           19,222 100%  220.84kB/s    0:00:00 (xfr#26, to-chk=13/41)
+assets/year_2019-6a432f6a.js
+            700   2%    8.04kB/s    0:00:03           29,227 100%  335.79kB/s    0:00:00 (xfr#27, to-chk=12/41)
+assets/year_2019-711e45c8.svg
+            700   1%    7.95kB/s    0:00:08           64,856 100%  728.00kB/s    0:00:00 (xfr#28, to-chk=11/41)
+assets/year_2020-a868b70d.svg
+            700   0%    7.86kB/s    0:00:09           74,015 100%  821.37kB/s    0:00:00 (xfr#29, to-chk=10/41)
+assets/year_2020-b89aa0b2.js
+            700   2%    7.77kB/s    0:00:04           33,936 100%  376.60kB/s    0:00:00 (xfr#30, to-chk=9/41)
+assets/year_2021-148cf391.svg
+            700   6%    7.68kB/s    0:00:01           10,653 100%  116.89kB/s    0:00:00 (xfr#31, to-chk=8/41)
+assets/year_2021-b7a0ee2e.js
+            700  10%    7.68kB/s    0:00:00            6,996 100%   76.76kB/s    0:00:00 (xfr#32, to-chk=7/41)
+assets/year_2022-3248faf2.svg
+            700   7%    7.68kB/s    0:00:01            8,951 100%   98.22kB/s    0:00:00 (xfr#33, to-chk=6/41)
+assets/year_2022-3941051b.js
+            700  11%    7.68kB/s    0:00:00            6,272 100%   68.82kB/s    0:00:00 (xfr#34, to-chk=5/41)
+assets/year_2023-2b363981.js
+            700  10%    7.68kB/s    0:00:00            6,863 100%   74.47kB/s    0:00:00 (xfr#35, to-chk=4/41)
+assets/year_2023-b72bbafd.svg
+            700   6%    7.60kB/s    0:00:01           10,404 100%  112.89kB/s    0:00:00 (xfr#36, to-chk=3/41)
+assets/year_2024-1da973a9.js
+          5,383 100%   58.41kB/s    0:00:00            5,383 100%   58.41kB/s    0:00:00 (xfr#37, to-chk=2/41)
+assets/year_2024-8e65d8d0.svg
+          7,046 100%   76.45kB/s    0:00:00            7,046 100%   76.45kB/s    0:00:00 (xfr#38, to-chk=1/41)
+images/
+images/favicon.png
+            700   9%    7.60kB/s    0:00:00            7,252 100%   77.82kB/s    0:00:00 (xfr#39, to-chk=0/41)
+
+sent 146,986 bytes  received 15,107 bytes  108,062.00 bytes/sec
+total size is 2,830,328  speedup is 17.46
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   363  100   316  100    47    268     39  0:00:01  0:00:01 --:--:--   308
+{"ok":true,"result":{"message_id":2781,"from":{"id":1720428588,"is_bot":true,"first_name":"\u7535\u8111\u5c0f\u52a9\u624b","username":"Fantexiangs_bot"},"chat":{"id":475290138,"first_name":"Colin","username":"imcolinfan","type":"private"},"date":1705225894,"text":"\u8dd1\u6b65\u6570\u636e\u751f\u6210\u6210\u529f"}}Access ok
+Start syncing
+..+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 60
+After filter tracks: 60
+Creating poster of type github with 60 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 60
+After filter tracks: 60
+Creating poster of type grid with 17 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 60
+After filter tracks: 60
+
+> yihong.run@1.0.0 build
+> vite build
+
+vite v4.4.9 building for production...
+transforming...
+✓ 160 modules transformed.
+rendering chunks...
+warnings when minifying css:
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:1385:7:
+      1385 │ .cf { *zoom: 1; }
+           ╵        ~~~~
+
+
+▲ [WARNING] Unexpected "zoom" [css-syntax-error]
+
+    <stdin>:6118:3:
+      6118 │   *zoom: 1;
+           ╵    ~~~~
+
+
+computing gzip size...
+dist/index.html                         0.64 kB │ gzip:   0.38 kB
+dist/assets/end-a91503f9.svg            1.71 kB │ gzip:   0.67 kB
+dist/manifest.json                      4.93 kB │ gzip:   0.71 kB
+dist/assets/start-2a9d06f3.svg          6.56 kB │ gzip:   2.89 kB
+dist/assets/year_2024-b017376a.svg      7.29 kB │ gzip:   2.29 kB
+dist/assets/year_2022-3248faf2.svg      8.95 kB │ gzip:   3.15 kB
+dist/assets/year_2023-b72bbafd.svg     10.40 kB │ gzip:   3.73 kB
+dist/assets/year_2021-148cf391.svg     10.65 kB │ gzip:   3.91 kB
+dist/assets/year_2012-a096ccf9.svg     20.54 kB │ gzip:   7.95 kB
+dist/assets/year_2015-37392634.svg     34.54 kB │ gzip:  13.59 kB
+dist/assets/year_2014-0989ebca.svg     39.36 kB │ gzip:  15.45 kB
+dist/assets/year_2018-1170f4d3.svg     40.69 kB │ gzip:  15.37 kB
+dist/assets/year_2013-7e38c907.svg     41.04 kB │ gzip:  16.13 kB
+dist/assets/year_2017-6f8d3cf1.svg     44.44 kB │ gzip:  17.42 kB
+dist/assets/year_2016-994e76d4.svg     46.75 kB │ gzip:  18.03 kB
+dist/assets/year_2019-711e45c8.svg     64.86 kB │ gzip:  24.56 kB
+dist/assets/year_2020-a868b70d.svg     74.02 kB │ gzip:  28.31 kB
+dist/assets/github-63a137b1.svg       150.48 kB │ gzip:  11.44 kB
+dist/assets/grid-be50061a.svg         179.96 kB │ gzip:  50.57 kB
+dist/assets/index-481dc5ef.css        201.29 kB │ gzip:  33.46 kB
+dist/assets/year_2024-9b611947.js       5.49 kB │ gzip:   1.23 kB
+dist/assets/year_2022-3941051b.js       6.27 kB │ gzip:   1.54 kB
+dist/assets/year_2023-2b363981.js       6.86 kB │ gzip:   1.71 kB
+dist/assets/year_2021-b7a0ee2e.js       7.00 kB │ gzip:   1.82 kB
+dist/assets/year_2012-72f08ee5.js      11.20 kB │ gzip:   3.09 kB
+dist/assets/year_2015-e0c5f599.js      17.11 kB │ gzip:   4.70 kB
+dist/assets/year_2014-9c77e3ed.js      18.93 kB │ gzip:   5.14 kB
+dist/assets/year_2018-58759540.js      19.22 kB │ gzip:   5.09 kB
+dist/assets/year_2013-ab25ec47.js      19.86 kB │ gzip:   5.50 kB
+dist/assets/year_2017-bd298de9.js      21.06 kB │ gzip:   5.62 kB
+dist/assets/year_2016-a0a66092.js      22.12 kB │ gzip:   6.10 kB
+dist/assets/year_2019-6a432f6a.js      29.23 kB │ gzip:   7.49 kB
+dist/assets/year_2020-b89aa0b2.js      33.94 kB │ gzip:   9.41 kB
+dist/assets/grid.svg-9ec7b720.js       47.05 kB │ gzip:  16.89 kB
+dist/assets/activities-9efa6600.js     47.16 kB │ gzip:  24.41 kB
+dist/assets/index-8b75969a.js          96.10 kB │ gzip:  28.10 kB
+dist/assets/github.svg-34822a3c.js    167.72 kB │ gzip:  11.91 kB
+dist/assets/vendors-f26d4cd0.js     1,263.45 kB │ gzip: 366.91 kB
+
+(!) Some chunks are larger than 500 kBs after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 23.56s
+sending incremental file list
+index.html
+            660 100%    0.00kB/s    0:00:00              660 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=40/41)
+manifest.json
+          1,400  28%    1.34MB/s    0:00:00            4,927 100%    4.70MB/s    0:00:00 (xfr#2, to-chk=39/41)
+assets/
+assets/activities-9efa6600.js
+         32,768  68%  432.43kB/s    0:00:00           47,637 100%  604.16kB/s    0:00:00 (xfr#3, to-chk=36/41)
+assets/end-a91503f9.svg
+            700  40%    8.88kB/s    0:00:00            1,714 100%   21.74kB/s    0:00:00 (xfr#4, to-chk=35/41)
+assets/github-63a137b1.svg
+         32,768  21%  410.26kB/s    0:00:00          150,480 100%    1.71MB/s    0:00:00 (xfr#5, to-chk=34/41)
+assets/github.svg-34822a3c.js
+         32,768  19%  372.09kB/s    0:00:00          167,734 100%    1.78MB/s    0:00:00 (xfr#6, to-chk=33/41)
+assets/grid-be50061a.svg
+         32,768  18%  347.83kB/s    0:00:00          179,961 100%    1.72MB/s    0:00:00 (xfr#7, to-chk=32/41)
+assets/grid.svg-9ec7b720.js
+         32,768  69%  310.68kB/s    0:00:00           47,053 100%  433.49kB/s    0:00:00 (xfr#8, to-chk=31/41)
+assets/index-481dc5ef.css
+            700   0%    6.45kB/s    0:00:31          201,293 100%    1.75MB/s    0:00:00 (xfr#9, to-chk=30/41)
+assets/index-8b75969a.js
+         32,768  32%  288.29kB/s    0:00:00           99,492 100%  852.28kB/s    0:00:00 (xfr#10, to-chk=29/41)
+assets/start-2a9d06f3.svg
+            700  10%    6.00kB/s    0:00:00            6,559 100%   55.70kB/s    0:00:00 (xfr#11, to-chk=28/41)
+assets/vendors-f26d4cd0.js
+          1,120   0%    9.51kB/s    0:02:12        1,263,786 100%    8.93MB/s    0:00:00 (xfr#12, to-chk=27/41)
+assets/year_2012-72f08ee5.js
+            700   6%    5.03kB/s    0:00:02           11,202 100%   80.44kB/s    0:00:00 (xfr#13, to-chk=26/41)
+assets/year_2012-a096ccf9.svg
+            700   3%    5.03kB/s    0:00:03           20,536 100%  147.46kB/s    0:00:00 (xfr#14, to-chk=25/41)
+assets/year_2013-7e38c907.svg
+            700   1%    5.03kB/s    0:00:08           41,036 100%  292.51kB/s    0:00:00 (xfr#15, to-chk=24/41)
+assets/year_2013-ab25ec47.js
+            700   3%    4.99kB/s    0:00:03           19,857 100%  141.54kB/s    0:00:00 (xfr#16, to-chk=23/41)
+assets/year_2014-0989ebca.svg
+            700   1%    4.99kB/s    0:00:07           39,356 100%  278.50kB/s    0:00:00 (xfr#17, to-chk=22/41)
+assets/year_2014-9c77e3ed.js
+            700   3%    4.95kB/s    0:00:03           18,931 100%  133.97kB/s    0:00:00 (xfr#18, to-chk=21/41)
+assets/year_2015-37392634.svg
+            700   2%    4.95kB/s    0:00:06           34,537 100%  242.64kB/s    0:00:00 (xfr#19, to-chk=20/41)
+assets/year_2015-e0c5f599.js
+            700   4%    4.92kB/s    0:00:03           17,107 100%  120.19kB/s    0:00:00 (xfr#20, to-chk=19/41)
+assets/year_2016-994e76d4.svg
+            700   1%    4.92kB/s    0:00:09           46,752 100%  326.12kB/s    0:00:00 (xfr#21, to-chk=18/41)
+assets/year_2016-a0a66092.js
+            700   3%    4.88kB/s    0:00:04           22,118 100%  154.28kB/s    0:00:00 (xfr#22, to-chk=17/41)
+assets/year_2017-6f8d3cf1.svg
+            700   1%    4.88kB/s    0:00:08           44,442 100%  307.80kB/s    0:00:00 (xfr#23, to-chk=16/41)
+assets/year_2017-bd298de9.js
+            700   3%    4.85kB/s    0:00:04           21,058 100%  145.85kB/s    0:00:00 (xfr#24, to-chk=15/41)
+assets/year_2018-1170f4d3.svg
+            700   1%    4.85kB/s    0:00:08           40,691 100%  279.84kB/s    0:00:00 (xfr#25, to-chk=14/41)
+assets/year_2018-58759540.js
+            700   3%    4.81kB/s    0:00:03           19,222 100%  132.19kB/s    0:00:00 (xfr#26, to-chk=13/41)
+assets/year_2019-6a432f6a.js
+            700   2%    4.81kB/s    0:00:05           29,227 100%  199.59kB/s    0:00:00 (xfr#27, to-chk=12/41)
+assets/year_2019-711e45c8.svg
+            700   1%    4.78kB/s    0:00:13           64,856 100%  439.83kB/s    0:00:00 (xfr#28, to-chk=11/41)
+assets/year_2020-a868b70d.svg
+            700   0%    4.75kB/s    0:00:15           74,015 100%  498.48kB/s    0:00:00 (xfr#29, to-chk=10/41)
+assets/year_2020-b89aa0b2.js
+            700   2%    4.71kB/s    0:00:07           33,936 100%  228.56kB/s    0:00:00 (xfr#30, to-chk=9/41)
+assets/year_2021-148cf391.svg
+            700   6%    4.68kB/s    0:00:02           10,653 100%   71.26kB/s    0:00:00 (xfr#31, to-chk=8/41)
+assets/year_2021-b7a0ee2e.js
+            700  10%    4.68kB/s    0:00:01            6,996 100%   46.79kB/s    0:00:00 (xfr#32, to-chk=7/41)
+assets/year_2022-3248faf2.svg
+            700   7%    4.68kB/s    0:00:01            8,951 100%   59.87kB/s    0:00:00 (xfr#33, to-chk=6/41)
+assets/year_2022-3941051b.js
+            700  11%    4.68kB/s    0:00:01            6,272 100%   41.95kB/s    0:00:00 (xfr#34, to-chk=5/41)
+assets/year_2023-2b363981.js
+            700  10%    4.68kB/s    0:00:01            6,863 100%   45.91kB/s    0:00:00 (xfr#35, to-chk=4/41)
+assets/year_2023-b72bbafd.svg
+            700   6%    4.68kB/s    0:00:02           10,404 100%   69.12kB/s    0:00:00 (xfr#36, to-chk=3/41)
+assets/year_2024-9b611947.js
+          5,489 100%   36.46kB/s    0:00:00            5,489 100%   36.46kB/s    0:00:00 (xfr#37, to-chk=2/41)
+assets/year_2024-b017376a.svg
+          7,287 100%   48.41kB/s    0:00:00            7,287 100%   48.41kB/s    0:00:00 (xfr#38, to-chk=1/41)
+images/
+images/favicon.png
+            700   9%    4.65kB/s    0:00:01            7,252 100%   48.18kB/s    0:00:00 (xfr#39, to-chk=0/41)
+
+sent 150,212 bytes  received 15,107 bytes  110,212.67 bytes/sec
+total size is 2,840,342  speedup is 17.18
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    47    0     0  100    47      0     47  0:00:01 --:--:--  0:00:01    47100   363  100   316  100    47    282     41  0:00:01  0:00:01 --:--:--   324
+{"ok":true,"result":{"message_id":2797,"from":{"id":1720428588,"is_bot":true,"first_name":"\u7535\u8111\u5c0f\u52a9\u624b","username":"Fantexiangs_bot"},"chat":{"id":475290138,"first_name":"Colin","username":"imcolinfan","type":"private"},"date":1705501240,"text":"\u8dd1\u6b65\u6570\u636e\u751f\u6210\u6210\u529f"}}Access ok
+Start syncing
+../usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 60
+After filter tracks: 60
+Creating poster of type github with 60 tracks and storing it in file assets/github.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 60
+After filter tracks: 60
+Creating poster of type grid with 17 tracks and storing it in file assets/grid.svg...
+/usr/local/lib/python3.8/dist-packages/geopy/adapters.py:668: UserWarning: urllib3 prior to 1.24.2 is known to have a bug with custom ssl contexts: it attempts to load system certificates to them. Please consider upgrading `requests` and `urllib3` packages. See https://github.com/urllib3/urllib3/pull/1566
+  warnings.warn(
+All tracks: 60
+After filter tracks: 60
+
+> yihong.run@1.0.0 build
+> vite build
+
+vite v4.4.9 building for production...
+transforming...
+✓ 160 modules transformed.
+✓ built in 16.69s
+"PRIVACY_MODE" is not exported by "src/utils/const.ts", imported by "src/components/RunMap/index.tsx".
+file: /root/running_page/src/components/RunMap/index.tsx:16:2
+14:   LINE_OPACITY,
+15:   MAP_HEIGHT,
+16:   PRIVACY_MODE,
+      ^
+17:   LIGHTS_ON,
+18: } from '@/utils/const';
+error during build:
+RollupError: "PRIVACY_MODE" is not exported by "src/utils/const.ts", imported by "src/components/RunMap/index.tsx".
+    at error (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:2287:30)
+    at Module.error (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:13716:16)
+    at Module.traceVariable (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:14146:29)
+    at ModuleScope.findVariable (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:12589:39)
+    at ReturnValueScope.findVariable (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:7124:38)
+    at ChildScope.findVariable (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:7124:38)
+    at Identifier.bind (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:8309:40)
+    at ConditionalExpression.bind (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:5892:23)
+    at CallExpression.bind (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:5888:28)
+    at CallExpression.bind (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:9875:15)
+    at VariableDeclarator.bind (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:5892:23)
+    at VariableDeclaration.bind (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:5888:28)
+    at BlockStatement.bind (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:5888:28)
+    at ArrowFunctionExpression.bind (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:5892:23)
+    at VariableDeclarator.bind (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:5892:23)
+    at VariableDeclaration.bind (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:5888:28)
+    at Program.bind (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:5888:28)
+    at Module.bindReferences (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:13712:18)
+    at Graph.sortModules (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:25770:20)
+    at Graph.build (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:25654:14)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:26615:13
+    at async catchUnfinishedHookActions (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:25827:16)
+    at async rollupInternal (file:///root/running_page/node_modules/.pnpm/rollup@3.28.1/node_modules/rollup/dist/es/shared/node-entry.js:26610:5)
+    at async build (file:///root/running_page/node_modules/.pnpm/vite@4.4.9_@types+node@20.5.7_sass@1.66.1/node_modules/vite/dist/node/chunks/dep-df561101.js:48005:18)
+    at async CAC.<anonymous> (file:///root/running_page/node_modules/.pnpm/vite@4.4.9_@types+node@20.5.7_sass@1.66.1/node_modules/vite/dist/node/cli.js:822:9)
+sending incremental file list
+
+sent 1,170 bytes  received 14 bytes  473.60 bytes/sec
+total size is 2,840,342  speedup is 2,398.94
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0100   363  100   316  100    47    143     21  0:00:02  0:00:02 --:--:--   164
+{"ok":true,"result":{"message_id":2816,"from":{"id":1720428588,"is_bot":true,"first_name":"\u7535\u8111\u5c0f\u52a9\u624b","username":"Fantexiangs_bot"},"chat":{"id":475290138,"first_name":"Colin","username":"imcolinfan","type":"private"},"date":1705931321,"text":"\u8dd1\u6b65\u6570\u636e\u751f\u6210\u6210\u529f"}}
