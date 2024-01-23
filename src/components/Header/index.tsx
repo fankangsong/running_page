@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import useSiteMetadata from '@/hooks/useSiteMetadata';
 
 const Header = () => {
-  const { siteUrl, navLinks } = useSiteMetadata();
+  const { logo, siteUrl, navLinks } = useSiteMetadata();
 
   return (
     <>
@@ -13,7 +13,7 @@ const Header = () => {
         <div className="dib w-25 v-mid">
           <Link to={siteUrl} className="link dim">
             <picture>
-              <img className="dib w3 h3 br-100" alt="logo" src="https://imcolin.fan/static/avatar-859a99b5703f5352e0b9357c90442030.jpg" />
+              <img className="dib w3 h3 br-100" alt="logo" src={logo} />
             </picture>
           </Link>
         </div>

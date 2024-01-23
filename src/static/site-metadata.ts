@@ -10,14 +10,18 @@ interface ISiteMetadataResult {
 }
 
 const data: ISiteMetadataResult = {
-  siteTitle: '一个跑步的中年人',
+  siteTitle: "Colin，加油！",
   siteUrl: 'https://imcolin.fan',
-  logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTtc69JxHNcmN1ETpMUX4dozAgAN6iPjWalQ&usqp=CAU',
-  description: '一个跑步的中年人 - imcoiln.fan',
+  logo: 'https://imcolin.fan/static/avatar-859a99b5703f5352e0b9357c90442030.jpg',
+  description: '',
   navLinks: [
     {
-      name: 'imcolin.fan',
-      url: 'https://imcolin.fan'
+      name: 'Strava',
+      url: 'https://www.strava.com/athletes/129314348'
+    },
+    {
+      name: 'About',
+      url: '/about'
     },
   ],
 };
