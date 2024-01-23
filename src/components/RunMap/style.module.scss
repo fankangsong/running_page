@@ -20,16 +20,21 @@
   display: inline-block;
   position: relative;
   cursor: pointer;
-  padding: 1.3rem 0.4rem;
+  // padding: 1.3rem 0.4rem;
+  padding: 0.4rem;
   margin-top: 0.1rem;
+  margin-right: 0.4rem;
   font-size: 1rem;
   text-align: center;
   color: white;
   font-family: $global-font-family;
+  border: 1px solid #e0ed5e;
 }
 
 .selected {
-  color: $nike;
+  color: #000;
+  background-color: #e0ed5e;
+  font-weight: bold;
 }
 
 .runTitle {
