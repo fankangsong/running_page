@@ -13,7 +13,7 @@ const Header = () => {
         <div className="dib w-25 v-mid">
           <Link to={siteUrl} className="link dim">
             <picture>
-              <img className="dib w3 h3 br-100" alt="logo" src={logo} />
+              <img className="dib w3 h3 br-100" alt="logo" src={logo} style={{marginLeft: '1rem'}} />
             </picture>
           </Link>
         </div>
