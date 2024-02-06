@@ -43,7 +43,7 @@ export default defineConfig({
     //   open:true //如果存在本地服务端口，将在打包后自动展示
     // }),
   ],
-  base: process.env.PATH_PREFIX || '/',
+  base: process.env.PATH_PREFIX || '/running/',
   build: {
     manifest: true,
     outDir: './dist', // for user easy to use, vercel use default dir -> dist
