@@ -63,6 +63,7 @@ const MIDDAY_RUN_TITLE = IS_CHINESE ? '午间跑步' : 'Midday Run';
 const AFTERNOON_RUN_TITLE = IS_CHINESE ? '午后跑步' : 'Afternoon Run';
 const EVENING_RUN_TITLE = IS_CHINESE ? '傍晚跑步' : 'Evening Run';
 const NIGHT_RUN_TITLE = IS_CHINESE ? '夜晚跑步' : 'Night Run';
+const INDOOR_RUN_TITLE = IS_CHINESE ? '室内跑步' : 'Indoor Run';
 
 const RUN_TITLES = {
   FULL_MARATHON_RUN_TITLE,
@@ -72,6 +73,7 @@ const RUN_TITLES = {
   AFTERNOON_RUN_TITLE,
   EVENING_RUN_TITLE,
   NIGHT_RUN_TITLE,
+  INDOOR_RUN_TITLE
 };
 
 export {
@@ -101,3 +103,15 @@ const nike = 'rgb(224,237,94)'; // if you want change the main color change here
 export const NEED_FIX_MAP = false;
 export const MAIN_COLOR = nike;
 export const PROVINCE_FILL_COLOR = '#47b8e0';
+
+export const WEEK_TITLE = [
+  '周日',
+  '周一',
+  '周二',
+  '周三',
+  '周三',
+  '周五',
+  '周六'
+]
+
+export const WEEK_TITLE_EN = ['SUN.', 'MON.', 'TUE.', 'WED.', 'THU.', 'FRI.', 'SAT.'];

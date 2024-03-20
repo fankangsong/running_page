@@ -1,4 +1,4 @@
-import { formatPace, titleForRun, formatRunTime, Activity, RunIds } from '@/utils/utils';
+import { formatPace, titleForRun, formatRunTime, Activity, RunIds, dayOfWeek } from '@/utils/utils';
 import styles from './style.module.scss';
 
 interface IRunRowProperties {
@@ -30,10 +30,10 @@ const RunRow = ({ elementIndex, locateActivity, run, runIndex, setRunIndex }: IR
       key={run.start_date_local}
       onClick={handleClick}
     >
-      <td>{titleForRun(run)}</td>
+      <td>{dayOfWeek(run.start_date_local)}{titleForRun(run)}</td>
       <td>{distance}</td>
       {paceParts && <td>{paceParts}</td>}
-      <td>{heartRate && heartRate.toFixed(0)}</td>
+      <td>{heartRate && heartRate.toFixed(0) || '~'}</td>
       <td>{runTime}</td>
       <td className={styles.runDate}>{run.start_date_local}</td>
     </tr>
