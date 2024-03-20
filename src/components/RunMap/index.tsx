@@ -126,6 +126,11 @@ const RunMap = ({
     opacity: 0.3,
   };
 
+
+  // console.log('11111', viewState)
+
+  // viewState.zoom = 22;
+
   return (
     <Map
       {...viewState}
