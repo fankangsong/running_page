@@ -93,7 +93,9 @@ English | [简体中文](https://github.com/yihong0618/running_page/blob/master/
 | [s1smart](https://github.com/s1smart)             | <https://s1smart.github.io/running_page/>      | Strava      |
 | [XmchxUp](https://github.com/XmchxUp)             | <https://xmchxup.github.io/running_page/>      | Strava      |
 | [Ryan](https://github.com/85Ryan)                 | <https://85ryan.github.io/gooorun/>            | Strava      |
-| [PPZ](https://github.com/8824PPZ)                 | <https://run.dudubbbbbbbbb.top/>            | Strava      |
+| [PPZ](https://github.com/8824PPZ)                 | <https://run.dudubbbbbbbbb.top/>               | Strava      |
+| [Yer1k](https://github.com/Yer1k)                 | <https://running.yer1k.com/>                   | Strava      |
+| [AlienVision](https://github.com/weaming)         | <https://run.drink.cafe/>                      | Strava      |
 </details>
 
 ## How it works
@@ -127,7 +129,7 @@ English | [简体中文](https://github.com/yihong0618/running_page/blob/master/
 - **[Gpx_to_Strava(upload all gpx data to strava)](#gpx_to_strava)**
 - **[Garmin_to_Strava(Using Garmin Run, Strava backup data)](#garmin_to_strava)**
 - **[Strava_to_Garmin(Using Strava Run, Garmin backup data)](#strava_to_garmin)**
-
+- **[Coros](#Coros)**
 ## Download
 
 Clone or fork the repo.
@@ -683,6 +685,29 @@ ps: **when initializing for the first time, if you have a large amount of strava
 
 </details>
 
+
+
+### Coros
+
+<details>
+<summary>Get your Coros data</summary>
+
+#### Enter the following command in the terminal
+
+```bash
+python run_page/coros_sync.py 'your coros account' 'your coros password'
+```
+
+#### Modify `run_data_sync.yml`  env.RUN_TYPE: _coros_
+
+#### Set the Coros account information in github action
+
+- configure the `COROS_ACCOUNT` , `COROS_PASSWORD`
+
+  ![github-action](https://img3.uploadhouse.com/fileuploads/30980/3098042335f8995623f8b50776c4fad4cf7fff8d.png)
+
+</details>
+
 ### Total Data Analysis
 
 <details>
@@ -775,11 +800,11 @@ For more display effects, see:
 
 4. make sure you have write permissions in Workflow permissions settings.
 
-5. If you want to deploy your running_page to xxx.github.io instead of xxx.github.io/running_page, you need to do three things:
+5. If you want to deploy your running_page to xxx.github.io instead of xxx.github.io/running_page or redirect your GitHub Pages to a custom domain, you need to do three things:
 
 - Rename your forked running_page repository to `xxx.github.io`, where xxx is your GitHub username
 - Modify the Build module in gh-pages.yml, remove `${{ github.event.repository.name }}` and change to `run: PATH_PREFIX=/ pnpm build`
-- In `src/static/site-metadata.ts`, set siteUrl: ''
+- In `src/static/site-metadata.ts`, set siteUrl: '' or your custom domain URL
 
 </details>
 
@@ -923,7 +948,7 @@ Just enjoy it~
   Strava API Rate Limit Timeout. Retry in 799.491622 seconds
   ```
 
-- vercel git ignpre gh-pages:
+- vercel git ignore gh-pages:
 
   you can change settings -> build -> Ignored Build Step -> Custom command
 
