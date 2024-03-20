@@ -3,7 +3,7 @@ import gcoord from 'gcoord';
 import { WebMercatorViewport } from 'viewport-mercator-project';
 import { chinaGeojson } from '@/static/run_countries';
 import { chinaCities } from '@/static/city';
-import { MUNICIPALITY_CITIES_ARR, NEED_FIX_MAP, RUN_TITLES } from './const';
+import { IS_CHINESE, MUNICIPALITY_CITIES_ARR, NEED_FIX_MAP, RUN_TITLES, WEEK_TITLE, WEEK_TITLE_EN } from './const';
 import { FeatureCollection, LineString } from 'geojson';
 
 export type Coordinate = [number, number];
@@ -182,6 +182,9 @@ const geoJsonForRuns = (runs: Activity[]): FeatureCollection<LineString> => ({
 const geoJsonForMap = () => chinaGeojson;
 
 const titleForRun = (run: Activity): string => {
+  if (!run.summary_polyline) {
+    return RUN_TITLES.INDOOR_RUN_TITLE;
+  }
   const runDistance = run.distance / 1000;
   const runHour = +run.start_date_local.slice(11, 13);
   if (runDistance > 20 && runDistance < 40) {
@@ -281,6 +284,17 @@ const sortDateFunc = (a: Activity, b: Activity) => {
   );
 };
 const sortDateFuncReverse = (a: Activity, b: Activity) => sortDateFunc(b, a);
+
+export const dayOfWeek = (time: string) => {
+  const date = new Date(time);
+  const dayOfWeek = date.getDay();
+
+  if (IS_CHINESE) {
+    return WEEK_TITLE[dayOfWeek]
+  }
+  
+  return WEEK_TITLE_EN[dayOfWeek]
+}
 
 export {
   titleForShow,
