@@ -12,7 +12,7 @@ interface ISiteMetadataResult {
 const data: ISiteMetadataResult = {
   siteTitle: "Colin，加油！",
   siteUrl: 'https://imcolin.fan',
-  logo: 'https://imcolin.fan/static/avatar-859a99b5703f5352e0b9357c90442030.jpg',
+  logo: 'https://imcolin.fan/a.jpg',
   description: '',
   navLinks: [
     {

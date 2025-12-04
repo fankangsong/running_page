@@ -176,7 +176,13 @@ const Index = () => {
         <h1 className="f1 fw9 i">
           <a href="/">{siteTitle}</a>
         </h1>
-        {(viewState.zoom ?? 0) <= 3 && IS_CHINESE ? (
+        <LocationStat
+            changeYear={changeYear}
+            changeCity={changeCity}
+            changeTitle={changeTitle}
+          />
+        <YearsStat year={year} onClick={changeYear} />
+        {/* {(viewState.zoom ?? 0) <= 3 && IS_CHINESE ? (
           <LocationStat
             changeYear={changeYear}
             changeCity={changeCity}
@@ -184,7 +190,7 @@ const Index = () => {
           />
         ) : (
           <YearsStat year={year} onClick={changeYear} />
-        )}
+        )} */}
       </div>
       <div className="fl w-100 w-70-l">
         <RunMap
@@ -208,7 +214,7 @@ const Index = () => {
         )}
       </div>
       {/* Enable Audiences in Vercel Analytics: https://vercel.com/docs/concepts/analytics/audiences/quickstart */}
-      <Analytics />
+      {/* <Analytics /> */}
     </Layout>
   );
 };
