@@ -22,4 +22,5 @@ config.yaml
 .venv/
 
 build.sh
+run-build.sh
 *.log
