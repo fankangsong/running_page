@@ -90,8 +90,8 @@ def main():
         dest="background_color",
         metavar="COLOR",
         type=str,
-        default="#222222",
-        help='Background color of poster (default: "#222222").',
+        default="transparent",
+        help='Background color of poster (default: "transparent").',
     )
     args_parser.add_argument(
         "--track-color",
@@ -230,8 +230,9 @@ def main():
         "special_distance2": args.special_distance2,
     }
 
+    # Force transparent background for all generated SVGs (svgwrite expects 'none' instead of 'transparent')
     p.colors = {
-        "background": args.background_color,
+        "background": "none",
         "track": args.track_color,
         "track2": args.track_color2 or args.track_color,
         "special": args.special_color,
@@ -247,6 +248,7 @@ def main():
         p.drawer_type = "title"
 
     if args.type == "github":
+        p.width = 190
         p.height = 15 + p.years.count() * 43
     # for special circular
     if is_circular:
@@ -266,6 +268,7 @@ def main():
             p.years.from_year, p.years.to_year = y, y
             p.set_tracks(tracks)
             # Re-calculate height for single year
+            p.width = 190
             p.height = 100 + 32
             p.draw(drawers[args.type], os.path.join("assets", f"github_{str(y)}.svg"))
     elif args.type == "grid":

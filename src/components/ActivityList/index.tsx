@@ -28,7 +28,6 @@ const ActivityList = ({
   return (
     <div className="bg-card rounded-card p-6 shadow-lg border border-gray-800/50">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-primary mb-4">Activity Log</h2>
         <div className="flex flex-wrap gap-2">
             {years.map((y) => (
             <button

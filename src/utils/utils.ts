@@ -73,10 +73,15 @@ const formatRunTime = (moving_time: string): string => {
 
 // for scroll to the map
 const scrollToMap = () => {
-  const el = document.querySelector('.fl.w-100.w-70-l');
-  const rect = el?.getBoundingClientRect();
+  const mapEl = document.getElementById('run-map');
+  if (mapEl && 'scrollIntoView' in mapEl) {
+    mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  const fallback = document.querySelector('.fl.w-100.w-70-l');
+  const rect = (fallback as HTMLElement | null)?.getBoundingClientRect();
   if (rect) {
-    window.scroll(rect.left + window.scrollX, rect.top + window.scrollY);
+    window.scrollTo({ top: rect.top + window.scrollY, behavior: 'smooth' });
   }
 };
 

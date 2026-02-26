@@ -111,13 +111,16 @@ class Poster:
         width = self.width
         if self.drawer_type == "plain":
             height = height - 100
-            self.colors["background"] = "#1a1a1a"
-            self.colors["track"] = "red"
-            self.colors["special"] = "yellow"
-            self.colors["text"] = "#e1ed5e"
+            # Respect pre-configured colors; only set defaults if not provided
+            self.colors.setdefault("background", "#1a1a1a")
+            self.colors.setdefault("track", "red")
+            self.colors.setdefault("special", "yellow")
+            self.colors.setdefault("text", "#e1ed5e")
         d = svgwrite.Drawing(output, (f"{width}mm", f"{height}mm"))
         d.viewbox(0, 0, self.width, height)
-        d.add(d.rect((0, 0), (width, height), fill=self.colors["background"]))
+        bg = self.colors.get("background", "#222222")
+        fill_value = "none" if str(bg).lower() in ("transparent", "none", "rgba(0,0,0,0)") else bg
+        d.add(d.rect((0, 0), (width, height), fill=fill_value))
         if not self.drawer_type == "plain":
             self.__draw_header(d)
             self.__draw_footer(d)

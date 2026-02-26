@@ -143,7 +143,7 @@ const Index = () => {
         {/* Right Column (4/10 width - 40%) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           {/* Row 1: Map */}
-          <div className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full aspect-square">
+          <div id="run-map" className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full aspect-square">
             <RunMap
               title={title}
               viewState={viewState}

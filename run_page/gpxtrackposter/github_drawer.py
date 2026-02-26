@@ -20,7 +20,7 @@ class GithubDrawer(TracksDrawer):
     def draw(self, dr: svgwrite.Drawing, size: XY, offset: XY):
         if self.poster.tracks is None:
             raise PosterError("No tracks to draw")
-        year_size = 200 * 4.0 / 80.0
+        year_size = 190 * 4.0 / 80.0
         year_style = f"font-size:{year_size}px; font-family:Arial;"
         year_length_style = f"font-size:{110 * 3.0 / 80.0}px; font-family:Arial;"
         month_names_style = f"font-size:2.5px; font-family:Arial"

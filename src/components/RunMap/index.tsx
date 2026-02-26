@@ -44,6 +44,11 @@ const RunMap = ({
   const { provinces } = useActivities();
   const mapRef = useRef<MapRef>();
   const [lights, setLights] = useState(PRIVACY_MODE ? false : LIGHTS_ON);
+  // Fallback style when Mapbox token is missing or unauthorized in dev
+  const FALLBACK_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+  const [mapStyleUrl, setMapStyleUrl] = useState<string>(
+    MAPBOX_TOKEN ? 'mapbox://styles/mapbox/dark-v10' : FALLBACK_STYLE
+  );
   const keepWhenLightsOff = ['runs2']
   function switchLayerVisibility(map: MapInstance, lights: boolean) {
     const styleJson = map.getStyle();
@@ -73,6 +78,13 @@ const RunMap = ({
           }
           mapRef.current = ref;
           switchLayerVisibility(map, lights);
+        });
+        // Fallback to tokenless style if style/tile loading fails (e.g., 401 in dev)
+        map.on('error', (e: any) => {
+          const msg = String(e?.error?.message || e?.message || '');
+          if (MAPBOX_TOKEN && (msg.includes('Unauthorized') || msg.includes('401') || msg.includes('Forbidden') || msg.includes('Not Found'))) {
+            setMapStyleUrl(FALLBACK_STYLE);
+          }
         });
       }
       if (mapRef.current) {
@@ -135,7 +147,7 @@ const RunMap = ({
       {...viewState}
       onMove={onMove}
       style={style}
-      mapStyle="mapbox://styles/mapbox/dark-v10"
+      mapStyle={mapStyleUrl}
       ref={mapRefCallback}
       mapboxAccessToken={MAPBOX_TOKEN}
     >
