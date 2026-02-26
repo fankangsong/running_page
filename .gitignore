@@ -20,7 +20,8 @@ _site/
 
 config.yaml
 .venv/
+.env
 
-build.sh
+
 run-build.sh
 *.log
