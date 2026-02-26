@@ -125,7 +125,7 @@ const Index = () => {
         <div className="lg:col-span-6 flex flex-col gap-6">
           {/* Row 1: Dashboard Stats */}
           <DashboardStats changeCity={changeCity} changeTitle={changeTitle} />
-          
+
           {/* Row 2: Activity List (Calendar/Table) */}
           <ActivityList
             year={year}
@@ -157,7 +157,7 @@ const Index = () => {
             <AnnualStatsChart year={year} />
           </div>
         </div>
-      </div>\
+      </div>
     </Layout>
   );
 };
