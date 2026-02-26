@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Analytics } from '@vercel/analytics/react';
 import Layout from '@/components/Layout';
 import RunMap from '@/components/RunMap';
 import DashboardStats from '@/components/DashboardStats';
@@ -158,9 +157,7 @@ const Index = () => {
             <AnnualStatsChart year={year} />
           </div>
         </div>
-      </div>
-      {/* Enable Audiences in Vercel Analytics: https://vercel.com/docs/concepts/analytics/audiences/quickstart */}
-      <Analytics />
+      </div>\
     </Layout>
   );
 };
