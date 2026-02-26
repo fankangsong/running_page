@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { RouterProvider, createHashRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Index from './pages';
 import Tracks from './pages/Tracks';
@@ -18,7 +18,7 @@ if (USE_GOOGLE_ANALYTICS) {
   ReactGA.initialize(GOOGLE_ANALYTICS_TRACKING_ID);
 }
 
-const routes = createBrowserRouter(
+const routes = createHashRouter(
   [
     {
       path: '/',
@@ -32,8 +32,7 @@ const routes = createBrowserRouter(
       path: '*',
       element: withOptionalGAPageTracking(<NotFound />),
     },
-  ],
-  { basename: import.meta.env.BASE_URL }
+  ]
 );
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
