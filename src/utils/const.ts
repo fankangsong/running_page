@@ -94,6 +94,27 @@ const MONTHLY_TITLE = IS_CHINESE ? 'Month' : 'Monthly';
 const WEEKLY_TITLE = IS_CHINESE ? 'Week' : 'Weekly';
 const DAILY_TITLE = IS_CHINESE ? 'Day' : 'Daily';
 const LOCATION_TITLE = IS_CHINESE ? 'Location' : 'Location';
+
+const WEEK_TITLE = {
+  0: '周日',
+  1: '周一',
+  2: '周二',
+  3: '周三',
+  4: '周四',
+  5: '周五',
+  6: '周六',
+};
+
+const WEEK_TITLE_EN = {
+  0: 'Sun',
+  1: 'Mon',
+  2: 'Tue',
+  3: 'Wed',
+  4: 'Thu',
+  5: 'Fri',
+  6: 'Sat',
+};
+
 const HOME_PAGE_TITLE = IS_CHINESE ? '首页' : 'Home';
 
 const LOADING_TEXT = IS_CHINESE ? '加载中...' : 'Loading...';
@@ -164,6 +185,8 @@ export {
   LOADING_TEXT,
   NO_ROUTE_DATA,
   INVALID_ROUTE_DATA,
+  WEEK_TITLE,
+  WEEK_TITLE_EN,
 };
 
 const nike = 'rgb(224,237,94)'; // if you want to change the main color, modify this value in src/styles/variables.scss
