@@ -12,7 +12,6 @@ import {
   PROVINCE_FILL_COLOR,
   USE_DASH_LINE,
   LINE_OPACITY,
-  MAP_HEIGHT,
   PRIVACY_MODE,
   LIGHTS_ON,
 } from '@/utils/const';
@@ -117,7 +116,7 @@ const RunMap = ({
   }, []);
   const style: React.CSSProperties = {
     width: '100%',
-    height: MAP_HEIGHT,
+    height: '100%',
   };
   const fullscreenButton: React.CSSProperties = {
     position: 'absolute',
@@ -140,7 +139,7 @@ const RunMap = ({
       ref={mapRefCallback}
       mapboxAccessToken={MAPBOX_TOKEN}
     >
-      <RunMapButtons changeYear={changeYear} thisYear={thisYear} />
+      {/* <RunMapButtons changeYear={changeYear} thisYear={thisYear} /> */}
       <Source id="data" type="geojson" data={geoData}>
         <Layer
           id="province"

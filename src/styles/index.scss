@@ -126,3 +126,12 @@ h5 .header-link {
 .markdown-content .gatsby-resp-image-wrapper {
   margin-top: 1rem;
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

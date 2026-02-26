@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles to override defaults or add specifics */
+body {
+  @apply bg-gray-900 text-white; /* Dark mode default as per screenshot */
+}
+
+/* Ensure no rounded corners as requested */
+* {
+  @apply rounded-none;
+}

@@ -102,6 +102,7 @@ class Poster:
         for tracks in self.tracks_by_date.values():
             length = sum([t.length for t in tracks])
             self.length_range_by_date.extend(length)
+        self.__compute_track_statistics()
 
     def draw(self, drawer, output):
         """Set the Poster's drawer and draw the tracks."""

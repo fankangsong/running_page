@@ -2,34 +2,37 @@ import { Link } from 'react-router-dom';
 import useSiteMetadata from '@/hooks/useSiteMetadata';
 
 const Header = () => {
-  const { logo, siteUrl, navLinks } = useSiteMetadata();
+  const { navLinks } = useSiteMetadata();
 
   return (
-    <>
-      <nav
-        className="db flex justify-between w-100 ph5-l"
-        style={{ marginTop: '1rem' }}
-      >
-        <div className="dib w-25 v-mid">
-          <Link to={siteUrl} className="link dim">
-            <picture>
-              <img className="dib w3 h3 br-100" alt="logo" src={logo} style={{marginLeft: '1rem'}} />
-            </picture>
-          </Link>
-        </div>
-        <div className="dib w-75 v-mid tr">
-          {navLinks.map((n, i) => (
+    <nav className="flex justify-between items-center w-full px-6 py-4 bg-background text-primary">
+      <div className="flex items-center">
+        <Link to="/" className="text-2xl font-black italic tracking-tighter text-white">
+            RUN <span className="text-white">COLIN</span>
+        </Link>
+      </div>
+      <div className="flex justify-end items-center space-x-8">
+        {navLinks.map((n, i) => (
+          n.url.startsWith('/') ? (
+            <Link
+              key={i}
+              to={n.url}
+              className="text-secondary hover:text-primary font-bold uppercase text-sm tracking-wide transition-colors duration-200"
+            >
+              {n.name}
+            </Link>
+          ) : (
             <a
               key={i}
               href={n.url}
-              className="light-gray link dim f6 f5-l mr3 mr4-l"
+              className="text-secondary hover:text-primary font-bold uppercase text-sm tracking-wide transition-colors duration-200"
             >
               {n.name}
             </a>
-          ))}
-        </div>
-      </nav>
-    </>
+          )
+        ))}
+      </div>
+    </nav>
   );
 };
 

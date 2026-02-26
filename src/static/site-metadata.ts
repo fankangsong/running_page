@@ -10,18 +10,18 @@ interface ISiteMetadataResult {
 }
 
 const data: ISiteMetadataResult = {
-  siteTitle: "Colin，加油！",
+  siteTitle: 'Run Colin, Run!',
   siteUrl: 'https://imcolin.fan',
   logo: 'https://imcolin.fan/a.jpg',
   description: '',
   navLinks: [
     {
-      name: 'Strava',
-      url: 'https://www.strava.com/athletes/129314348'
+      name: 'Running Log',
+      url: '/',
     },
     {
-      name: 'About',
-      url: '/about'
+      name: 'Tracks',
+      url: '/tracks',
     },
   ],
 };

@@ -1,10 +1,12 @@
-$global-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+$global-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
   Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 
 $breakpoint-mobile: 960px;
 $breakpoint-stack: 530px;
 
-$nike: rgb(224, 237, 94);
-$light: rgb(204, 204, 204);
-$dark: rgb(26, 26, 26);
+// Updated Color Palette
+$nike: #FF3B30; // Changed from Neon Green to Red Accent
+$light: #8E8E93; // Changed to Secondary Gray
+$dark: #000000; // Deep Black Background
+$card-bg: #1C1C1E; // Card Background
 $map-box-line-color: rgb(71, 184, 224);

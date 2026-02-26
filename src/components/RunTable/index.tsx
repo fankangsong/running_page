@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  sortDateFunc,
-  sortDateFuncReverse,
   convertMovingTime2Sec,
   Activity,
   RunIds,
@@ -18,6 +16,7 @@ interface IRunTableProperties {
 }
 
 type SortFunc = (_a: Activity, _b: Activity) => number;
+type IRunTableHeaderKey = 'KM' | 'Pace' | 'BPM' | 'Time' | 'Date';
 
 const RunTable = ({
   runs,
@@ -26,71 +25,128 @@ const RunTable = ({
   runIndex,
   setRunIndex,
 }: IRunTableProperties) => {
-  const [sortFuncInfo, setSortFuncInfo] = useState('');
-  // TODO refactor?
-  const sortKMFunc: SortFunc = (a, b) =>
-    sortFuncInfo === 'KM' ? a.distance - b.distance : b.distance - a.distance;
-  const sortPaceFunc: SortFunc = (a, b) =>
-    sortFuncInfo === 'Pace'
-      ? a.average_speed - b.average_speed
-      : b.average_speed - a.average_speed;
-  const sortBPMFunc: SortFunc = (a, b) => {
-    return sortFuncInfo === 'BPM'
-      ? (a.average_heartrate ?? 0) - (b.average_heartrate ?? 0)
-      : (b.average_heartrate ?? 0) - (a.average_heartrate ?? 0);
-  };
-  const sortRunTimeFunc: SortFunc = (a, b) => {
-    const aTotalSeconds = convertMovingTime2Sec(a.moving_time);
-    const bTotalSeconds = convertMovingTime2Sec(b.moving_time);
-    return sortFuncInfo === 'Time'
-      ? aTotalSeconds - bTotalSeconds
-      : bTotalSeconds - aTotalSeconds;
-  };
-  const sortDateFuncClick =
-    sortFuncInfo === 'Date' ? sortDateFunc : sortDateFuncReverse;
-  const sortFuncMap = new Map([
-    ['KM', sortKMFunc],
-    ['Pace', sortPaceFunc],
-    ['BPM', sortBPMFunc],
-    ['Time', sortRunTimeFunc],
-    ['Date', sortDateFuncClick],
-  ]);
+  const [sortKey, setSortKey] = useState<IRunTableHeaderKey>('Date');
+  const [sortAsc, setSortAsc] = useState(false);
 
-  const handleClick: React.MouseEventHandler<HTMLElement> = (e) => {
-    const funcName = (e.target as HTMLElement).innerHTML;
-    const f = sortFuncMap.get(funcName);
+  const [pageSize, setPageSize] = useState(20);
+  const [page, setPage] = useState(1);
 
-    setRunIndex(-1);
-    setSortFuncInfo(sortFuncInfo === funcName ? '' : funcName);
-    setActivity(runs.sort(f));
-  };
+  const totalCount = runs.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  useEffect(() => {
+    setPage((p) => Math.min(Math.max(1, p), totalPages));
+  }, [totalPages]);
+
+  const sortFuncMap = useMemo(() => {
+    const compareAscByKey: Record<IRunTableHeaderKey, SortFunc> = {
+      KM: (a, b) => a.distance - b.distance,
+      Pace: (a, b) => a.average_speed - b.average_speed,
+      BPM: (a, b) => (a.average_heartrate ?? 0) - (b.average_heartrate ?? 0),
+      Time: (a, b) =>
+        convertMovingTime2Sec(a.moving_time) - convertMovingTime2Sec(b.moving_time),
+      Date: (a, b) =>
+        new Date(a.start_date_local.replace(' ', 'T')).getTime() -
+        new Date(b.start_date_local.replace(' ', 'T')).getTime(),
+    };
+    const compareAsc = compareAscByKey[sortKey];
+    const compare = sortAsc ? compareAsc : (a: Activity, b: Activity) => compareAsc(b, a);
+    return new Map<IRunTableHeaderKey, SortFunc>([
+      ['KM', compare],
+      ['Pace', compare],
+      ['BPM', compare],
+      ['Time', compare],
+      ['Date', compare],
+    ]);
+  }, [sortAsc, sortKey]);
+
+  const handleSortClick =
+    (key: IRunTableHeaderKey): React.MouseEventHandler<HTMLElement> =>
+    () => {
+      const nextAsc = sortKey === key ? !sortAsc : false;
+      setSortKey(key);
+      setSortAsc(nextAsc);
+
+      const f = sortFuncMap.get(key);
+      if (!f) return;
+      setRunIndex(-1);
+      setPage(1);
+      setActivity([...runs].sort(f));
+    };
+
+  const pageStart = (page - 1) * pageSize;
+  const pageEnd = Math.min(totalCount, pageStart + pageSize);
+  const pageRuns = runs.slice(pageStart, pageEnd);
 
   return (
-    <div className={styles.tableContainer}>
-      <table className={styles.runTable} cellSpacing="0" cellPadding="0">
-        <thead>
-          <tr>
-            <th />
-            {Array.from(sortFuncMap.keys()).map((k) => (
-              <th key={k} onClick={handleClick}>
-                {k}
-              </th>
+    <div className={styles.wrapper}>
+      <div className={styles.metaBar}>
+        <div className={styles.count}>
+          {totalCount === 0 ? '0' : `${pageStart + 1}-${pageEnd}`} / {totalCount}
+        </div>
+        <div className={styles.pager}>
+          <button
+            className={styles.pageButton}
+            disabled={page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            type="button"
+          >
+            Prev
+          </button>
+          <div className={styles.pageInfo}>
+            {page} / {totalPages}
+          </div>
+          <button
+            className={styles.pageButton}
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            type="button"
+          >
+            Next
+          </button>
+          <select
+            className={styles.pageSize}
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+          >
+            {[10, 20, 50, 100].map((s) => (
+              <option key={s} value={s}>
+                {s} / page
+              </option>
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          {runs.map((run, elementIndex) => (
-            <RunRow
-              key={run.run_id}
-              elementIndex={elementIndex}
-              locateActivity={locateActivity}
-              run={run}
-              runIndex={runIndex}
-              setRunIndex={setRunIndex}
-            />
-          ))}
-        </tbody>
-      </table>
+          </select>
+        </div>
+      </div>
+
+      <div className={styles.tableContainer}>
+        <table className={styles.runTable} cellSpacing="0" cellPadding="0">
+          <thead>
+            <tr>
+              <th />
+              {(Array.from(sortFuncMap.keys()) as IRunTableHeaderKey[]).map((k) => (
+                <th key={k} onClick={handleSortClick(k)}>
+                  {k}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {pageRuns.map((run, elementIndex) => (
+              <RunRow
+                key={run.run_id}
+                elementIndex={pageStart + elementIndex}
+                locateActivity={locateActivity}
+                run={run}
+                runIndex={runIndex}
+                setRunIndex={setRunIndex}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -25,6 +25,9 @@ class GithubDrawer(TracksDrawer):
         year_length_style = f"font-size:{110 * 3.0 / 80.0}px; font-family:Arial;"
         month_names_style = f"font-size:2.5px; font-family:Arial"
         total_length_year_dict = self.poster.total_length_year_dict
+        single_year = self.poster.years.from_year == self.poster.years.to_year
+        base_x = 0.0 if single_year else offset.x
+        base_y = offset.y
         for year in range(self.poster.years.from_year, self.poster.years.to_year + 1)[
             ::-1
         ]:
@@ -75,41 +78,45 @@ class GithubDrawer(TracksDrawer):
             km_or_mi = "mi"
             if self.poster.units == "metric":
                 km_or_mi = "km"
-            dr.add(
-                dr.text(
-                    f"{year}",
-                    insert=offset.tuple(),
-                    fill=self.poster.colors["text"],
-                    dominant_baseline="hanging",
-                    style=year_style,
+            if not single_year:
+                dr.add(
+                    dr.text(
+                        f"{year}",
+                        insert=offset.tuple(),
+                        fill=self.poster.colors["text"],
+                        dominant_baseline="hanging",
+                        style=year_style,
+                    )
                 )
-            )
 
-            dr.add(
-                dr.text(
-                    f"{year_length} {km_or_mi}",
-                    insert=(offset.tuple()[0] + 165, offset.tuple()[1] + 5),
-                    fill=self.poster.colors["text"],
-                    dominant_baseline="hanging",
-                    style=year_length_style,
+                dr.add(
+                    dr.text(
+                        f"{year_length} {km_or_mi}",
+                        insert=(offset.tuple()[0] + 165, offset.tuple()[1] + 5),
+                        fill=self.poster.colors["text"],
+                        dominant_baseline="hanging",
+                        style=year_length_style,
+                    )
                 )
-            )
             # add month name up to the poster one by one because of svg text auto trim the spaces.
             for num, name in enumerate(month_names):
                 dr.add(
                     dr.text(
                         f"{name}",
-                        insert=(offset.tuple()[0] + 15.5 * num, offset.tuple()[1] + 14),
+                        insert=(
+                            base_x + 15.5 * num,
+                            base_y + (3.0 if single_year else 14),
+                        ),
                         fill=self.poster.colors["text"],
                         style=month_names_style,
                     )
                 )
 
-            rect_x = 10.0
+            rect_x = base_x
             dom = (2.6, 2.6)
             # add every day of this year for 53 weeks and per week has 7 days
             for i in range(54):
-                rect_y = offset.y + year_size + 2
+                rect_y = base_y + (1.0 if single_year else (year_size + 2))
                 for j in range(7):
                     if int(github_rect_day.year) > year:
                         break
@@ -137,4 +144,5 @@ class GithubDrawer(TracksDrawer):
                     dr.add(rect)
                     github_rect_day += datetime.timedelta(1)
                 rect_x += 3.5
-            offset.y += 3.5 * 9 + year_size + 1.0
+            base_y += 3.5 * 9 + (0.0 if single_year else year_size) + 1.0
+            offset.y = base_y

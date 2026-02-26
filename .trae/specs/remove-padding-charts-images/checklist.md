@@ -1,0 +1,3 @@
+- [ ] `RunMap` container in `src/pages/index.tsx` has no padding class (e.g., `p-6` is removed).
+- [ ] `AnnualStatsChart` container in `src/pages/index.tsx` has no padding class.
+- [ ] `AnnualStatsChart` component does not enforce `bg-gray-800`, allowing the parent card background to prevail or matching the design.

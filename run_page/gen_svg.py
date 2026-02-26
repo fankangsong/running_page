@@ -240,10 +240,14 @@ def main():
     }
     p.units = args.units
     p.set_tracks(tracks)
-    # circular not add footer and header
-    p.drawer_type = "plain" if is_circular else "title"
+    # circular and github and grid should be plain for web view assets
+    if is_circular or args.type == "github" or args.type == "grid":
+        p.drawer_type = "plain"
+    else:
+        p.drawer_type = "title"
+
     if args.type == "github":
-        p.height = 55 + p.years.count() * 43
+        p.height = 15 + p.years.count() * 43
     # for special circular
     if is_circular:
         years = p.years.all()[:]
@@ -252,6 +256,31 @@ def main():
             # may be refactor
             p.set_tracks(tracks)
             p.draw(drawers[args.type], os.path.join("assets", f"year_{str(y)}.svg"))
+    elif args.type == "github":
+        # Draw the full poster first
+        p.draw(drawers[args.type], args.output)
+        
+        # Draw annual posters
+        years = p.years.all()[:]
+        for y in years:
+            p.years.from_year, p.years.to_year = y, y
+            p.set_tracks(tracks)
+            # Re-calculate height for single year
+            p.height = 100 + 32
+            p.draw(drawers[args.type], os.path.join("assets", f"github_{str(y)}.svg"))
+    elif args.type == "grid":
+        # Draw the full poster first
+        p.draw(drawers[args.type], args.output)
+
+        # Draw annual posters
+        years = p.years.all()[:]
+        for y in years:
+            p.years.from_year, p.years.to_year = y, y
+            year_tracks = [t for t in tracks if t.start_time_local.year == y]
+            if not year_tracks:
+                continue
+            p.set_tracks(year_tracks)
+            p.draw(drawers[args.type], os.path.join("assets", f"grid_{str(y)}.svg"))
     else:
         p.draw(drawers[args.type], args.output)
 

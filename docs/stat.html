@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级跑步数据面板</title>
+    <style>
+        /* 基础重置与全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 核心面板样式 - 高级质感 */
+        .running-dashboard {
+            background: linear-gradient(145deg, #1e1e1e, #121212);
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(40, 40, 40, 0.5);
+            border: 1px solid rgba(50, 50, 50, 0.3);
+            color: #ffffff;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        /* 数据项容器 */
+        .data-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+        }
+
+        /* 标题样式 - 次要信息 */
+        .data-label {
+            font-size: 14px;
+            color: #a0a0a0;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* 主数据样式 - 视觉焦点 */
+        .data-value {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.2;
+            background: linear-gradient(90deg, #4fc3f7, #81d4fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* 单位样式 */
+        .data-unit {
+            font-size: 16px;
+            color: #cccccc;
+            font-weight: 400;
+            margin-left: 4px;
+        }
+
+        /* 辅助说明文字 */
+        .data-desc {
+            font-size: 12px;
+            color: #888888;
+            font-weight: 400;
+        }
+
+        /* 分隔线（可选增强） */
+        .data-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -12px;
+            top: 10%;
+            height: 80%;
+            width: 1px;
+            background: linear-gradient(transparent, #333, transparent);
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .running-dashboard {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 24px;
+            }
+            .data-item::after {
+                display: none;
+            }
+            .data-value {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="running-dashboard">
+        <!-- 总里程 -->
+        <div class="data-item">
+            <span class="data-label">Summary</span>
+            <div class="data-value">1989.0<span class="data-unit">km</span></div>
+            <div class="data-desc">318 runs / 209.62 hours</div>
+        </div>
+
+        <!-- 平均数据 -->
+        <div class="data-item">
+            <span class="data-label">Avg</span>
+            <div class="data-value">6'19"<span class="data-unit">/km</span></div>
+            <div class="data-desc">140 bpm / 7.4 weekly km</div>
+        </div>
+
+        <!-- 极值数据 -->
+        <div class="data-item">
+            <span class="data-label">Max/Min</span>
+            <div class="data-value">15<span class="data-unit">km</span></div>
+            <div class="data-desc">max / 0km min</div>
+        </div>
+    </div>
+</body>
+</html>

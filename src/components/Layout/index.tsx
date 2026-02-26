@@ -21,7 +21,11 @@ const Layout = ({ children }: React.PropsWithChildren) => {
         />
       </Helmet>
       <Header />
-      <div className="pa3 pa5-l mb5 cf">{children}</div>
+      <div className="bg-background min-h-screen text-primary p-4 md:p-8 font-sans">
+        <div className="max-w-[1400px] mx-auto">
+            {children}
+        </div>
+      </div>
     </>
   );
 };

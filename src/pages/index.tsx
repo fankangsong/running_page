@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import Layout from '@/components/Layout';
-import LocationStat from '@/components/LocationStat';
 import RunMap from '@/components/RunMap';
-import RunTable from '@/components/RunTable';
-import SVGStat from '@/components/SVGStat';
-import YearsStat from '@/components/YearsStat';
+import DashboardStats from '@/components/DashboardStats';
+import ActivityList from '@/components/ActivityList';
+import AnnualStatsChart from '@/components/AnnualStatsChart';
 import useActivities from '@/hooks/useActivities';
 import useSiteMetadata from '@/hooks/useSiteMetadata';
-import { IS_CHINESE } from '@/utils/const';
 import {
   Activity,
   IViewState,
@@ -25,9 +23,8 @@ import {
 } from '@/utils/utils';
 
 const Index = () => {
-  const { siteTitle } = useSiteMetadata();
   const { activities, thisYear } = useActivities();
-  const [year, setYear] = useState('Total');
+  const [year, setYear] = useState(thisYear);
   const [runIndex, setRunIndex] = useState(-1);
   const [runs, setActivity] = useState(
     filterAndSortRuns(activities, year, filterYearRuns, sortDateFunc)
@@ -48,7 +45,7 @@ const Index = () => {
     func: (_run: Activity, _value: string) => boolean
   ) => {
     scrollToMap();
-    if (name != 'Year') {
+    if (name !== 'Year') {
       setYear(thisYear)
     }
     setActivity(filterAndSortRuns(activities, item, func, sortDateFunc));
@@ -123,98 +120,48 @@ const Index = () => {
     setIntervalId(id);
   }, [runs]);
 
-  useEffect(() => {
-    if (year !== 'Total') {
-      return;
-    }
-
-    let svgStat = document.getElementById('svgStat');
-    if (!svgStat) {
-      return;
-    }
-
-    const handleClick = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName.toLowerCase() === 'path') {
-        // Use querySelector to get the <desc> element and the <title> element.
-        const descEl = target.querySelector('desc');
-        if (descEl) {
-          // If the runId exists in the <desc> element, it means that a running route has been clicked.
-          const runId = Number(descEl.innerHTML);
-          if (!runId) {
-            return;
-          }
-          locateActivity([runId]);
-          return;
-        }
-
-        const titleEl = target.querySelector('title');
-        if (titleEl) {
-          // If the runDate exists in the <title> element, it means that a date square has been clicked.
-          const [runDate] = titleEl.innerHTML.match(/\d{4}-\d{1,2}-\d{1,2}/) || [
-            `${+thisYear + 1}`,
-          ];
-          const runIDsOnDate = runs
-            .filter((r) => r.start_date_local.slice(0, 10) === runDate)
-            .map((r) => r.run_id);
-          if (!runIDsOnDate.length) {
-            return;
-          }
-          locateActivity(runIDsOnDate);
-        }
-      }
-    }
-    svgStat.addEventListener('click', handleClick);
-    return () => {
-      svgStat && svgStat.removeEventListener('click', handleClick);
-    };
-  }, [year]);
-
   return (
     <Layout>
-      <div className="fl w-30-l">
-        <h1 className="f1 fw9 i">
-          <a href="/">{siteTitle}</a>
-        </h1>
-        <LocationStat
-            changeYear={changeYear}
-            changeCity={changeCity}
-            changeTitle={changeTitle}
-          />
-        <YearsStat year={year} onClick={changeYear} />
-        {/* {(viewState.zoom ?? 0) <= 3 && IS_CHINESE ? (
-          <LocationStat
-            changeYear={changeYear}
-            changeCity={changeCity}
-            changeTitle={changeTitle}
-          />
-        ) : (
-          <YearsStat year={year} onClick={changeYear} />
-        )} */}
-      </div>
-      <div className="fl w-100 w-70-l">
-        <RunMap
-          title={title}
-          viewState={viewState}
-          geoData={geoData}
-          setViewState={setViewState}
-          changeYear={changeYear}
-          thisYear={year}
-        />
-        {year === 'Total' ? (
-          <SVGStat />
-        ) : (
-          <RunTable
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 p-4 lg:p-6">
+        {/* Left Column (6/10 width - 60%) */}
+        <div className="lg:col-span-6 flex flex-col gap-6">
+          {/* Row 1: Dashboard Stats */}
+          <DashboardStats changeCity={changeCity} changeTitle={changeTitle} />
+          
+          {/* Row 2: Activity List (Calendar/Table) */}
+          <ActivityList
+            year={year}
+            setYear={changeYear}
             runs={runs}
             locateActivity={locateActivity}
             setActivity={setActivity}
             runIndex={runIndex}
             setRunIndex={setRunIndex}
           />
-        )}
+        </div>
+
+        {/* Right Column (4/10 width - 40%) */}
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          {/* Row 1: Map */}
+          <div className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full aspect-square">
+            <RunMap
+              title={title}
+              viewState={viewState}
+              geoData={geoData}
+              setViewState={setViewState}
+              changeYear={changeYear}
+              thisYear={year}
+            />
+          </div>
+
+          {/* Row 2: Annual Stats Chart */}
+          <div className="bg-card rounded-card shadow-lg border border-gray-800/50 h-[400px] min-h-[400px] flex flex-col justify-center items-center overflow-hidden">
+            <AnnualStatsChart year={year} />
+          </div>
+        </div>
       </div>
       {/* Enable Audiences in Vercel Analytics: https://vercel.com/docs/concepts/analytics/audiences/quickstart */}
-      {/* <Analytics /> */}
+      <Analytics />
     </Layout>
   );
 };
