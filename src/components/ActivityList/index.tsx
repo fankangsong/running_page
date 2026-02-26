@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import useActivities from '@/hooks/useActivities';
 import RunTable from '@/components/RunTable';
 import RunningCalendar from '@/components/RunningCalendar';
@@ -6,12 +5,12 @@ import { Activity, RunIds } from '@/utils/utils';
 
 interface IActivityListProps {
   year: string;
-  setYear: (year: string) => void;
+  setYear: (_year: string) => void;
   runs: Activity[];
-  locateActivity: (runIds: RunIds) => void;
-  setActivity: (runs: Activity[]) => void;
+  locateActivity: (_runIds: RunIds) => void;
+  setActivity: (_runs: Activity[]) => void;
   runIndex: number;
-  setRunIndex: (index: number) => void;
+  setRunIndex: (_index: number) => void;
 }
 
 const ActivityList = ({

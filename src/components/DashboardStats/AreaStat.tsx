@@ -1,7 +1,6 @@
-import React from 'react';
 import useActivities from '@/hooks/useActivities';
 
-const AreaStat = ({ changeCity }: { changeCity: (city: string) => void }) => {
+const AreaStat = ({ changeCity }: { changeCity: (_city: string) => void }) => {
   const { activities: runs, years, countries, provinces, cities } = useActivities();
 
   // Calculate Max/Min Distance

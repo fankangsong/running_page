@@ -1,4 +1,3 @@
-import React from 'react';
 import { Activity, formatPace } from '@/utils/utils';
 
 interface ITracksStatsProps {

@@ -8,7 +8,6 @@ const FailedLoadSvg = ({ fileName }: { fileName: string }) => (
 
 const RunningCalendar = ({ year }: { year: string }) => {
   const [CalendarSVG, setCalendarSVG] = useState<React.ComponentType<any> | null>(null);
-  const [loading, setLoading] = useState(false);
   const LoadingPlaceholder = () => (
     <div className="w-full min-h-[110px] flex items-center justify-center bg-gray-900/60">
       <div className="h-10 w-10 rounded-full border-2 border-gray-600 border-t-white animate-spin" />
@@ -20,7 +19,6 @@ const RunningCalendar = ({ year }: { year: string }) => {
       let component;
       const fileName = year === 'Total' ? 'github.svg' : `github_${year}.svg`;
       try {
-        setLoading(true);
         if (year === 'Total') {
           component = await loadSvgComponent(totalStat, './github.svg');
         } else {
@@ -36,9 +34,8 @@ const RunningCalendar = ({ year }: { year: string }) => {
         }
       } catch (error) {
         console.error('Failed to load SVG:', error);
-        setCalendarSVG(() => () => <FailedLoadSvg fileName={fileName} />);
-      } finally {
-        setLoading(false);
+        const FailedLoadComponent = () => <FailedLoadSvg fileName={fileName} />;
+        setCalendarSVG(() => FailedLoadComponent);
       }
     };
     loadSvg();

@@ -1,4 +1,3 @@
-import React from 'react';
 import useActivities from '@/hooks/useActivities';
 import { formatPace, convertMovingTime2Sec } from '@/utils/utils';
 

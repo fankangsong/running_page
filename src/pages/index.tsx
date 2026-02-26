@@ -6,7 +6,6 @@ import DashboardStats from '@/components/DashboardStats';
 import ActivityList from '@/components/ActivityList';
 import AnnualStatsChart from '@/components/AnnualStatsChart';
 import useActivities from '@/hooks/useActivities';
-import useSiteMetadata from '@/hooks/useSiteMetadata';
 import {
   Activity,
   IViewState,

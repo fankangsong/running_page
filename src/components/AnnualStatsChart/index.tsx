@@ -30,7 +30,8 @@ const AnnualStatsChart = ({ year }: { year: string }) => {
         }
       } catch (error) {
         console.error('Failed to load SVG:', error);
-        setYearSVG(() => () => <FailedLoadSvg fileName={fileName} />);
+        const FailedLoadComponent = () => <FailedLoadSvg fileName={fileName} />;
+        setYearSVG(() => FailedLoadComponent);
       } finally {
         setLoading(false);
       }

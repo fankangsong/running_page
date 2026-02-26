@@ -1,7 +1,7 @@
 import React from 'react';
 import useActivities from '@/hooks/useActivities';
 
-const HabitStat = ({ changeTitle }: { changeTitle: (title: string) => void }) => {
+const HabitStat = ({ changeTitle }: { changeTitle: (_title: string) => void }) => {
   const { runPeriod } = useActivities();
   const periodArr = Object.entries(runPeriod);
   periodArr.sort((a, b) => b[1] - a[1]);
