@@ -30,5 +30,6 @@ module.exports = {
   },
   globals: {
     NodeJS: true,
+    __MAPBOX_TOKEN__: true,
   },
 };

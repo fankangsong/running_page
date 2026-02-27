@@ -1,5 +1,6 @@
 import useActivities from '@/hooks/useActivities';
 import { formatPace } from '@/utils/utils';
+import CyclingText from '@/components/CyclingText';
 
 const PBStat = () => {
   const { activities: runs } = useActivities();
@@ -54,7 +55,8 @@ const PBStat = () => {
             5K
           </span>
           <div className="text-[28px] font-bold leading-[1.2] bg-gradient-to-r from-[#4fc3f7] to-[#81d4fa] bg-clip-text text-transparent">
-            {pb5.pace}<span className="text-base text-[#cccccc] font-normal ml-1">/km</span>
+            <CyclingText text={pb5.pace} hoverPlay={true} interval={50} />
+            <span className="text-base text-[#cccccc] font-normal ml-1">/km</span>
           </div>
           <div className="text-xs text-[#888888] font-normal">
             {pb5.time}{pb5.date ? ` · ${pb5.date}` : ''}
@@ -69,7 +71,8 @@ const PBStat = () => {
             10K
           </span>
           <div className="text-[28px] font-bold leading-[1.2] bg-gradient-to-r from-[#4fc3f7] to-[#81d4fa] bg-clip-text text-transparent">
-            {pb10.pace}<span className="text-base text-[#cccccc] font-normal ml-1">/km</span>
+            <CyclingText text={pb10.pace} hoverPlay={true} interval={50} />
+            <span className="text-base text-[#cccccc] font-normal ml-1">/km</span>
           </div>
           <div className="text-xs text-[#888888] font-normal">
             {pb10.time}{pb10.date ? ` · ${pb10.date}` : ''}
@@ -84,7 +87,8 @@ const PBStat = () => {
             15K
           </span>
           <div className="text-[28px] font-bold leading-[1.2] bg-gradient-to-r from-[#4fc3f7] to-[#81d4fa] bg-clip-text text-transparent">
-            {pb15.pace}<span className="text-base text-[#cccccc] font-normal ml-1">/km</span>
+            <CyclingText text={pb15.pace} hoverPlay={true} interval={50} />
+            <span className="text-base text-[#cccccc] font-normal ml-1">/km</span>
           </div>
           <div className="text-xs text-[#888888] font-normal">
             {pb15.time}{pb15.date ? ` · ${pb15.date}` : ''}

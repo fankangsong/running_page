@@ -1,5 +1,6 @@
 import useActivities from '@/hooks/useActivities';
 import { formatPace, convertMovingTime2Sec } from '@/utils/utils';
+import CyclingText from '@/components/CyclingText'
 
 const TotalStat = () => {
   const { activities: runs } = useActivities();
@@ -80,7 +81,8 @@ const TotalStat = () => {
           Summary
         </span>
         <div className="text-[32px] font-bold leading-[1.2] bg-gradient-to-r from-[#4fc3f7] to-[#81d4fa] bg-clip-text text-transparent">
-          {totalKm}<span className="text-base text-[#cccccc] font-normal ml-1">km</span>
+          <CyclingText text={totalKm} hoverPlay={true} interval={50} />
+          <span className="text-base text-[#cccccc] font-normal ml-1">km</span>
         </div>
         <div className="text-xs text-[#888888] font-normal">
           {runs.length} runs / {totalHours} hours
@@ -97,7 +99,8 @@ const TotalStat = () => {
           Avg
         </span>
         <div className="text-[32px] font-bold leading-[1.2] bg-gradient-to-r from-[#4fc3f7] to-[#81d4fa] bg-clip-text text-transparent">
-          {avgPace}<span className="text-base text-[#cccccc] font-normal ml-1">/km</span>
+          <CyclingText text={avgPace} hoverPlay={true} interval={50} />
+          <span className="text-base text-[#cccccc] font-normal ml-1">/km</span>
         </div>
         <div className="text-xs text-[#888888] font-normal">
           {avgHeartRate} bpm / {avgWeeklyKm} weekly km
@@ -114,7 +117,8 @@ const TotalStat = () => {
           Max
         </span>
         <div className="text-[32px] font-bold leading-[1.2] bg-gradient-to-r from-[#4fc3f7] to-[#81d4fa] bg-clip-text text-transparent">
-          {maxDistStr}<span className="text-base text-[#cccccc] font-normal ml-1">km</span>
+          <CyclingText text={maxDistStr} hoverPlay={true} interval={50} />
+          <span className="text-base text-[#cccccc] font-normal ml-1">km</span>
         </div>
         <div className="text-xs text-[#888888] font-normal">
           {maxCount} runs

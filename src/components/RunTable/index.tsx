@@ -30,8 +30,9 @@ const RunTable = ({
   const [sortKey, setSortKey] = useState<IRunTableHeaderKey>('Date');
   const [sortAsc, setSortAsc] = useState(false);
 
-  const [pageSize, setPageSize] = useState(20);
   const [page, setPage] = useState(1);
+  const [animSeed, setAnimSeed] = useState(0);
+  const pageSize = 10;
 
   const totalCount = runs.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -79,6 +80,11 @@ const RunTable = ({
   const pageStart = (page - 1) * pageSize;
   const pageEnd = Math.min(totalCount, pageStart + pageSize);
   const pageRuns = runs.slice(pageStart, pageEnd);
+  const pageRunsFirstId = pageRuns[0]?.run_id ?? '';
+
+  useEffect(() => {
+    setAnimSeed((s) => s + 1);
+  }, [page, totalCount, pageRunsFirstId]);
 
   return (
     <div className={`${styles.wrapper} ${compact ? styles.compact : ''}`}>
@@ -97,8 +103,9 @@ const RunTable = ({
           <tbody>
             {pageRuns.map((run, elementIndex) => (
               <RunRow
-                key={run.run_id}
+                key={`${run.run_id}-${animSeed}`}
                 elementIndex={pageStart + elementIndex}
+                animationDelayMs={Math.min(30, elementIndex) * 22}
                 locateActivity={locateActivity}
                 run={run}
                 runIndex={runIndex}
@@ -133,20 +140,6 @@ const RunTable = ({
           >
             Next
           </button>
-          <select
-            className={styles.pageSize}
-            value={pageSize}
-            onChange={(e) => {
-              setPageSize(Number(e.target.value));
-              setPage(1);
-            }}
-          >
-            {[10, 20, 50, 100].map((s) => (
-              <option key={s} value={s}>
-                {s} / page
-              </option>
-            ))}
-          </select>
         </div>
       </div>
     </div>

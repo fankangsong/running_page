@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { githubStats, totalStat } from '@assets/index';
 import { loadSvgComponent } from '@/utils/svgUtils';
 
@@ -8,6 +8,8 @@ const FailedLoadSvg = ({ fileName }: { fileName: string }) => (
 
 const RunningCalendar = ({ year }: { year: string }) => {
   const [CalendarSVG, setCalendarSVG] = useState<React.ComponentType<any> | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const requestIdRef = useRef(0);
   const LoadingPlaceholder = () => (
     <div className="w-full min-h-[110px] flex items-center justify-center bg-gray-900/60">
       <div className="h-10 w-10 rounded-full border-2 border-gray-600 border-t-white animate-spin" />
@@ -15,6 +17,9 @@ const RunningCalendar = ({ year }: { year: string }) => {
   );
 
   useEffect(() => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    setIsLoading(true);
     const loadSvg = async () => {
       let component;
       const fileName = year === 'Total' ? 'github.svg' : `github_${year}.svg`;
@@ -24,18 +29,20 @@ const RunningCalendar = ({ year }: { year: string }) => {
         } else {
           component = await loadSvgComponent(githubStats, `./github_${year}.svg`);
         }
-        
-        // Check if component is a module with default export or the component itself
-        // When using import.meta.glob with { import: 'ReactComponent' }, component is the component itself
+
+        if (requestIdRef.current !== requestId) return;
         if (component && typeof component === 'object' && 'default' in component) {
-            setCalendarSVG(() => component.default);
+          setCalendarSVG(() => component.default);
         } else {
-            setCalendarSVG(() => component);
+          setCalendarSVG(() => component);
         }
+        setIsLoading(false);
       } catch (error) {
+        if (requestIdRef.current !== requestId) return;
         console.error('Failed to load SVG:', error);
         const FailedLoadComponent = () => <FailedLoadSvg fileName={fileName} />;
         setCalendarSVG(() => FailedLoadComponent);
+        setIsLoading(false);
       }
     };
     loadSvg();
@@ -46,9 +53,11 @@ const RunningCalendar = ({ year }: { year: string }) => {
   }
 
   return (
-    <div className="w-full overflow-x-auto scrollbar-hide min-h-[110px]">
+    <div className="w-full overflow-x-auto scrollbar-hide min-h-[110px] relative">
       <Suspense fallback={<LoadingPlaceholder />}>
-        <CalendarSVG className="w-full h-auto" />
+        <div className={isLoading ? 'opacity-70 transition-opacity duration-150' : 'opacity-100 transition-opacity duration-150'}>
+          <CalendarSVG className="w-full h-auto" />
+        </div>
       </Suspense>
     </div>
   );

@@ -112,6 +112,7 @@
 .tableContainer {
   width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .wrapper {
@@ -199,4 +200,25 @@
 .runDate {
   color: rgba($light, 0.7);
   font-size: 0.75rem;
+}
+
+.rowEnter {
+  td {
+    opacity: 0;
+    transform: translateY(6px);
+    animation: rowFadeUp 320ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+    animation-delay: var(--row-delay, 0ms);
+    will-change: opacity, transform;
+  }
+}
+
+@keyframes rowFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

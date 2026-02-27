@@ -1,15 +1,24 @@
+import type { CSSProperties } from 'react';
 import { formatPace, titleForRun, formatRunTime, Activity, RunIds, dayOfWeek } from '@/utils/utils';
 import styles from './style.module.scss';
 
 interface IRunRowProperties {
   elementIndex: number;
+  animationDelayMs: number;
   locateActivity: (_runIds: RunIds) => void;
   run: Activity;
   runIndex: number;
   setRunIndex: (_ndex: number) => void;
 }
 
-const RunRow = ({ elementIndex, locateActivity, run, runIndex, setRunIndex }: IRunRowProperties) => {
+const RunRow = ({
+  elementIndex,
+  animationDelayMs,
+  locateActivity,
+  run,
+  runIndex,
+  setRunIndex,
+}: IRunRowProperties) => {
   const distance = (run.distance / 1000.0).toFixed(2);
   const paceParts = run.average_speed ? formatPace(run.average_speed) : null;
   const heartRate = run.average_heartrate;
@@ -26,9 +35,9 @@ const RunRow = ({ elementIndex, locateActivity, run, runIndex, setRunIndex }: IR
 
   return (
     <tr
-      className={`${styles.runRow} ${runIndex === elementIndex ? styles.selected : ''}`}
-      key={run.start_date_local}
+      className={`${styles.runRow} ${styles.rowEnter} ${runIndex === elementIndex ? styles.selected : ''}`}
       onClick={handleClick}
+      style={{ ['--row-delay' as never]: `${animationDelayMs}ms` } as CSSProperties}
     >
       <td>{dayOfWeek(run.start_date_local)}{titleForRun(run)}</td>
       <td>{distance}</td>
