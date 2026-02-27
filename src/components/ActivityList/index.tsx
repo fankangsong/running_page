@@ -55,6 +55,7 @@ const ActivityList = ({
             setActivity={setActivity}
             runIndex={runIndex}
             setRunIndex={setRunIndex}
+            compact
             />
         </div>
       </div>

@@ -13,6 +13,7 @@ interface IRunTableProperties {
   setActivity: (_runs: Activity[]) => void;
   runIndex: number;
   setRunIndex: (_index: number) => void;
+  compact?: boolean;
 }
 
 type SortFunc = (_a: Activity, _b: Activity) => number;
@@ -24,6 +25,7 @@ const RunTable = ({
   setActivity,
   runIndex,
   setRunIndex,
+  compact = false,
 }: IRunTableProperties) => {
   const [sortKey, setSortKey] = useState<IRunTableHeaderKey>('Date');
   const [sortAsc, setSortAsc] = useState(false);
@@ -79,7 +81,34 @@ const RunTable = ({
   const pageRuns = runs.slice(pageStart, pageEnd);
 
   return (
-    <div className={styles.wrapper}>
+    <div className={`${styles.wrapper} ${compact ? styles.compact : ''}`}>
+      <div className={styles.tableContainer}>
+        <table className={styles.runTable} cellSpacing="0" cellPadding="0">
+          <thead>
+            <tr>
+              <th />
+              {(Array.from(sortFuncMap.keys()) as IRunTableHeaderKey[]).map((k) => (
+                <th key={k} onClick={handleSortClick(k)}>
+                  {k}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {pageRuns.map((run, elementIndex) => (
+              <RunRow
+                key={run.run_id}
+                elementIndex={pageStart + elementIndex}
+                locateActivity={locateActivity}
+                run={run}
+                runIndex={runIndex}
+                setRunIndex={setRunIndex}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       <div className={styles.metaBar}>
         <div className={styles.count}>
           {totalCount === 0 ? '0' : `${pageStart + 1}-${pageEnd}`} / {totalCount}
@@ -119,33 +148,6 @@ const RunTable = ({
             ))}
           </select>
         </div>
-      </div>
-
-      <div className={styles.tableContainer}>
-        <table className={styles.runTable} cellSpacing="0" cellPadding="0">
-          <thead>
-            <tr>
-              <th />
-              {(Array.from(sortFuncMap.keys()) as IRunTableHeaderKey[]).map((k) => (
-                <th key={k} onClick={handleSortClick(k)}>
-                  {k}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {pageRuns.map((run, elementIndex) => (
-              <RunRow
-                key={run.run_id}
-                elementIndex={pageStart + elementIndex}
-                locateActivity={locateActivity}
-                run={run}
-                runIndex={runIndex}
-                setRunIndex={setRunIndex}
-              />
-            ))}
-          </tbody>
-        </table>
       </div>
     </div>
   );

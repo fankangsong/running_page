@@ -3,6 +3,7 @@ import Layout from '@/components/Layout';
 import RunMap from '@/components/RunMap';
 import DashboardStats from '@/components/DashboardStats';
 import ActivityList from '@/components/ActivityList';
+import MonthlyBarChart from '@/components/MonthlyBarChart';
 import AnnualStatsChart from '@/components/AnnualStatsChart';
 import useActivities from '@/hooks/useActivities';
 import {
@@ -14,7 +15,6 @@ import {
   filterYearRuns,
   geoJsonForRuns,
   getBoundsForGeoData,
-  scrollToMap,
   sortDateFunc,
   titleForShow,
   RunIds,
@@ -42,7 +42,6 @@ const Index = () => {
     name: string,
     func: (_run: Activity, _value: string) => boolean
   ) => {
-    scrollToMap();
     if (name !== 'Year') {
       setYear(thisYear)
     }
@@ -92,7 +91,6 @@ const Index = () => {
     setGeoData(geoJsonForRuns(selectedRuns));
     setTitle(titleForShow(lastRun));
     clearInterval(intervalId);
-    scrollToMap();
   };
 
   useEffect(() => {
@@ -121,11 +119,11 @@ const Index = () => {
   return (
     <Layout>
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 p-4 lg:p-6">
+        <div className="lg:col-span-10">
+          <DashboardStats changeCity={changeCity} changeTitle={changeTitle} />
+        </div>
         {/* Left Column (6/10 width - 60%) */}
         <div className="lg:col-span-6 flex flex-col gap-6">
-          {/* Row 1: Dashboard Stats */}
-          <DashboardStats changeCity={changeCity} changeTitle={changeTitle} />
-
           {/* Row 2: Activity List (Calendar/Table) */}
           <ActivityList
             year={year}
@@ -140,7 +138,14 @@ const Index = () => {
 
         {/* Right Column (4/10 width - 40%) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* Row 1: Map */}
+          
+
+          {/* Row 1: Annual Stats Chart */}
+          <div className="bg-card rounded-card shadow-lg border border-gray-800/50 h-[400px] min-h-[400px] flex flex-col justify-center items-center overflow-hidden">
+            <AnnualStatsChart year={year} />
+          </div>
+
+          {/* Row 2: Map */}
           <div id="run-map" className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full aspect-square">
             <RunMap
               title={title}
@@ -152,9 +157,16 @@ const Index = () => {
             />
           </div>
 
-          {/* Row 2: Annual Stats Chart */}
-          <div className="bg-card rounded-card shadow-lg border border-gray-800/50 h-[400px] min-h-[400px] flex flex-col justify-center items-center overflow-hidden">
-            <AnnualStatsChart year={year} />
+          <div>
+            <MonthlyBarChart
+              runs={filterAndSortRuns(
+                activities,
+                year === 'Total' ? thisYear : year,
+                filterYearRuns,
+                sortDateFunc
+              )}
+              year={year === 'Total' ? thisYear : year}
+            />
           </div>
         </div>
       </div>

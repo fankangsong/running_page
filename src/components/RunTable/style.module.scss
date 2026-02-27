@@ -118,6 +118,22 @@
   width: 100%;
 }
 
+.compact {
+  .runTable {
+    border-spacing: 0 0.35rem;
+    thead {
+      th {
+        padding: 0.5rem 0.6rem;
+      }
+    }
+  }
+  .runRow {
+    td {
+      padding: 0.6rem 0.6rem;
+    }
+  }
+}
+
 .metaBar {
   display: flex;
   align-items: center;

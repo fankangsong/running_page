@@ -8,7 +8,7 @@ const TracksGrid = ({ year }: { year: string }) => {
   const [YearGridSvg, setYearGridSvg] = useState<React.ComponentType<any> | null>(null);
   const [loading, setLoading] = useState(false);
   const LoadingPlaceholder = () => (
-    <div className="w-full min-h-[360px] flex items-center justify-center bg-gray-900/60">
+    <div className="w-full min-h-[360px] flex items-center justify-center">
       <div className="h-10 w-10 rounded-full border-2 border-gray-600 border-t-white animate-spin" />
     </div>
   );
