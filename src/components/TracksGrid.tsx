@@ -1,45 +1,41 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { totalStat, gridStats } from '@assets/index';
 import { loadSvgComponent } from '@/utils/svgUtils';
 
-const GridSvgTotal = lazy(() => loadSvgComponent(totalStat, './grid.svg'));
-
 const TracksGrid = ({ year }: { year: string }) => {
-  const [YearGridSvg, setYearGridSvg] = useState<React.ComponentType<any> | null>(null);
-  const [loading, setLoading] = useState(false);
-  const LoadingPlaceholder = () => (
-    <div className="w-full min-h-[360px] flex items-center justify-center">
-      <div className="h-10 w-10 rounded-full border-2 border-gray-600 border-t-white animate-spin" />
-    </div>
-  );
+  const [GridSvg, setGridSvg] = useState<React.ComponentType<any> | null>(null);
+  const [loadedYear, setLoadedYear] = useState<string | null>(null);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
-    if (year !== 'Total') {
-      const loadSvg = async () => {
-        setLoading(true);
-        const component = await loadSvgComponent(gridStats, `./grid_${year}.svg`);
-        setYearGridSvg(() => component.default);
-        setLoading(false);
-      };
-      loadSvg();
-    } else {
-      setYearGridSvg(null);
-    }
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
+    const loadSvg = async () => {
+      const isTotal = year === 'Total';
+      const component = await loadSvgComponent(
+        isTotal ? totalStat : gridStats,
+        isTotal ? './grid.svg' : `./grid_${year}.svg`
+      );
+
+      if (requestIdRef.current !== requestId) return;
+
+      if (component && typeof component === 'object' && 'default' in component) {
+        setGridSvg(() => component.default);
+      } else {
+        setGridSvg(() => component);
+      }
+      setLoadedYear(year);
+    };
+
+    loadSvg();
   }, [year]);
 
+  const isReady = loadedYear === year && GridSvg;
+
   return (
-    <div className="w-full py-6">
-      <Suspense fallback={<LoadingPlaceholder />}>
-        {year === 'Total' ? (
-          <GridSvgTotal className="w-full h-auto" />
-        ) : YearGridSvg ? (
-          <YearGridSvg className="w-full h-auto" />
-        ) : loading ? (
-          <LoadingPlaceholder />
-        ) : (
-          <LoadingPlaceholder />
-        )}
-      </Suspense>
+    <div className="w-full py-6 min-h-[360px] relative">
+      {isReady ? <GridSvg className="w-full h-auto" /> : <div className="min-h-[360px]" />}
     </div>
   );
 };
