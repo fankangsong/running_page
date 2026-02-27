@@ -5,6 +5,7 @@ import TracksGrid from '@/components/TracksGrid';
 import TracksStats from '@/components/TracksStats';
 import useActivities from '@/hooks/useActivities';
 import { filterAndSortRuns, filterYearRuns, filterCityRuns, sortDateFunc } from '@/utils/utils';
+import AnnualStatsChart from '@/components/AnnualStatsChart';
 
 const Tracks = () => {
   const { activities, years } = useActivities();

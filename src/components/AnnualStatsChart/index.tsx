@@ -39,12 +39,16 @@ const AnnualStatsChart = ({ year }: { year: string }) => {
     loadSvg();
   }, [year]);
 
+  if (year === 'Total') {
+    return null;
+  }
+
   if (!YearSVG || loading) {
     return <LoadingPlaceholder />;
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className="w-full">
       <Suspense fallback={<LoadingPlaceholder />}>
         <YearSVG className="w-full h-full" />
       </Suspense>

@@ -25,7 +25,7 @@ const MonthlyBarChart = ({ runs, year }: { runs: Activity[]; year: string }) => 
         <div className="text-xs text-secondary font-bold uppercase tracking-[0.5px]">Monthly KM</div>
         <div className="text-xs text-gray-400">{year}</div>
       </div>
-      <div className="h-48 flex items-end gap-2">
+      <div className="h-24 flex items-end gap-2">
         {totals.map((v, i) => {
           const h = `${Math.round((v / max) * 100)}%`;
           return (

@@ -102,7 +102,7 @@ const TotalStat = () => {
           <CyclingText text={avgPace} hoverPlay={true} interval={50} />
           <span className="text-base text-[#cccccc] font-normal ml-1">/km</span>
         </div>
-        <div className="text-xs text-[#888888] font-normal">
+        <div className="text-xs text-[#888888] font-normal whitespace-nowrap">
           {avgHeartRate} bpm / {avgWeeklyKm} weekly km
         </div>
       </div>

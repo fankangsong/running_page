@@ -138,12 +138,6 @@ const Index = () => {
 
         {/* Right Column (4/10 width - 40%) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-          
-
-          {/* Row 1: Annual Stats Chart */}
-          <div className="bg-card rounded-card shadow-lg border border-gray-800/50 h-[400px] min-h-[400px] flex flex-col justify-center items-center overflow-hidden">
-            <AnnualStatsChart year={year} />
-          </div>
 
           {/* Row 2: Map */}
           <div id="run-map" className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full aspect-square">
