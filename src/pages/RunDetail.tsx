@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/Layout';
-import RunMap from '@/components/RunMap';
+import RunPolyline from '@/components/RunPolyline';
 import RunDetailPanel from '@/components/RunDetailPanel';
 import useActivities from '@/hooks/useActivities';
 import NotFound from '@/pages/404';
-import { geoJsonForRuns, getBoundsForGeoData, IViewState, titleForShow } from '@/utils/utils';
+import { titleForShow } from '@/utils/utils';
 
 const RunDetail = () => {
   const { runId } = useParams();
@@ -17,17 +17,6 @@ const RunDetail = () => {
     return activities.find((r) => r.run_id === runIdNumber) ?? null;
   }, [activities, runId, runIdNumber]);
 
-  const geoData = useMemo(() => {
-    return run ? geoJsonForRuns([run]) : geoJsonForRuns([]);
-  }, [run]);
-
-  const bounds = useMemo(() => getBoundsForGeoData(geoData), [geoData]);
-  const [viewState, setViewState] = useState<IViewState>({ ...bounds });
-
-  useEffect(() => {
-    setViewState({ ...bounds });
-  }, [bounds.latitude, bounds.longitude, bounds.zoom]);
-
   if (!runId || Number.isNaN(runIdNumber) || !run) {
     return <NotFound />;
   }
@@ -37,16 +26,7 @@ const RunDetail = () => {
   return (
     <Layout>
       <div className="max-w-[480px] mx-auto">
-          <div className="bg-card rounded-card shadow-lg 
-          border border-gray-800/50 overflow-hidden 
-          relative w-full sm:max-w-[420px] mx-auto aspect-square">
-            <RunMap
-              title={title}
-              viewState={viewState}
-              geoData={geoData}
-              setViewState={setViewState}
-            />
-          </div>
+          <div className="w-full text-center"><RunPolyline run={run} /></div>
           <RunDetailPanel run={run} />
         </div>
     </Layout>

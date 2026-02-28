@@ -9,14 +9,9 @@ const RunDetailPanel = ({ run }: { run: Activity }) => {
 
   return (
     <div className="p-4 sm:max-w-[420px] mx-auto">
-      <div className="text-base font-black text-white tracking-tight truncate" title={run.name}>
-        {run.name}
-      </div>
-      <div className="text-xs text-secondary mt-1 whitespace-nowrap">
-        {run.start_date_local}
-      </div>
-      <div className="text-xs text-[#888888] font-normal mt-1 whitespace-nowrap truncate" title={location}>
-        {location}
+      <div className="flex justify-between items-center gap-2">
+        <div className="text-base font-black text-white tracking-tight truncate">{run.name}</div>
+        <div className="text-xs text-secondary mt-1 whitespace-nowrap">{run.start_date_local}</div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6 w-full text-white font-sans relative">
@@ -32,9 +27,6 @@ const RunDetailPanel = ({ run }: { run: Activity }) => {
             {distanceKm}
             <span className="text-base text-[#cccccc] font-normal ml-1">km</span>
           </div>
-          {/* <div className="text-[11px] sm:text-xs text-[#888888] font-normal whitespace-nowrap">
-            {run.type} / streak {run.streak}
-          </div> */}
         </div>
 
         <div className="flex flex-col gap-2">
