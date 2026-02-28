@@ -4,6 +4,7 @@ import { RouterProvider, createHashRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Index from './pages';
 import Tracks from './pages/Tracks';
+import RunDetail from './pages/RunDetail';
 import NotFound from './pages/404';
 import ReactGA from 'react-ga4';
 import {
@@ -27,6 +28,10 @@ const routes = createHashRouter(
     {
       path: '/tracks',
       element: withOptionalGAPageTracking(<Tracks />),
+    },
+    {
+      path: '/run/:runId',
+      element: withOptionalGAPageTracking(<RunDetail />),
     },
     {
       path: '*',

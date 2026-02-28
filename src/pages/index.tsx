@@ -4,7 +4,6 @@ import RunMap from '@/components/RunMap';
 import DashboardStats from '@/components/DashboardStats';
 import ActivityList from '@/components/ActivityList';
 import MonthlyBarChart from '@/components/MonthlyBarChart';
-import AnnualStatsChart from '@/components/AnnualStatsChart';
 import useActivities from '@/hooks/useActivities';
 import {
   Activity,

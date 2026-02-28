@@ -100,6 +100,40 @@
   }
 }
 
+.titleCell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.titleText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detailLink {
+  flex: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba($light, 0.7);
+  text-decoration: none;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  border: 1px solid rgba($light, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+
+  &:hover {
+    color: white;
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
 .selected {
   background-color: rgba($nike, 0.1) !important;
   

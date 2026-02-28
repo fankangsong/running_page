@@ -57,6 +57,7 @@ export default defineConfig(({ mode }) => {
     build: {
       manifest: true,
       outDir: './dist', // for user easy to use, vercel use default dir -> dist
+      copyPublicDir: false,
       rollupOptions: {
         output: {
           manualChunks: () => {

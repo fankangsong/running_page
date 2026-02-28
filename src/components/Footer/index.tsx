@@ -12,7 +12,7 @@ const Footer = () => {
         </div>
         <div className="flex items-center gap-6">
           <a
-            href="https://github.com/yihong0618/running_page"
+            href="https://github.com/fankangsong/running_page"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-primary transition-colors duration-200"
