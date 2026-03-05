@@ -23,7 +23,11 @@ const AnnualStatsChart = ({ year }: { year: string }) => {
       try {
         setLoading(true);
         const component = await loadSvgComponent(yearStats, `./${fileName}`);
-        if (component && typeof component === 'object' && 'default' in component) {
+        if (
+          component &&
+          typeof component === 'object' &&
+          'default' in component
+        ) {
           setYearSVG(() => (component as any).default);
         } else {
           setYearSVG(() => component as any);

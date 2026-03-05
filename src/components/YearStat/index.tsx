@@ -7,7 +7,13 @@ import useHover from '@/hooks/useHover';
 import { yearStats } from '@assets/index';
 import { loadSvgComponent } from '@/utils/svgUtils';
 
-const YearStat = ({ year, onClick }: { year: string, onClick: (_year: string) => void }) => {
+const YearStat = ({
+  year,
+  onClick,
+}: {
+  year: string;
+  onClick: (_year: string) => void;
+}) => {
   let { activities: runs, years } = useActivities();
   // for hover
   const [hovered, eventHandlers] = useHover();
@@ -65,7 +71,7 @@ const YearStat = ({ year, onClick }: { year: string, onClick: (_year: string) =>
           <Stat value={avgHeartRate} description=" Avg Heart Rate" />
         )}
       </section>
-      {year !== "Total" && hovered && (
+      {year !== 'Total' && hovered && (
         <Suspense fallback="loading...">
           <YearSVG className={styles.yearSVG} />
         </Suspense>

@@ -3,7 +3,7 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import svgr from 'vite-plugin-svgr';
-import { visualizer } from "rollup-plugin-visualizer";
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // The following are known larger packages or packages that can be loaded asynchronously.
 // const individuallyPackages = ['activities', 'github.svg', 'grid.svg'];
@@ -11,10 +11,12 @@ import { visualizer } from "rollup-plugin-visualizer";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  
+
   // Simple obfuscation for Mapbox token to avoid plain text in build
   const mapboxToken = env.VITE_MAPBOX_TOKEN || '';
-  const obfuscatedToken = mapboxToken ? Buffer.from(mapboxToken).toString('base64').split('').reverse().join('') : '';
+  const obfuscatedToken = mapboxToken
+    ? Buffer.from(mapboxToken).toString('base64').split('').reverse().join('')
+    : '';
 
   return {
     define: {
@@ -74,10 +76,10 @@ export default defineConfig(({ mode }) => {
             //     }
             //   }
             // }
-            return  {
+            return {
               // 'react-vendor': ['react', 'react-dom', 'react-router'],
-              'mapbox': ['mapbox-gl'],
-            }
+              mapbox: ['mapbox-gl'],
+            };
           },
         },
       },

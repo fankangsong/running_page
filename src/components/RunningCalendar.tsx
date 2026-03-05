@@ -1,13 +1,16 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
-import { githubStats, totalStat } from '@assets/index';
+import { githubStats } from '@assets/index';
 import { loadSvgComponent } from '@/utils/svgUtils';
 
 const FailedLoadSvg = ({ fileName }: { fileName: string }) => (
-  <div className="text-gray-500 text-center py-8">Failed to load {fileName}</div>
+  <div className="text-gray-500 text-center py-8">
+    Failed to load {fileName}
+  </div>
 );
 
 const RunningCalendar = ({ year }: { year: string }) => {
-  const [CalendarSVG, setCalendarSVG] = useState<React.ComponentType<any> | null>(null);
+  const [CalendarSVG, setCalendarSVG] =
+    useState<React.ComponentType<any> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const requestIdRef = useRef(0);
   const LoadingPlaceholder = () => (
@@ -22,16 +25,16 @@ const RunningCalendar = ({ year }: { year: string }) => {
     setIsLoading(true);
     const loadSvg = async () => {
       let component;
-      const fileName = year === 'Total' ? 'github.svg' : `github_${year}.svg`;
+      const fileName = `github_${year}.svg`;
       try {
-        if (year === 'Total') {
-          component = await loadSvgComponent(totalStat, './github.svg');
-        } else {
-          component = await loadSvgComponent(githubStats, `./github_${year}.svg`);
-        }
+        component = await loadSvgComponent(githubStats, `./github_${year}.svg`);
 
         if (requestIdRef.current !== requestId) return;
-        if (component && typeof component === 'object' && 'default' in component) {
+        if (
+          component &&
+          typeof component === 'object' &&
+          'default' in component
+        ) {
           setCalendarSVG(() => component.default);
         } else {
           setCalendarSVG(() => component);
@@ -48,6 +51,10 @@ const RunningCalendar = ({ year }: { year: string }) => {
     loadSvg();
   }, [year]);
 
+  if (year === 'Total') {
+    return null;
+  }
+
   if (!CalendarSVG) {
     return <LoadingPlaceholder />;
   }
@@ -55,7 +62,13 @@ const RunningCalendar = ({ year }: { year: string }) => {
   return (
     <div className="w-full overflow-x-auto scrollbar-hide min-h-[110px] relative">
       <Suspense fallback={<LoadingPlaceholder />}>
-        <div className={isLoading ? 'opacity-70 transition-opacity duration-150' : 'opacity-100 transition-opacity duration-150'}>
+        <div
+          className={
+            isLoading
+              ? 'opacity-70 transition-opacity duration-150'
+              : 'opacity-100 transition-opacity duration-150'
+          }
+        >
           <CalendarSVG className="w-full h-auto" />
         </div>
       </Suspense>

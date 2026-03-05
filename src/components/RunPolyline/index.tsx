@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { pathForRun, Coordinate } from '@/utils/utils';
+import { useMemo } from 'react';
+import { pathForRun } from '@/utils/utils';
 import { MAIN_COLOR } from '@/utils/const';
 import { Activity } from '@/utils/utils';
 import { ReactComponent as StartIcon } from '@assets/start.svg';
@@ -10,7 +10,7 @@ interface IRunPolylineProps {
 }
 
 const RunPolyline = ({ run }: IRunPolylineProps) => {
-  const { points, bounds } = useMemo(() => {
+  const { points } = useMemo(() => {
     const coords = pathForRun(run);
     if (coords.length === 0) {
       return { points: [], bounds: null };
@@ -30,9 +30,9 @@ const RunPolyline = ({ run }: IRunPolylineProps) => {
     const svgWidth = 300;
     const svgHeight = 300;
 
-    const scaleX = (lon: number) => 
+    const scaleX = (lon: number) =>
       padding + ((lon - minLon) / lonRange) * (svgWidth - 2 * padding);
-    const scaleY = (lat: number) => 
+    const scaleY = (lat: number) =>
       padding + ((lat - minLat) / latRange) * (svgHeight - 2 * padding);
 
     const points = coords.map((coord) => {
@@ -43,7 +43,6 @@ const RunPolyline = ({ run }: IRunPolylineProps) => {
 
     return {
       points,
-      bounds: { minLon, maxLon, minLat, maxLat },
     };
   }, [run]);
 
@@ -72,7 +71,7 @@ const RunPolyline = ({ run }: IRunPolylineProps) => {
           <stop offset="100%" stopColor={MAIN_COLOR} stopOpacity="0.3" />
         </linearGradient>
       </defs>
-      
+
       <polyline
         points={polylinePoints}
         fill="none"
@@ -82,11 +81,11 @@ const RunPolyline = ({ run }: IRunPolylineProps) => {
         strokeLinejoin="round"
         opacity="0.9"
       />
-      
+
       <g transform={`translate(${startPoint.x - 12}, ${startPoint.y - 24})`}>
         <StartIcon width="24" height="24" />
       </g>
-      
+
       <g transform={`translate(${endPoint.x - 12}, ${endPoint.y - 24})`}>
         <EndIcon width="24" height="24" />
       </g>

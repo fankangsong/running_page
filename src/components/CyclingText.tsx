@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useCallback, useImperativeHandle, forwardRef, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useImperativeHandle,
+  forwardRef,
+  useRef,
+} from 'react';
 
 interface CyclingTextProps {
   text: string;
@@ -8,7 +15,7 @@ interface CyclingTextProps {
   manualStart?: boolean;
   hoverPlay?: boolean;
   interval?: number; // Time in ms between frames
-  step?: number;     // Character code increment step
+  step?: number; // Character code increment step
 }
 
 export interface CyclingTextHandle {
@@ -16,16 +23,19 @@ export interface CyclingTextHandle {
 }
 
 const CyclingText = forwardRef<CyclingTextHandle, CyclingTextProps>(
-  ({ 
-    text, 
-    className, 
-    style, 
-    onComplete, 
-    manualStart = false, 
-    hoverPlay = false,
-    interval = 10,
-    step = 3
-  }, ref) => {
+  (
+    {
+      text,
+      className,
+      style,
+      onComplete,
+      manualStart = false,
+      hoverPlay = false,
+      interval = 10,
+      step = 3,
+    },
+    ref
+  ) => {
     // Initialize with 'A's for A-Z characters, 'a' for a-z, '0' for numbers, or the character itself for others
     const getInitialText = (targetText: string) => {
       return targetText
@@ -58,7 +68,7 @@ const CyclingText = forwardRef<CyclingTextHandle, CyclingTextProps>(
       isPlayingRef.current = true;
 
       const targetText = textRef.current;
-      
+
       // Start from start chars again
       let currentChars = targetText.split('').map((char) => {
         if (/[A-Z]/.test(char)) return 'A';
@@ -66,7 +76,7 @@ const CyclingText = forwardRef<CyclingTextHandle, CyclingTextProps>(
         if (/[0-9]/.test(char)) return '0';
         return char;
       });
-      
+
       setDisplayText(currentChars.join(''));
 
       // Keep track of which character index we are currently animating
@@ -76,7 +86,7 @@ const CyclingText = forwardRef<CyclingTextHandle, CyclingTextProps>(
         // Find the next character that needs animating
         // Skip characters that don't need animation (already match or non-alphanumeric)
         while (
-          activeIndex < targetText.length && 
+          activeIndex < targetText.length &&
           currentChars[activeIndex] === targetText[activeIndex]
         ) {
           activeIndex++;
@@ -92,25 +102,24 @@ const CyclingText = forwardRef<CyclingTextHandle, CyclingTextProps>(
         // Animate the current active character
         const currentChar = currentChars[activeIndex];
         const targetChar = targetText[activeIndex];
-        
+
         const charCode = currentChar.charCodeAt(0);
         const targetCode = targetChar.charCodeAt(0);
-        
+
         let nextChar = currentChar;
 
         if (charCode < targetCode) {
-           const nextCode = Math.min(charCode + step, targetCode);
-           nextChar = String.fromCharCode(nextCode);
+          const nextCode = Math.min(charCode + step, targetCode);
+          nextChar = String.fromCharCode(nextCode);
         } else if (charCode > targetCode) {
-           nextChar = targetChar;
+          nextChar = targetChar;
         } else {
-           nextChar = targetChar;
+          nextChar = targetChar;
         }
 
         currentChars[activeIndex] = nextChar;
         setDisplayText(currentChars.join(''));
-
-      }, interval); 
+      }, interval);
     }, [interval, step]);
 
     const handleMouseEnter = useCallback(() => {
@@ -133,11 +142,7 @@ const CyclingText = forwardRef<CyclingTextHandle, CyclingTextProps>(
     }, [play, manualStart]);
 
     return (
-      <span 
-        className={className} 
-        style={style}
-        onMouseEnter={handleMouseEnter}
-      >
+      <span className={className} style={style} onMouseEnter={handleMouseEnter}>
         {displayText}
       </span>
     );

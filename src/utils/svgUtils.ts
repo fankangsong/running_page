@@ -25,6 +25,10 @@ export async function loadSvgComponent(
     return loadByKey(matchKey);
   }
   throw new Error(
-    `SVG component not found for path: ${path}. Available keys: ${Object.keys(modules).slice(0, 10).join(', ')}`
+    `SVG component not found for path: ${path}. Available keys: ${Object.keys(
+      modules
+    )
+      .slice(0, 10)
+      .join(', ')}`
   );
 }

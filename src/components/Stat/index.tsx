@@ -13,7 +13,13 @@ interface IStatProperties {
   onClick?: () => void;
 }
 
-const Stat = ({ value, description, className = 'w-100', citySize, onClick }: IStatProperties) => (
+const Stat = ({
+  value,
+  description,
+  className = 'w-100',
+  citySize,
+  onClick,
+}: IStatProperties) => (
   <div className={`${className}`} onClick={onClick}>
     <span className={`f${citySize || 2} fw9 i`} style={divStyle}>
       {intComma(value.toString())}

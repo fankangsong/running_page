@@ -3,8 +3,14 @@ import type { TransitionEventHandler } from 'react';
 import Layout from '@/components/Layout';
 import TracksGrid from '@/components/TracksGrid';
 import TracksStats from '@/components/TracksStats';
+import RunningCalendar from '@/components/RunningCalendar';
 import useActivities from '@/hooks/useActivities';
-import { filterAndSortRuns, filterYearRuns, filterCityRuns, sortDateFunc } from '@/utils/utils';
+import {
+  filterAndSortRuns,
+  filterYearRuns,
+  filterCityRuns,
+  sortDateFunc,
+} from '@/utils/utils';
 
 const filterCountryRuns = (run: any, country: string) => {
   if (run && run.location_country) {
@@ -32,20 +38,34 @@ const Tracks = () => {
   const [displayRuns, setDisplayRuns] = useState(activities);
   const [phase, setPhase] = useState<'idle' | 'out' | 'in'>('idle');
   const prevYearRef = useRef<string>(year);
-  const pendingRef = useRef<{ year: string; runs: typeof activities }>({ year, runs: activities });
+  const pendingRef = useRef<{ year: string; runs: typeof activities }>({
+    year,
+    runs: activities,
+  });
 
   useEffect(() => {
-    let filtered = filterAndSortRuns(activities, year, filterYearRuns, sortDateFunc);
+    let filtered = filterAndSortRuns(
+      activities,
+      year,
+      filterYearRuns,
+      sortDateFunc
+    );
     if (selectedCountry && selectedCountry.length > 0) {
-      filtered = filtered.filter((r) => filterCountryRuns(r, selectedCountry as string));
+      filtered = filtered.filter((r) =>
+        filterCountryRuns(r, selectedCountry as string)
+      );
       filtered.sort(sortDateFunc);
     }
     if (selectedProvince && selectedProvince.length > 0) {
-      filtered = filtered.filter((r) => filterProvinceRuns(r, selectedProvince as string));
+      filtered = filtered.filter((r) =>
+        filterProvinceRuns(r, selectedProvince as string)
+      );
       filtered.sort(sortDateFunc);
     }
     if (selectedCity && selectedCity.length > 0) {
-      filtered = filtered.filter((r) => filterCityRuns(r, selectedCity as string));
+      filtered = filtered.filter((r) =>
+        filterCityRuns(r, selectedCity as string)
+      );
       filtered.sort(sortDateFunc);
     }
     setRuns(filtered);
@@ -139,11 +159,11 @@ const Tracks = () => {
           onTransitionEnd={handleTransitionEnd}
         >
           <div className="lg:col-span-3">
-            <TracksStats 
-              runs={displayRuns} 
-              year={displayYear} 
-              onSelectCity={handleSelectCity} 
-              selectedCity={selectedCity} 
+            <TracksStats
+              runs={displayRuns}
+              year={displayYear}
+              onSelectCity={handleSelectCity}
+              selectedCity={selectedCity}
               topN={12}
               onSelectCountry={handleSelectCountry}
               selectedCountry={selectedCountry}
@@ -152,6 +172,7 @@ const Tracks = () => {
             />
           </div>
           <div className="lg:col-span-7">
+            <RunningCalendar year={displayYear} />
             <TracksGrid year={displayYear} />
           </div>
         </div>

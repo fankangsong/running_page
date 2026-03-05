@@ -20,7 +20,11 @@ const TracksGrid = ({ year }: { year: string }) => {
 
       if (requestIdRef.current !== requestId) return;
 
-      if (component && typeof component === 'object' && 'default' in component) {
+      if (
+        component &&
+        typeof component === 'object' &&
+        'default' in component
+      ) {
         setGridSvg(() => component.default);
       } else {
         setGridSvg(() => component);
@@ -35,7 +39,11 @@ const TracksGrid = ({ year }: { year: string }) => {
 
   return (
     <div className="w-full py-6 min-h-[360px] relative">
-      {isReady ? <GridSvg className="w-full h-auto" /> : <div className="min-h-[360px]" />}
+      {isReady ? (
+        <GridSvg className="w-full h-auto" />
+      ) : (
+        <div className="min-h-[360px]" />
+      )}
     </div>
   );
 };

@@ -1,75 +1,91 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Layout from '@/components/Layout';
 import RunMap from '@/components/RunMap';
 import DashboardStats from '@/components/DashboardStats';
-import ActivityList from '@/components/ActivityList';
 import MonthlyBarChart from '@/components/MonthlyBarChart';
+import CompactRunCalendar from '@/components/CompactRunCalendar';
 import useActivities from '@/hooks/useActivities';
 import {
-  Activity,
   IViewState,
   filterAndSortRuns,
-  filterCityRuns,
-  filterTitleRuns,
   filterYearRuns,
+  filterYearMonthRuns,
   geoJsonForRuns,
   getBoundsForGeoData,
+  groupRunsByDate,
   sortDateFunc,
   titleForShow,
   RunIds,
 } from '@/utils/utils';
 
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
 const Index = () => {
-  const { activities, thisYear } = useActivities();
+  const { activities, thisYear, years } = useActivities();
+  const initialMonth = (() => {
+    const thisYearRuns = filterAndSortRuns(
+      activities,
+      thisYear,
+      filterYearRuns,
+      sortDateFunc
+    );
+    const m = thisYearRuns[0]?.start_date_local?.slice(5, 7);
+    const parsed = m ? Number(m) : NaN;
+    if (parsed >= 1 && parsed <= 12) return parsed;
+    return new Date().getMonth() + 1;
+  })();
   const [year, setYear] = useState(thisYear);
-  const [runIndex, setRunIndex] = useState(-1);
+  const [month, setMonth] = useState<number>(initialMonth);
   const [runs, setActivity] = useState(
-    filterAndSortRuns(activities, year, filterYearRuns, sortDateFunc)
+    filterAndSortRuns(
+      activities,
+      `${thisYear}-${pad2(initialMonth)}`,
+      filterYearMonthRuns,
+      sortDateFunc
+    )
   );
   const [title, setTitle] = useState('');
   const [geoData, setGeoData] = useState(geoJsonForRuns(runs));
   // for auto zoom
   const bounds = getBoundsForGeoData(geoData);
   const [intervalId, setIntervalId] = useState<number>();
+  const runsByDate = useMemo(() => groupRunsByDate(runs), [runs]);
 
   const [viewState, setViewState] = useState<IViewState>({
     ...bounds,
   });
 
-  const changeByItem = (
-    item: string,
-    name: string,
-    func: (_run: Activity, _value: string) => boolean
-  ) => {
-    if (name !== 'Year') {
-      setYear(thisYear)
-    }
-    setActivity(filterAndSortRuns(activities, item, func, sortDateFunc));
-    setRunIndex(-1);
-    setTitle(`${item} ${name} Running Heatmap`);
-  };
+  // const changeByItem = (
+  //   item: string,
+  //   name: string,
+  //   func: (_run: Activity, _value: string) => boolean
+  // ) => {
+  //   if (name !== 'Year') {
+  //     setYear(thisYear);
+  //     setMonth(initialMonth);
+  //   }
+  //   setActivity(filterAndSortRuns(activities, item, func, sortDateFunc));
+  //   setTitle(`${item} ${name} Running Heatmap`);
+  // };
 
-  const changeYear = (y: string) => {
-    // default year
+  const changeYearMonth = (y: string, m: number) => {
     setYear(y);
-
-    if ((viewState.zoom ?? 0) > 3 && bounds) {
-      setViewState({
-        ...bounds,
-      });
-    }
-
-    changeByItem(y, 'Year', filterYearRuns);
+    setMonth(m);
+    const ym = `${y}-${pad2(m)}`;
+    setActivity(
+      filterAndSortRuns(activities, ym, filterYearMonthRuns, sortDateFunc)
+    );
+    setTitle(`${ym} Running Heatmap`);
     clearInterval(intervalId);
   };
 
-  const changeCity = (city: string) => {
-    changeByItem(city, 'City', filterCityRuns);
-  };
+  // const changeCity = (city: string) => {
+  //   changeByItem(city, 'City', filterCityRuns);
+  // };
 
-  const changeTitle = (title: string) => {
-    changeByItem(title, 'Title', filterTitleRuns);
-  };
+  // const changeTitle = (title: string) => {
+  //   changeByItem(title, 'Title', filterTitleRuns);
+  // };
 
   const locateActivity = (runIds: RunIds) => {
     const ids = new Set(runIds);
@@ -87,21 +103,27 @@ const Index = () => {
     if (!lastRun) {
       return;
     }
-    setGeoData(geoJsonForRuns(selectedRuns));
+    const nextGeo = geoJsonForRuns(selectedRuns);
+    setGeoData(nextGeo);
+    setViewState({
+      ...getBoundsForGeoData(nextGeo),
+    });
     setTitle(titleForShow(lastRun));
     clearInterval(intervalId);
   };
 
   useEffect(() => {
+    const fullGeo = geoJsonForRuns(runs);
     setViewState({
-      ...bounds,
+      ...getBoundsForGeoData(fullGeo),
     });
-  }, [geoData]);
-
-  useEffect(() => {
     const runsNum = runs.length;
     // maybe change 20 ?
     const sliceNume = runsNum >= 20 ? runsNum / 20 : 1;
+    if (runsNum === 0) {
+      setGeoData(fullGeo);
+      return;
+    }
     let i = sliceNume;
     const id = setInterval(() => {
       if (i >= runsNum) {
@@ -119,36 +141,22 @@ const Index = () => {
     <Layout>
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 p-4 lg:p-6">
         <div className="lg:col-span-10">
-          <DashboardStats changeCity={changeCity} changeTitle={changeTitle} />
+          <DashboardStats />
         </div>
         {/* Left Column (6/10 width - 60%) */}
-        <div className="lg:col-span-6 flex flex-col gap-6">
-          {/* Row 2: Activity List (Calendar/Table) */}
-          <ActivityList
-            year={year}
-            setYear={changeYear}
-            runs={runs}
-            locateActivity={locateActivity}
-            setActivity={setActivity}
-            runIndex={runIndex}
-            setRunIndex={setRunIndex}
-          />
-        </div>
 
         {/* Right Column (4/10 width - 40%) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
+          <CompactRunCalendar
+            year={year}
+            month={month}
+            years={years}
+            runsByDate={runsByDate}
+            onChangeYearMonth={changeYearMonth}
+            onSelectRunIds={(ids) => locateActivity(ids)}
+          />
 
           {/* Row 2: Map */}
-          <div id="run-map" className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full aspect-square">
-            <RunMap
-              title={title}
-              viewState={viewState}
-              geoData={geoData}
-              setViewState={setViewState}
-              changeYear={changeYear}
-              thisYear={year}
-            />
-          </div>
 
           <div>
             <MonthlyBarChart
@@ -159,6 +167,23 @@ const Index = () => {
                 sortDateFunc
               )}
               year={year === 'Total' ? thisYear : year}
+              activeMonth={month}
+            />
+          </div>
+        </div>
+
+        <div className="lg:col-span-6 flex flex-col">
+          <div
+            id="run-map"
+            className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full h-full min-h-[400px]"
+          >
+            <RunMap
+              title={title}
+              viewState={viewState}
+              geoData={geoData}
+              setViewState={setViewState}
+              changeYear={(y) => changeYearMonth(y, month)}
+              thisYear={year}
             />
           </div>
         </div>

@@ -1,7 +1,13 @@
 import YearStat from '@/components/YearStat';
 import useActivities from '@/hooks/useActivities';
 
-const YearsStat = ({ year, onClick }: { year: string, onClick: (_year: string) => void }) => {
+const YearsStat = ({
+  year,
+  onClick,
+}: {
+  year: string;
+  onClick: (_year: string) => void;
+}) => {
   const { years } = useActivities();
   // make sure the year click on front
   let yearsArrayUpdate = years.slice();

@@ -19,26 +19,24 @@ if (USE_GOOGLE_ANALYTICS) {
   ReactGA.initialize(GOOGLE_ANALYTICS_TRACKING_ID);
 }
 
-const routes = createHashRouter(
-  [
-    {
-      path: '/',
-      element: withOptionalGAPageTracking(<Index />),
-    },
-    {
-      path: '/tracks',
-      element: withOptionalGAPageTracking(<Tracks />),
-    },
-    {
-      path: '/run/:runId',
-      element: withOptionalGAPageTracking(<RunDetail />),
-    },
-    {
-      path: '*',
-      element: withOptionalGAPageTracking(<NotFound />),
-    },
-  ]
-);
+const routes = createHashRouter([
+  {
+    path: '/',
+    element: withOptionalGAPageTracking(<Index />),
+  },
+  {
+    path: '/tracks',
+    element: withOptionalGAPageTracking(<Tracks />),
+  },
+  {
+    path: '/run/:runId',
+    element: withOptionalGAPageTracking(<RunDetail />),
+  },
+  {
+    path: '*',
+    element: withOptionalGAPageTracking(<NotFound />),
+  },
+]);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

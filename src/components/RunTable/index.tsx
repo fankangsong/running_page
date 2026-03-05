@@ -1,9 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  convertMovingTime2Sec,
-  Activity,
-  RunIds,
-} from '@/utils/utils';
+import { convertMovingTime2Sec, Activity, RunIds } from '@/utils/utils';
 import RunRow from './RunRow';
 import styles from './style.module.scss';
 
@@ -47,13 +43,16 @@ const RunTable = ({
       Pace: (a, b) => a.average_speed - b.average_speed,
       BPM: (a, b) => (a.average_heartrate ?? 0) - (b.average_heartrate ?? 0),
       Time: (a, b) =>
-        convertMovingTime2Sec(a.moving_time) - convertMovingTime2Sec(b.moving_time),
+        convertMovingTime2Sec(a.moving_time) -
+        convertMovingTime2Sec(b.moving_time),
       Date: (a, b) =>
         new Date(a.start_date_local.replace(' ', 'T')).getTime() -
         new Date(b.start_date_local.replace(' ', 'T')).getTime(),
     };
     const compareAsc = compareAscByKey[sortKey];
-    const compare = sortAsc ? compareAsc : (a: Activity, b: Activity) => compareAsc(b, a);
+    const compare = sortAsc
+      ? compareAsc
+      : (a: Activity, b: Activity) => compareAsc(b, a);
     return new Map<IRunTableHeaderKey, SortFunc>([
       ['KM', compare],
       ['Pace', compare],
@@ -93,11 +92,13 @@ const RunTable = ({
           <thead>
             <tr>
               <th />
-              {(Array.from(sortFuncMap.keys()) as IRunTableHeaderKey[]).map((k) => (
-                <th key={k} onClick={handleSortClick(k)}>
-                  {k}
-                </th>
-              ))}
+              {(Array.from(sortFuncMap.keys()) as IRunTableHeaderKey[]).map(
+                (k) => (
+                  <th key={k} onClick={handleSortClick(k)}>
+                    {k}
+                  </th>
+                )
+              )}
             </tr>
           </thead>
           <tbody>
@@ -118,7 +119,8 @@ const RunTable = ({
 
       <div className={styles.metaBar}>
         <div className={styles.count}>
-          {totalCount === 0 ? '0' : `${pageStart + 1}-${pageEnd}`} / {totalCount}
+          {totalCount === 0 ? '0' : `${pageStart + 1}-${pageEnd}`} /{' '}
+          {totalCount}
         </div>
         <div className={styles.pager}>
           <button

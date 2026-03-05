@@ -3,7 +3,14 @@ import gcoord from 'gcoord';
 import { WebMercatorViewport } from 'viewport-mercator-project';
 import { chinaGeojson } from '@/static/run_countries';
 import { chinaCities } from '@/static/city';
-import { IS_CHINESE, MUNICIPALITY_CITIES_ARR, NEED_FIX_MAP, RUN_TITLES, WEEK_TITLE, WEEK_TITLE_EN } from './const';
+import {
+  IS_CHINESE,
+  MUNICIPALITY_CITIES_ARR,
+  NEED_FIX_MAP,
+  RUN_TITLES,
+  WEEK_TITLE,
+  WEEK_TITLE_EN,
+} from './const';
 import { FeatureCollection, LineString } from 'geojson';
 
 export type Coordinate = [number, number];
@@ -18,9 +25,9 @@ export interface Activity {
   type: string;
   start_date: string;
   start_date_local: string;
-  location_country?: string|null;
-  summary_polyline?: string|null;
-  average_heartrate?: number|null;
+  location_country?: string | null;
+  summary_polyline?: string | null;
+  average_heartrate?: number | null;
   average_speed: number;
   streak: number;
 }
@@ -154,7 +161,7 @@ const pathForRun = (run: Activity): Coordinate[] => {
   try {
     if (!run.summary_polyline) {
       return [];
-    };
+    }
     const c = mapboxPolyline.decode(run.summary_polyline);
     // reverse lat long for mapbox
     c.forEach((arr) => {
@@ -260,6 +267,27 @@ const filterYearRuns = (run: Activity, year: string) => {
   return false;
 };
 
+const filterYearMonthRuns = (run: Activity, yearMonth: string) => {
+  if (!run?.start_date_local) return false;
+  const y = run.start_date_local.slice(0, 4);
+  const m = run.start_date_local.slice(5, 7);
+  return `${y}-${m}` === yearMonth;
+};
+
+const dateKeyForRun = (run: Activity) =>
+  run.start_date_local?.slice(0, 10) ?? '';
+
+const groupRunsByDate = (runs: Activity[]) => {
+  const map: Record<string, Activity[]> = {};
+  runs.forEach((r) => {
+    const k = dateKeyForRun(r);
+    if (!k) return;
+    if (!map[k]) map[k] = [];
+    map[k].push(r);
+  });
+  return map;
+};
+
 const filterCityRuns = (run: Activity, city: string) => {
   if (run && run.location_country) {
     return run.location_country.includes(city);
@@ -295,11 +323,11 @@ export const dayOfWeek = (time: string) => {
   const dayOfWeek = date.getDay();
 
   if (IS_CHINESE) {
-    return WEEK_TITLE[dayOfWeek]
+    return WEEK_TITLE[dayOfWeek];
   }
-  
-  return WEEK_TITLE_EN[dayOfWeek]
-}
+
+  return WEEK_TITLE_EN[dayOfWeek];
+};
 
 export {
   titleForShow,
@@ -312,6 +340,7 @@ export {
   geoJsonForMap,
   titleForRun,
   filterYearRuns,
+  filterYearMonthRuns,
   filterCityRuns,
   filterTitleRuns,
   filterAndSortRuns,
@@ -320,4 +349,6 @@ export {
   getBoundsForGeoData,
   formatRunTime,
   convertMovingTime2Sec,
+  dateKeyForRun,
+  groupRunsByDate,
 };

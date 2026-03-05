@@ -1,11 +1,10 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import RunPolyline from '@/components/RunPolyline';
 import RunDetailPanel from '@/components/RunDetailPanel';
 import useActivities from '@/hooks/useActivities';
 import NotFound from '@/pages/404';
-import { titleForShow } from '@/utils/utils';
 
 const RunDetail = () => {
   const { runId } = useParams();
@@ -21,14 +20,14 @@ const RunDetail = () => {
     return <NotFound />;
   }
 
-  const title = titleForShow(run);
-
   return (
     <Layout>
       <div className="max-w-[480px] mx-auto">
-          <div className="w-full text-center"><RunPolyline run={run} /></div>
-          <RunDetailPanel run={run} />
+        <div className="w-full text-center">
+          <RunPolyline run={run} />
         </div>
+        <RunDetailPanel run={run} />
+      </div>
     </Layout>
   );
 };
