@@ -1,4 +1,4 @@
-import { Activity, formatPace, locationForRun } from '@/utils/utils';
+import { Activity, formatPace, locationForRun, isRun } from '@/utils/utils';
 
 interface ITracksStatsProps {
   runs: Activity[];
@@ -27,6 +27,7 @@ const TracksStats = ({
   const provinceDistances: Record<string, number> = {};
 
   runs.forEach((run) => {
+    if (!isRun(run.type)) return;
     sumDistance += run.distance || 0;
     if (run.average_speed) {
       totalMetersAvail += run.distance || 0;

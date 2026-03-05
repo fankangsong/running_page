@@ -17,6 +17,23 @@ export type Coordinate = [number, number];
 
 export type RunIds = Array<number> | [];
 
+export const RUN_TYPE = 'Run';
+export const HIKE_TYPE = 'Hike';
+export const RIDE_TYPE = 'Ride';
+export const VIRTUAL_RIDE_TYPE = 'VirtualRide';
+export const EBIKE_RIDE_TYPE = 'EBikeRide';
+export const WALK_TYPE = 'Walk';
+export const SWIM_TYPE = 'Swim';
+export const ROWING_TYPE = 'Rowing';
+export const KAYAKING_TYPE = 'Kayaking';
+export const SNOWBOARD_TYPE = 'Snowboard';
+export const SKI_TYPE = 'Ski';
+export const ROAD_TRIP_TYPE = 'RoadTrip';
+export const CROSSFIT_TYPE = 'Crossfit';
+export const WEIGHT_TRAINING_TYPE = 'WeightTraining';
+export const WORKOUT_TYPE = 'Workout';
+export const YOGA_TYPE = 'Yoga';
+
 export interface Activity {
   run_id: number;
   name: string;
@@ -31,6 +48,8 @@ export interface Activity {
   average_speed: number;
   streak: number;
 }
+
+export const isRun = (type: string) => type === RUN_TYPE;
 
 const titleForShow = (run: Activity): string => {
   const date = run.start_date_local.slice(0, 11);

@@ -1,5 +1,26 @@
 import { useMemo, useState } from 'react';
-import { Activity, Coordinate, formatPace, pathForRun } from '@/utils/utils';
+import {
+  Activity,
+  Coordinate,
+  formatPace,
+  pathForRun,
+  RUN_TYPE,
+  HIKE_TYPE,
+  RIDE_TYPE,
+  VIRTUAL_RIDE_TYPE,
+  EBIKE_RIDE_TYPE,
+  WALK_TYPE,
+  SWIM_TYPE,
+  ROWING_TYPE,
+  KAYAKING_TYPE,
+  SNOWBOARD_TYPE,
+  SKI_TYPE,
+  ROAD_TRIP_TYPE,
+  CROSSFIT_TYPE,
+  WEIGHT_TRAINING_TYPE,
+  WORKOUT_TYPE,
+  YOGA_TYPE,
+} from '@/utils/utils';
 
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
 
@@ -75,8 +96,36 @@ const ArrowIcon = ({ dir }: { dir: 'left' | 'right' }) => (
   </svg>
 );
 
-const IndoorRunIcon = ({ size = 18 }: { size?: number }) => {
-  return <span style={{ fontSize: size, lineHeight: 1 }}>🏃‍♀️</span>;
+const IndoorRunIcon = ({
+  size = 18,
+  type = RUN_TYPE,
+}: {
+  size?: number;
+  type?: string;
+}) => {
+  const iconMap: Record<string, string> = {
+    [RUN_TYPE]: '🏃‍♀️',
+    [HIKE_TYPE]: '🏞️',
+    [RIDE_TYPE]: '🚴',
+    [VIRTUAL_RIDE_TYPE]: '🚴',
+    [EBIKE_RIDE_TYPE]: '🚴',
+    [WALK_TYPE]: '🚶',
+    [SWIM_TYPE]: '🏊',
+    [ROWING_TYPE]: '🚣',
+    [KAYAKING_TYPE]: '🛶',
+    [SNOWBOARD_TYPE]: '🏂',
+    [SKI_TYPE]: '⛷️',
+    [ROAD_TRIP_TYPE]: '🚗',
+    [CROSSFIT_TYPE]: '🏋️',
+    [WEIGHT_TRAINING_TYPE]: '🏋️',
+    [WORKOUT_TYPE]: '💪',
+    [YOGA_TYPE]: '🧘',
+  };
+  return (
+    <span style={{ fontSize: size, lineHeight: 1 }}>
+      {iconMap[type] || '🏃‍♀️'}
+    </span>
+  );
 };
 
 interface CompactRunCalendarProps {
@@ -266,7 +315,11 @@ const CompactRunCalendar = ({
 
           const key = dayKey(year, month, c.day);
           const dayRuns = runsByDate[key] ?? [];
+          // If multiple runs, prefer outdoor run for polyline
           const outdoorRun = pickOutdoorRun(dayRuns);
+          // Prefer run with polyline, then any run
+          const primaryRun = outdoorRun || dayRuns[0];
+
           const hasIndoor = dayRuns.some((r) => !r.summary_polyline);
           const polylineSvgPoints = outdoorRun
             ? computePolylinePoints(pathForRun(outdoorRun), 36, 4)
@@ -274,7 +327,8 @@ const CompactRunCalendar = ({
 
           const isSelected = selectedKey === key;
           const isClickable = dayRuns.length > 0;
-          const hasVisual = Boolean(polylineSvgPoints) || hasIndoor;
+          const hasVisual = Boolean(polylineSvgPoints) || !!primaryRun;
+
           const displayRun = dayRuns.length
             ? [...dayRuns].sort(
                 (a, b) =>
@@ -298,13 +352,13 @@ const CompactRunCalendar = ({
               <button
                 type="button"
                 onClick={() => handleSelectDay(c.day)}
-                className={`w-9 h-9 rounded-md relative overflow-hidden flex items-stretch justify-stretch ${
-                  isClickable
+                className={`w-9 h-9 rounded-md relative overflow-hidden flex items-stretch justify-stretch transition ${
+                  isSelected
+                    ? 'bg-gray-700 shadow-inner'
+                    : isClickable
                     ? 'bg-gray-900/30 hover:bg-gray-800/40'
                     : 'bg-transparent'
-                } ${
-                  isSelected ? 'ring-1 ring-accent' : 'ring-1 ring-transparent'
-                } transition`}
+                }`}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
                   {polylineSvgPoints ? (
@@ -322,9 +376,9 @@ const CompactRunCalendar = ({
                         opacity="0.95"
                       />
                     </svg>
-                  ) : hasIndoor ? (
+                  ) : primaryRun ? (
                     <div className="text-yellow-400">
-                      <IndoorRunIcon size={18} />
+                      <IndoorRunIcon size={18} type={primaryRun.type} />
                     </div>
                   ) : null}
                 </div>
@@ -337,7 +391,7 @@ const CompactRunCalendar = ({
 
                 {polylineSvgPoints && hasIndoor ? (
                   <div className="absolute bottom-0.5 left-0.5 text-yellow-400 opacity-90">
-                    <IndoorRunIcon size={12} />
+                    <IndoorRunIcon size={12} type={primaryRun?.type} />
                   </div>
                 ) : null}
               </button>
@@ -345,12 +399,15 @@ const CompactRunCalendar = ({
               {isClickable ? (
                 <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-20 pointer-events-none opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition duration-150">
                   <div className="bg-gray-900/95 border border-gray-700/70 rounded-lg shadow-xl px-3 py-2.5 w-56">
-                    <div className="text-[12px] text-primary font-bold truncate">
-                      {displayTitle}
+                    <div className="flex items-center gap-1.5 text-[12px] text-primary font-bold truncate">
+                      <div className="shrink-0">
+                        <IndoorRunIcon size={14} type={displayRun?.type} />
+                      </div>
+                      <span className="truncate">{displayTitle}</span>
                     </div>
                     <div className="mt-2 flex justify-between">
                       <div>
-                        <div className="text-[10px] text-secondary tracking-[0.6px] uppercase">
+                        <div className="text-[10px] text-blue-400 font-bold tracking-[0.6px] uppercase">
                           Distance
                         </div>
                         <div className="flex items-baseline gap-1">
@@ -361,7 +418,7 @@ const CompactRunCalendar = ({
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-secondary tracking-[0.6px] uppercase">
+                        <div className="text-[10px] text-emerald-400 font-bold tracking-[0.6px] uppercase">
                           AVG
                         </div>
                         <div className="text-[14px] font-bold text-primary tabular-nums text-[#81d4fa]">
@@ -369,7 +426,7 @@ const CompactRunCalendar = ({
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-secondary tracking-[0.6px] uppercase">
+                        <div className="text-[10px] text-red-400 font-bold tracking-[0.6px] uppercase">
                           BMP
                         </div>
                         <div className="flex items-baseline gap-1">

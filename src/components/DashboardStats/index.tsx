@@ -1,6 +1,6 @@
 import React from 'react';
 import useActivities from '@/hooks/useActivities';
-import { formatPace, convertMovingTime2Sec } from '@/utils/utils';
+import { formatPace, convertMovingTime2Sec, isRun } from '@/utils/utils';
 import CyclingText from '@/components/CyclingText';
 
 interface StatItemProps {
@@ -69,6 +69,7 @@ const DashboardStats = () => {
   let maxDistance = 0;
 
   runs.forEach((run) => {
+    if (!isRun(run.type)) return;
     const dist = run.distance / 1000;
     sumDistance += dist;
     totalSeconds += convertMovingTime2Sec(run.moving_time);
@@ -102,6 +103,7 @@ const DashboardStats = () => {
   const maxDistStr = maxDistance.toFixed(0);
   const maxRoundedKm = Number(maxDistStr);
   const maxCount = runs.reduce((acc, run) => {
+    if (!isRun(run.type)) return acc;
     const distKm = run.distance / 1000;
     return acc + (Math.round(distKm) === maxRoundedKm ? 1 : 0);
   }, 0);
@@ -121,6 +123,7 @@ const DashboardStats = () => {
     let bestPace = '--';
     let bestDate = '';
     runs.forEach((run) => {
+      if (!isRun(run.type)) return;
       if (run.average_speed && run.distance >= targetMeters) {
         const seconds = targetMeters / run.average_speed;
         if (seconds < bestSeconds) {
