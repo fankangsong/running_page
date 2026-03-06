@@ -41,6 +41,9 @@ echo "All SVG assets generated successfully."
 
 pnpm build
 
+git add .
+git commit -m 'sync and update data'
+git push
 
 coscli cp -r dist cos://hk//running
 notify 'running page 发布完成 ✅'
