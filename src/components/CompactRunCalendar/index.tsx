@@ -3,24 +3,10 @@ import {
   Activity,
   Coordinate,
   formatPace,
+  convertMovingTime2Sec,
   pathForRun,
-  RUN_TYPE,
-  HIKE_TYPE,
-  RIDE_TYPE,
-  VIRTUAL_RIDE_TYPE,
-  EBIKE_RIDE_TYPE,
-  WALK_TYPE,
-  SWIM_TYPE,
-  ROWING_TYPE,
-  KAYAKING_TYPE,
-  SNOWBOARD_TYPE,
-  SKI_TYPE,
-  ROAD_TRIP_TYPE,
-  CROSSFIT_TYPE,
-  WEIGHT_TRAINING_TYPE,
-  WORKOUT_TYPE,
-  YOGA_TYPE,
 } from '@/utils/utils';
+import ActivityIcon from '@/components/ActivityIcon';
 
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
 
@@ -96,38 +82,6 @@ const ArrowIcon = ({ dir }: { dir: 'left' | 'right' }) => (
   </svg>
 );
 
-const IndoorRunIcon = ({
-  size = 18,
-  type = RUN_TYPE,
-}: {
-  size?: number;
-  type?: string;
-}) => {
-  const iconMap: Record<string, string> = {
-    [RUN_TYPE]: '🏃‍♀️',
-    [HIKE_TYPE]: '🏞️',
-    [RIDE_TYPE]: '🚴',
-    [VIRTUAL_RIDE_TYPE]: '🚴',
-    [EBIKE_RIDE_TYPE]: '🚴',
-    [WALK_TYPE]: '🚶',
-    [SWIM_TYPE]: '🏊',
-    [ROWING_TYPE]: '🚣',
-    [KAYAKING_TYPE]: '🛶',
-    [SNOWBOARD_TYPE]: '🏂',
-    [SKI_TYPE]: '⛷️',
-    [ROAD_TRIP_TYPE]: '🚗',
-    [CROSSFIT_TYPE]: '🏋️',
-    [WEIGHT_TRAINING_TYPE]: '🏋️',
-    [WORKOUT_TYPE]: '💪',
-    [YOGA_TYPE]: '🧘',
-  };
-  return (
-    <span style={{ fontSize: size, lineHeight: 1 }}>
-      {iconMap[type] || '🏃‍♀️'}
-    </span>
-  );
-};
-
 interface CompactRunCalendarProps {
   year: string;
   month: number;
@@ -188,8 +142,9 @@ const CompactRunCalendar = ({
     for (let d = 1; d <= daysInMonth; d += 1) {
       arr.push({ day: d, inMonth: true });
     }
-    const tail = (7 - (arr.length % 7)) % 7;
-    for (let i = 0; i < tail; i += 1) {
+    // Always fill to 42 cells (6 rows * 7 columns) to maintain consistent height
+    const totalCells = 42;
+    while (arr.length < totalCells) {
       arr.push({ day: 0, inMonth: false });
     }
     return arr;
@@ -347,6 +302,30 @@ const CompactRunCalendar = ({
             : '--';
           const displayTitle = displayRun?.name || 'Run';
 
+          let timeRange = '';
+          let displayDuration = '';
+          if (displayRun) {
+            const durationTotalSeconds = convertMovingTime2Sec(
+              displayRun.moving_time
+            );
+            const hours = Math.floor(durationTotalSeconds / 3600);
+            const minutes = Math.floor((durationTotalSeconds % 3600) / 60);
+            const seconds = Math.floor(durationTotalSeconds % 60);
+            displayDuration = `${hours}:${pad2(minutes)}:${pad2(seconds)}`;
+
+            const startTime = displayRun.start_date_local.split(' ')[1];
+            if (startTime) {
+              const [h, m, s] = startTime.split(':').map(Number);
+              const startDate = new Date();
+              startDate.setHours(h, m, s);
+              const endDate = new Date(
+                startDate.getTime() + durationTotalSeconds * 1000
+              );
+              const endTime = endDate.toTimeString().split(' ')[0];
+              timeRange = `${startTime}~${endTime}`;
+            }
+          }
+
           return (
             <div key={key} className="relative group">
               <button
@@ -378,7 +357,7 @@ const CompactRunCalendar = ({
                     </svg>
                   ) : primaryRun ? (
                     <div className="text-yellow-400">
-                      <IndoorRunIcon size={18} type={primaryRun.type} />
+                      <ActivityIcon size={18} type={primaryRun.type} />
                     </div>
                   ) : null}
                 </div>
@@ -391,35 +370,45 @@ const CompactRunCalendar = ({
 
                 {polylineSvgPoints && hasIndoor ? (
                   <div className="absolute bottom-0.5 left-0.5 text-yellow-400 opacity-90">
-                    <IndoorRunIcon size={12} type={primaryRun?.type} />
+                    <ActivityIcon size={12} type={primaryRun?.type} />
                   </div>
                 ) : null}
               </button>
 
               {isClickable ? (
                 <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-20 pointer-events-none opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition duration-150">
-                  <div className="bg-gray-900/95 border border-gray-700/70 rounded-lg shadow-xl px-3 py-2.5 w-56">
-                    <div className="flex items-center gap-1.5 text-[12px] text-primary font-bold truncate">
-                      <div className="shrink-0">
-                        <IndoorRunIcon size={14} type={displayRun?.type} />
+                  <div className="bg-gray-900/95 border border-gray-700/70 rounded-lg shadow-xl px-3 py-2.5 w-64">
+                    <div className="flex flex-col gap-0.5 mb-2">
+                      <div className="flex items-center gap-1.5 text-[12px] text-primary font-bold truncate">
+                        <div className="shrink-0">
+                          <ActivityIcon size={14} type={displayRun?.type} />
+                        </div>
+                        <span className="truncate">{displayTitle}</span>
                       </div>
-                      <span className="truncate">{displayTitle}</span>
+                      <div className="text-[10px] text-gray-400 font-mono pl-5">
+                        {timeRange}
+                      </div>
                     </div>
-                    <div className="mt-2 flex justify-between">
+                    <div className="flex justify-between items-end gap-2">
                       <div>
                         <div className="text-[10px] text-blue-400 font-bold tracking-[0.6px] uppercase">
-                          Distance
+                          KM
                         </div>
-                        <div className="flex items-baseline gap-1">
-                          <div className="text-[14px] font-bold text-primary tabular-nums text-[yellow]">
-                            {displayDistance}
-                          </div>
-                          <div className="text-[10px] text-secondary">km</div>
+                        <div className="text-[14px] font-bold text-primary tabular-nums text-[yellow]">
+                          {displayDistance}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-purple-400 font-bold tracking-[0.6px] uppercase">
+                          Time
+                        </div>
+                        <div className="text-[14px] font-bold text-primary tabular-nums text-white">
+                          {displayDuration}
                         </div>
                       </div>
                       <div>
                         <div className="text-[10px] text-emerald-400 font-bold tracking-[0.6px] uppercase">
-                          AVG
+                          Pace
                         </div>
                         <div className="text-[14px] font-bold text-primary tabular-nums text-[#81d4fa]">
                           {displayPace}
@@ -427,13 +416,10 @@ const CompactRunCalendar = ({
                       </div>
                       <div>
                         <div className="text-[10px] text-red-400 font-bold tracking-[0.6px] uppercase">
-                          BMP
+                          BPM
                         </div>
-                        <div className="flex items-baseline gap-1">
-                          <div className="text-[14px] font-bold text-primary tabular-nums text-[red]">
-                            {displayHr}
-                          </div>
-                          <div className="text-[10px] text-secondary">bpm</div>
+                        <div className="text-[14px] font-bold text-primary tabular-nums text-[red]">
+                          {displayHr}
                         </div>
                       </div>
                     </div>

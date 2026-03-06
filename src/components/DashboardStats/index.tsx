@@ -3,6 +3,8 @@ import useActivities from '@/hooks/useActivities';
 import { formatPace, convertMovingTime2Sec, isRun } from '@/utils/utils';
 import CyclingText from '@/components/CyclingText';
 
+import { Activity } from '@/utils/utils';
+
 interface StatItemProps {
   label: string;
   value: string | number;
@@ -11,6 +13,8 @@ interface StatItemProps {
   icon: React.ReactNode;
   iconColorClass?: string;
   valueSizeClass?: string;
+  onClick?: () => void;
+  className?: string;
 }
 
 const StatItem = ({
@@ -21,8 +25,13 @@ const StatItem = ({
   icon,
   iconColorClass = 'text-primary',
   valueSizeClass = 'text-2xl lg:text-3xl',
+  onClick,
+  className = '',
 }: StatItemProps) => (
-  <div className="flex flex-col gap-1">
+  <div
+    className={`flex flex-col gap-1 ${className}`}
+    onClick={onClick}
+  >
     <div className="flex items-center gap-2 mb-1">
       <div
         className={`w-6 h-6 rounded-full bg-gray-800/50 flex items-center justify-center shrink-0 ${iconColorClass}`}
@@ -48,13 +57,17 @@ const StatItem = ({
         <span className="text-xs font-medium text-secondary">{unit}</span>
       )}
     </div>
-    <div className="text-[10px] font-medium text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis h-4">
+    <div className="text-[10px] font-medium text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
       {subtext}
     </div>
   </div>
 );
 
-const DashboardStats = () => {
+interface DashboardStatsProps {
+  onClickPB?: (run: Activity) => void;
+}
+
+const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
   const { activities: runs } = useActivities();
 
   // Logic from TotalStat
@@ -122,6 +135,8 @@ const DashboardStats = () => {
     let bestSeconds = Infinity;
     let bestPace = '--';
     let bestDate = '';
+    let bestRun: Activity | null = null;
+
     runs.forEach((run) => {
       if (!isRun(run.type)) return;
       if (run.average_speed && run.distance >= targetMeters) {
@@ -130,12 +145,18 @@ const DashboardStats = () => {
           bestSeconds = seconds;
           bestPace = formatPace(run.average_speed);
           bestDate = run.start_date_local.split(' ')[0];
+          bestRun = run;
         }
       }
     });
     return bestSeconds === Infinity
-      ? { pace: '--', time: '--', date: '' }
-      : { pace: bestPace, time: formatSeconds(bestSeconds), date: bestDate };
+      ? { pace: '--', time: '--', date: '', run: null }
+      : {
+          pace: bestPace,
+          time: formatSeconds(bestSeconds),
+          date: bestDate,
+          run: bestRun,
+        };
   };
 
   const pb5 = getPB(5000);
@@ -146,7 +167,7 @@ const DashboardStats = () => {
     <div className="bg-card rounded-2xl shadow-xl border border-white/5 overflow-hidden">
       <div className="flex flex-col md:flex-row">
         {/* Total Stats Section */}
-        <div className="flex-1 p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+        <div className="flex-1 p-4 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
             <StatItem
               label="Total"
@@ -216,7 +237,7 @@ const DashboardStats = () => {
         <div className="h-px md:h-auto md:w-px bg-white/10" />
 
         {/* PB Stats Section */}
-        <div className="flex-1 p-6 bg-gradient-to-br from-gray-900/30 to-black/20">
+        <div className="flex-1 p-4 bg-gradient-to-br from-gray-900/30 to-black/20">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
             <StatItem
               label="5K Best"
@@ -228,9 +249,13 @@ const DashboardStats = () => {
               subtext={
                 <div className="flex flex-col gap-0.5">
                   <span className="font-mono text-gray-400">{pb5.time}</span>
-                  <span className="text-[10px] opacity-70">{pb5.date}</span>
+                  <span className="text-[10px] opacity-70">
+                    {pb5.date} {pb5.run?.start_date_local.split(' ')[1]}
+                  </span>
                 </div>
               }
+              className="cursor-pointer hover:bg-white/5 rounded transition-colors p-2 -m-2"
+              onClick={() => pb5.run && onClickPB?.(pb5.run)}
             />
             <StatItem
               label="10K Best"
@@ -242,9 +267,13 @@ const DashboardStats = () => {
               subtext={
                 <div className="flex flex-col gap-0.5">
                   <span className="font-mono text-gray-400">{pb10.time}</span>
-                  <span className="text-[10px] opacity-70">{pb10.date}</span>
+                  <span className="text-[10px] opacity-70">
+                    {pb10.date} {pb10.run?.start_date_local.split(' ')[1]}
+                  </span>
                 </div>
               }
+              className="cursor-pointer hover:bg-white/5 rounded transition-colors p-2 -m-2"
+              onClick={() => pb10.run && onClickPB?.(pb10.run)}
             />
             <StatItem
               label="15K Best"
@@ -256,9 +285,13 @@ const DashboardStats = () => {
               subtext={
                 <div className="flex flex-col gap-0.5">
                   <span className="font-mono text-gray-400">{pb15.time}</span>
-                  <span className="text-[10px] opacity-70">{pb15.date}</span>
+                  <span className="text-[10px] opacity-70">
+                    {pb15.date} {pb15.run?.start_date_local.split(' ')[1]}
+                  </span>
                 </div>
               }
+              className="cursor-pointer hover:bg-white/5 rounded transition-colors p-2 -m-2"
+              onClick={() => pb15.run && onClickPB?.(pb15.run)}
             />
           </div>
         </div>

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import Layout from '@/components/Layout';
 import RunMap from '@/components/RunMap';
 import DashboardStats from '@/components/DashboardStats';
 import MonthlyBarChart from '@/components/MonthlyBarChart';
 import CompactRunCalendar from '@/components/CompactRunCalendar';
+import ActivityCardList from '@/components/ActivityCardList';
 import useActivities from '@/hooks/useActivities';
 import {
   IViewState,
@@ -50,6 +51,7 @@ const Index = () => {
   const bounds = getBoundsForGeoData(geoData);
   const [intervalId, setIntervalId] = useState<number>();
   const runsByDate = useMemo(() => groupRunsByDate(runs), [runs]);
+  const pendingRunIdRef = useRef<number | null>(null);
 
   const [viewState, setViewState] = useState<IViewState>({
     ...bounds,
@@ -112,8 +114,24 @@ const Index = () => {
     clearInterval(intervalId);
   };
 
+  const handleClickPB = (run: any) => {
+    const date = run.start_date_local;
+    const y = date.slice(0, 4);
+    const m = parseInt(date.slice(5, 7));
+    changeYearMonth(y, m);
+    pendingRunIdRef.current = run.run_id;
+  };
+
   useEffect(() => {
     const fullGeo = geoJsonForRuns(runs);
+    if (pendingRunIdRef.current) {
+      const targetRun = runs.find((r) => r.run_id === pendingRunIdRef.current);
+      if (targetRun) {
+        locateActivity([pendingRunIdRef.current]);
+        pendingRunIdRef.current = null;
+        return;
+      }
+    }
     setViewState({
       ...getBoundsForGeoData(fullGeo),
     });
@@ -141,11 +159,9 @@ const Index = () => {
     <Layout>
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 p-4 lg:p-6">
         <div className="lg:col-span-10">
-          <DashboardStats />
+          <DashboardStats onClickPB={handleClickPB} />
         </div>
-        {/* Left Column (6/10 width - 60%) */}
 
-        {/* Right Column (4/10 width - 40%) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           <CompactRunCalendar
             year={year}

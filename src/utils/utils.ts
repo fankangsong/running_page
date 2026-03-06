@@ -201,7 +201,7 @@ const geoJsonForRuns = (runs: Activity[]): FeatureCollection<LineString> => ({
 
     return {
       type: 'Feature',
-      properties: {},
+      properties: run,
       geometry: {
         type: 'LineString',
         coordinates: points,

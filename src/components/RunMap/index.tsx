@@ -20,8 +20,32 @@ import {
   LINE_OPACITY,
   PRIVACY_MODE,
 } from '@/utils/const';
-import { Coordinate, IViewState, geoJsonForMap } from '@/utils/utils';
+import {
+  Coordinate,
+  IViewState,
+  geoJsonForMap,
+  formatPace,
+  convertMovingTime2Sec,
+  RUN_TYPE,
+  HIKE_TYPE,
+  RIDE_TYPE,
+  VIRTUAL_RIDE_TYPE,
+  EBIKE_RIDE_TYPE,
+  WALK_TYPE,
+  SWIM_TYPE,
+  ROWING_TYPE,
+  KAYAKING_TYPE,
+  SNOWBOARD_TYPE,
+  SKI_TYPE,
+  ROAD_TRIP_TYPE,
+  CROSSFIT_TYPE,
+  WEIGHT_TRAINING_TYPE,
+  WORKOUT_TYPE,
+  YOGA_TYPE,
+  Activity,
+} from '@/utils/utils';
 import RunMarker from './RunMarker';
+import ActivityIcon from '@/components/ActivityIcon';
 import styles from './style.module.scss';
 import { FeatureCollection } from 'geojson';
 import { RPGeometry } from '@/static/run_countries';
@@ -139,10 +163,12 @@ const RunMap = ({
   let startLat = 0;
   let endLon = 0;
   let endLat = 0;
+  let run: Activity | null = null;
   if (isSingleRun) {
     const points = geoData.features[0].geometry.coordinates as Coordinate[];
     [startLon, startLat] = points[0];
     [endLon, endLat] = points[points.length - 1];
+    run = geoData.features[0].properties as Activity;
   }
   let dash = USE_DASH_LINE && !isSingleRun && !isBigMap ? [2, 2] : [2, 0];
   const onMove = React.useCallback(
@@ -162,57 +188,134 @@ const RunMap = ({
     opacity: 0.3,
   };
 
+  const pad2 = (n: number) => String(n).padStart(2, '0');
+
+  let timeRange = '';
+  let displayDuration = '';
+  if (run) {
+    const durationTotalSeconds = convertMovingTime2Sec(run.moving_time);
+    const hours = Math.floor(durationTotalSeconds / 3600);
+    const minutes = Math.floor((durationTotalSeconds % 3600) / 60);
+    const seconds = Math.floor(durationTotalSeconds % 60);
+    displayDuration = `${hours}:${pad2(minutes)}:${pad2(seconds)}`;
+
+    const startTime = run.start_date_local.split(' ')[1];
+    if (startTime) {
+      const [h, m, s] = startTime.split(':').map(Number);
+      const startDate = new Date();
+      startDate.setHours(h, m, s);
+      const endDate = new Date(
+        startDate.getTime() + durationTotalSeconds * 1000
+      );
+      const endTime = endDate.toTimeString().split(' ')[0];
+      timeRange = `${startTime}~${endTime}`;
+    }
+  }
+
   return (
-    <Map
-      {...viewState}
-      onMove={onMove}
-      style={style}
-      mapStyle={mapStyleUrl}
-      ref={mapRefCallback}
-      mapboxAccessToken={MAPBOX_TOKEN}
-    >
-      <Source id="data" type="geojson" data={geoData}>
-        <Layer
-          id="province"
-          type="fill"
-          paint={{
-            'fill-color': PROVINCE_FILL_COLOR,
-          }}
-          filter={filterProvinces}
+    <div className="relative w-full h-full">
+      <Map
+        {...viewState}
+        onMove={onMove}
+        style={style}
+        mapStyle={mapStyleUrl}
+        ref={mapRefCallback}
+        mapboxAccessToken={MAPBOX_TOKEN}
+      >
+        <Source id="data" type="geojson" data={geoData}>
+          <Layer
+            id="province"
+            type="fill"
+            paint={{
+              'fill-color': PROVINCE_FILL_COLOR,
+            }}
+            filter={filterProvinces}
+          />
+          <Layer
+            id="runs2"
+            type="line"
+            paint={{
+              'line-color': MAIN_COLOR,
+              'line-width': isBigMap && lights ? 1 : 2,
+              'line-dasharray': dash,
+              'line-opacity':
+                isSingleRun || isBigMap || !lights ? 1 : LINE_OPACITY,
+              'line-blur': 1,
+            }}
+            layout={{
+              'line-join': 'round',
+              'line-cap': 'round',
+            }}
+          />
+        </Source>
+        {isSingleRun && (
+          <RunMarker
+            startLat={startLat}
+            startLon={startLon}
+            endLat={endLat}
+            endLon={endLon}
+          />
+        )}
+        {/* <span className={styles.runTitle}>{title}</span> */}
+        <FullscreenControl style={fullscreenButton} />
+        <NavigationControl
+          showCompass={false}
+          position={'bottom-right'}
+          style={{ opacity: 0.3 }}
         />
-        <Layer
-          id="runs2"
-          type="line"
-          paint={{
-            'line-color': MAIN_COLOR,
-            'line-width': isBigMap && lights ? 1 : 2,
-            'line-dasharray': dash,
-            'line-opacity':
-              isSingleRun || isBigMap || !lights ? 1 : LINE_OPACITY,
-            'line-blur': 1,
-          }}
-          layout={{
-            'line-join': 'round',
-            'line-cap': 'round',
-          }}
-        />
-      </Source>
-      {isSingleRun && (
-        <RunMarker
-          startLat={startLat}
-          startLon={startLon}
-          endLat={endLat}
-          endLon={endLon}
-        />
+      </Map>
+      {isSingleRun && run && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+          <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-700/50 rounded-lg shadow-xl px-4 py-3 w-72">
+            <div className="flex flex-col gap-1 mb-3">
+              <div className="flex items-center gap-2 text-sm text-primary font-bold truncate">
+                <div className="shrink-0">
+                  <ActivityIcon size={16} type={run.type} />
+                </div>
+                <span className="truncate">{run.name}</span>
+              </div>
+              <div className="text-xs text-gray-400 font-mono pl-6">
+                {timeRange}
+              </div>
+            </div>
+            <div className="flex justify-between items-end gap-2">
+              <div>
+                <div className="text-[10px] text-blue-400 font-bold tracking-[0.6px] uppercase">
+                  KM
+                </div>
+                <div className="text-lg font-bold text-primary tabular-nums text-[yellow]">
+                  {(run.distance / 1000).toFixed(2)}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-purple-400 font-bold tracking-[0.6px] uppercase">
+                  Time
+                </div>
+                <div className="text-lg font-bold text-primary tabular-nums text-white">
+                  {displayDuration}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-emerald-400 font-bold tracking-[0.6px] uppercase">
+                  Pace
+                </div>
+                <div className="text-lg font-bold text-primary tabular-nums text-[#81d4fa]">
+                  {formatPace(run.average_speed)}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-red-400 font-bold tracking-[0.6px] uppercase">
+                  BPM
+                </div>
+                <div className="text-lg font-bold text-primary tabular-nums text-[red]">
+                  {run.average_heartrate?.toFixed(0) || '--'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
-      <span className={styles.runTitle}>{title}</span>
-      <FullscreenControl style={fullscreenButton} />
-      <NavigationControl
-        showCompass={false}
-        position={'bottom-right'}
-        style={{ opacity: 0.3 }}
-      />
-    </Map>
+    </div>
   );
 };
 
