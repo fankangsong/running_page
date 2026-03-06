@@ -13,6 +13,7 @@ import {
 } from './utils/const';
 import '@/styles/index.scss';
 import '@/styles/tailwind.css';
+import 'material-icons/iconfont/material-icons.css';
 import { withOptionalGAPageTracking } from './utils/trackRoute';
 
 if (USE_GOOGLE_ANALYTICS) {

@@ -240,7 +240,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
         <div className="flex-1 p-4 bg-gradient-to-br from-gray-900/30 to-black/20">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
             <StatItem
-              label="5K Best"
+              label="5K PB"
               value={pb5.pace}
               unit="/km"
               valueSizeClass="text-xl lg:text-2xl"
@@ -258,7 +258,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
               onClick={() => pb5.run && onClickPB?.(pb5.run)}
             />
             <StatItem
-              label="10K Best"
+              label="10K PB"
               value={pb10.pace}
               unit="/km"
               valueSizeClass="text-xl lg:text-2xl"
@@ -276,7 +276,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
               onClick={() => pb10.run && onClickPB?.(pb10.run)}
             />
             <StatItem
-              label="15K Best"
+              label="15K PB"
               value={pb15.pace}
               unit="/km"
               valueSizeClass="text-xl lg:text-2xl"

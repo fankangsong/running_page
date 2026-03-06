@@ -357,7 +357,7 @@ const CompactRunCalendar = ({
                     </svg>
                   ) : primaryRun ? (
                     <div className="text-yellow-400">
-                      <ActivityIcon size={18} type={primaryRun.type} />
+                      <ActivityIcon size={22} type={primaryRun.type} />
                     </div>
                   ) : null}
                 </div>
@@ -370,7 +370,7 @@ const CompactRunCalendar = ({
 
                 {polylineSvgPoints && hasIndoor ? (
                   <div className="absolute bottom-0.5 left-0.5 text-yellow-400 opacity-90">
-                    <ActivityIcon size={12} type={primaryRun?.type} />
+                    <ActivityIcon size={22} type={primaryRun?.type} />
                   </div>
                 ) : null}
               </button>
@@ -381,7 +381,7 @@ const CompactRunCalendar = ({
                     <div className="flex flex-col gap-0.5 mb-2">
                       <div className="flex items-center gap-1.5 text-[12px] text-primary font-bold truncate">
                         <div className="shrink-0">
-                          <ActivityIcon size={14} type={displayRun?.type} />
+                          <ActivityIcon size={16} type={displayRun?.type} />
                         </div>
                         <span className="truncate">{displayTitle}</span>
                       </div>

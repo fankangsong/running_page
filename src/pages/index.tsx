@@ -57,19 +57,6 @@ const Index = () => {
     ...bounds,
   });
 
-  // const changeByItem = (
-  //   item: string,
-  //   name: string,
-  //   func: (_run: Activity, _value: string) => boolean
-  // ) => {
-  //   if (name !== 'Year') {
-  //     setYear(thisYear);
-  //     setMonth(initialMonth);
-  //   }
-  //   setActivity(filterAndSortRuns(activities, item, func, sortDateFunc));
-  //   setTitle(`${item} ${name} Running Heatmap`);
-  // };
-
   const changeYearMonth = (y: string, m: number) => {
     setYear(y);
     setMonth(m);
@@ -80,14 +67,6 @@ const Index = () => {
     setTitle(`${ym} Running Heatmap`);
     clearInterval(intervalId);
   };
-
-  // const changeCity = (city: string) => {
-  //   changeByItem(city, 'City', filterCityRuns);
-  // };
-
-  // const changeTitle = (title: string) => {
-  //   changeByItem(title, 'Title', filterTitleRuns);
-  // };
 
   const locateActivity = (runIds: RunIds) => {
     const ids = new Set(runIds);
@@ -203,6 +182,9 @@ const Index = () => {
             />
           </div>
         </div>
+      </div>
+      <div className="lg:px-4 lg:py-24 xm:p-6">
+        <ActivityCardList onClick={handleClickPB} />
       </div>
     </Layout>
   );
