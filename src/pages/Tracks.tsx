@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import type { TransitionEventHandler } from 'react';
 import Layout from '@/components/Layout';
-import TracksGrid from '@/components/TracksGrid';
 import TracksStats from '@/components/TracksStats';
-import RunningCalendar from '@/components/RunningCalendar';
+import RunningCharts from '@/components/RunningCharts';
 import useActivities from '@/hooks/useActivities';
 import {
   filterAndSortRuns,
@@ -172,8 +171,7 @@ const Tracks = () => {
             />
           </div>
           <div className="lg:col-span-7">
-            <RunningCalendar year={displayYear} />
-            <TracksGrid year={displayYear} />
+            <RunningCharts year={displayYear} />
           </div>
         </div>
       </div>

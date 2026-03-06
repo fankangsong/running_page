@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
-import { githubStats } from '@assets/index';
+import { githubStats, totalStat, gridStats } from '@assets/index';
 import { loadSvgComponent } from '@/utils/svgUtils';
 
 const FailedLoadSvg = ({ fileName }: { fileName: string }) => (
@@ -8,16 +8,17 @@ const FailedLoadSvg = ({ fileName }: { fileName: string }) => (
   </div>
 );
 
+const LoadingPlaceholder = () => (
+  <div className="w-full min-h-[110px] flex items-center justify-center bg-gray-900/60">
+    <div className="h-10 w-10 rounded-full border-2 border-gray-600 border-t-white animate-spin" />
+  </div>
+);
+
 const RunningCalendar = ({ year }: { year: string }) => {
   const [CalendarSVG, setCalendarSVG] =
     useState<React.ComponentType<any> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const requestIdRef = useRef(0);
-  const LoadingPlaceholder = () => (
-    <div className="w-full min-h-[110px] flex items-center justify-center bg-gray-900/60">
-      <div className="h-10 w-10 rounded-full border-2 border-gray-600 border-t-white animate-spin" />
-    </div>
-  );
 
   useEffect(() => {
     const requestId = requestIdRef.current + 1;
@@ -76,4 +77,59 @@ const RunningCalendar = ({ year }: { year: string }) => {
   );
 };
 
-export default RunningCalendar;
+const TracksGrid = ({ year }: { year: string }) => {
+  const [GridSvg, setGridSvg] = useState<React.ComponentType<any> | null>(null);
+  const [loadedYear, setLoadedYear] = useState<string | null>(null);
+  const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
+    const loadSvg = async () => {
+      const isTotal = year === 'Total';
+      const component = await loadSvgComponent(
+        isTotal ? totalStat : gridStats,
+        isTotal ? './grid.svg' : `./grid_${year}.svg`
+      );
+
+      if (requestIdRef.current !== requestId) return;
+
+      if (
+        component &&
+        typeof component === 'object' &&
+        'default' in component
+      ) {
+        setGridSvg(() => component.default);
+      } else {
+        setGridSvg(() => component);
+      }
+      setLoadedYear(year);
+    };
+
+    loadSvg();
+  }, [year]);
+
+  const isReady = loadedYear === year && GridSvg;
+
+  return (
+    <div className="w-full py-6 min-h-[360px] relative">
+      {isReady ? (
+        <GridSvg className="w-full h-auto" />
+      ) : (
+        <div className="min-h-[360px]" />
+      )}
+    </div>
+  );
+};
+
+const RunningCharts = ({ year }: { year: string }) => {
+  return (
+    <>
+      <RunningCalendar year={year} />
+      <TracksGrid year={year} />
+    </>
+  );
+};
+
+export default RunningCharts;

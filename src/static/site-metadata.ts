@@ -16,7 +16,7 @@ const data: ISiteMetadataResult = {
   description: '',
   navLinks: [
     {
-      name: 'Running Log',
+      name: 'Running',
       url: '/',
     },
     {
