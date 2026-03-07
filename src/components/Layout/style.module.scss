@@ -3,6 +3,8 @@
 .body {
   background-color: $dark;
   color: $nike;
+  max-width: 100%;
+  overflow-x: hidden;
 
   p,
   h1,

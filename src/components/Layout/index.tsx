@@ -10,7 +10,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
   const { siteTitle, description } = useSiteMetadata();
 
   return (
-    <div className="bg-background min-h-screen flex flex-col font-sans text-primary">
+    <div className="bg-background min-h-screen flex flex-col font-sans text-primary w-full overflow-x-hidden">
       <Helmet bodyAttributes={{ class: styles.body }}>
         <html lang="en" />
         <title>{siteTitle}</title>
@@ -22,7 +22,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
         />
       </Helmet>
       <Header />
-      <main className="flex-grow w-full max-w-[1000px] mx-auto p-4 md:p-8">
+      <main className="flex-grow w-full max-w-full md:max-w-[1000px] mx-auto p-4 md:p-8 min-w-0">
         {children}
       </main>
       <Footer />

@@ -252,7 +252,7 @@ const CompactRunCalendar = ({
         {WEEKDAYS.map((w) => (
           <div
             key={w}
-            className="w-9 text-center text-[10px] font-bold text-secondary select-none"
+            className="text-center text-[10px] font-bold text-secondary select-none"
           >
             {w}
           </div>
@@ -265,7 +265,7 @@ const CompactRunCalendar = ({
       >
         {cells.map((c, i) => {
           if (!c.inMonth) {
-            return <div key={`e-${i}`} className="w-9 h-9" />;
+            return <div key={`e-${i}`} className="w-full aspect-square" />;
           }
 
           const key = dayKey(year, month, c.day);
@@ -331,7 +331,7 @@ const CompactRunCalendar = ({
               <button
                 type="button"
                 onClick={() => handleSelectDay(c.day)}
-                className={`w-9 h-9 rounded-md relative overflow-hidden flex items-stretch justify-stretch transition ${
+                className={`w-full aspect-square rounded-md relative overflow-hidden flex items-stretch justify-stretch transition ${
                   isSelected
                     ? 'bg-gray-700 shadow-inner'
                     : isClickable

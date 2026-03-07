@@ -136,7 +136,7 @@ const Index = () => {
 
   return (
     <Layout>
-      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 p-4 lg:p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 lg:p-6">
         <div className="lg:col-span-10">
           <DashboardStats onClickPB={handleClickPB} />
         </div>
@@ -151,7 +151,6 @@ const Index = () => {
             onSelectRunIds={(ids) => locateActivity(ids)}
           />
 
-          {/* Row 2: Map */}
 
           <div>
             <MonthlyBarChart
@@ -183,7 +182,7 @@ const Index = () => {
           </div>
         </div>
       </div>
-      <div className="lg:px-4 lg:py-24 xm:p-6">
+      <div className="px-4 lg:px-4 lg:py-24">
         <ActivityCardList onClick={handleClickPB} />
       </div>
     </Layout>

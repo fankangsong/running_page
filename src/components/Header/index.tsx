@@ -18,8 +18,8 @@ const Header = () => {
   };
 
   return (
-    <nav className="flex justify-between items-center w-full px-6 py-4 bg-background text-primary relative z-50">
-      <div className="flex items-center relative z-50">
+    <nav className="flex justify-between items-center w-full max-w-full px-6 py-4 bg-background text-primary relative z-50 overflow-x-hidden">
+      <div className="flex items-center relative z-50 min-w-0">
         <Link
           to="/"
           className="group flex items-center gap-1 text-2xl font-black italic tracking-tighter text-white"

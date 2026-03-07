@@ -64,7 +64,7 @@ const StatItem = ({
 );
 
 interface DashboardStatsProps {
-  onClickPB?: (run: Activity) => void;
+  onClickPB?: (_run: Activity) => void;
 }
 
 const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
@@ -115,9 +115,9 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
   const avgWeeklyKm = (sumDistance / weeks).toFixed(1);
   const maxDistStr = maxDistance.toFixed(0);
   const maxRoundedKm = Number(maxDistStr);
-  const maxCount = runs.reduce((acc, run) => {
-    if (!isRun(run.type)) return acc;
-    const distKm = run.distance / 1000;
+  const maxCount = runs.reduce((acc, r) => {
+    if (!isRun(r.type)) return acc;
+    const distKm = r.distance / 1000;
     return acc + (Math.round(distKm) === maxRoundedKm ? 1 : 0);
   }, 0);
 
@@ -131,7 +131,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
     return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
   };
 
-  const getPB = (targetMeters: number) => {
+  const getPB = (targetMeters: number): { pace: string; time: string; date: string; run: Activity | null } => {
     let bestSeconds = Infinity;
     let bestPace = '--';
     let bestDate = '';
@@ -168,7 +168,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
       <div className="flex flex-col md:flex-row">
         {/* Total Stats Section */}
         <div className="flex-1 p-4 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8">
             <StatItem
               label="Total"
               value={totalKm}
@@ -238,7 +238,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
 
         {/* PB Stats Section */}
         <div className="flex-1 p-4 bg-gradient-to-br from-gray-900/30 to-black/20">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8">
             <StatItem
               label="5K PB"
               value={pb5.pace}
