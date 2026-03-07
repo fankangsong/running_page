@@ -76,7 +76,7 @@ const MonthlyBarChart = ({
         </div>
         <div className="text-xs text-gray-400">{year}</div>
       </div>
-      <div className="h-24 flex items-end gap-2">
+      <div className="h-16 md:h-24 flex items-end gap-2">
         {totals.map((v, i) => {
           const h = `${Math.round((v.total / max) * 100)}%`;
           const isActive = activeMonth ? i + 1 === activeMonth : false;
