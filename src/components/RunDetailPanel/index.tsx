@@ -1,11 +1,11 @@
 import { Activity, formatPace, formatRunTime } from '@/utils/utils';
 
 const AEROBIC_ZONES = [
-  { zone: 1, min: 0, max: 119, color: '#64b5f6' },
-  { zone: 2, min: 120, max: 139, color: '#66bb6a' },
-  { zone: 3, min: 140, max: 159, color: '#ffee58' },
-  { zone: 4, min: 160, max: 179, color: '#ffa726' },
-  { zone: 5, min: 180, max: Infinity, color: '#ef5350' },
+  { zone: 1, min: 0, max: 120, color: '#64b5f6', label: '0-119' },
+  { zone: 2, min: 120, max: 140, color: '#66bb6a', label: '120-139' },
+  { zone: 3, min: 140, max: 160, color: '#ffee58', label: '140-159' },
+  { zone: 4, min: 160, max: 180, color: '#ffa726', label: '160-179' },
+  { zone: 5, min: 180, max: Infinity, color: '#ef5350', label: '180+' },
 ];
 
 const RunDetailPanel = ({
@@ -18,15 +18,18 @@ const RunDetailPanel = ({
   const distanceKm = (run.distance / 1000).toFixed(2);
   const runTime = formatRunTime(run.moving_time);
   const pace = run.average_speed ? formatPace(run.average_speed) : `0'00"`;
-  const heartRate = run.average_heartrate
-    ? `${run.average_heartrate.toFixed(0)} bpm`
-    : '~';
-  const currentHeartRate = run.average_heartrate ?? null;
-  const highlightedZone = currentHeartRate
-    ? AEROBIC_ZONES.find(
-        (zone) => currentHeartRate >= zone.min && currentHeartRate <= zone.max
-      )?.zone
+  const currentHeartRate = Number.isFinite(run.average_heartrate)
+    ? Math.round(run.average_heartrate as number)
     : null;
+  const heartRate = currentHeartRate !== null ? `${currentHeartRate} bpm` : '~';
+  const highlightedZone =
+    currentHeartRate === null
+      ? null
+      : AEROBIC_ZONES.find(
+          (zone) =>
+            currentHeartRate >= zone.min &&
+            (zone.max === Infinity || currentHeartRate < zone.max)
+        )?.zone ?? null;
   return (
     <div className="p-4 sm:max-w-[420px] mx-auto">
       <div className="flex justify-between items-center gap-2">
@@ -143,7 +146,7 @@ const RunDetailPanel = ({
             return (
               <div
                 key={zone.zone}
-                className={`rounded-md px-1.5 py-2 text-center transition-all ${
+                className={`rounded-md p-1 text-center transition-all ${
                   isHighlighted
                     ? 'border-2 border-white shadow-[0_0_0_1px_rgba(255,255,255,0.35),0_0_14px_rgba(255,255,255,0.35)] scale-[1.03]'
                     : 'border border-white/10'
@@ -154,12 +157,10 @@ const RunDetailPanel = ({
                 }}
               >
                 <div className="text-[10px] font-black text-black/85">Z{zone.zone}</div>
-                <div className="text-[9px] leading-4 text-black/75">
-                  {zone.max === Infinity ? `${zone.min}+` : `${zone.min}-${zone.max}`}
-                </div>
-                {isHighlighted && currentHeartRate ? (
-                  <div className="mt-1 text-[10px] font-black text-black bg-white/70 rounded-sm px-1">
-                    {/* {currentHeartRate.toFixed(0)} bpm */}
+                <div className="text-[9px] leading-4 text-black/75">{zone.label}</div>
+                {isHighlighted && currentHeartRate !== null ? (
+                  <div className="mt-1 text-[10px] font-black text-black">
+                    {/* {currentHeartRate} bpm */}
                   </div>
                 ) : null}
               </div>
