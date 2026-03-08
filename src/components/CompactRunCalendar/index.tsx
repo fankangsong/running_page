@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Activity,
   Coordinate,
@@ -100,6 +101,7 @@ const CompactRunCalendar = ({
   onSelectRunIds,
 }: CompactRunCalendarProps) => {
   const [selectedKey, setSelectedKey] = useState<string>('');
+  const [hoveredKey, setHoveredKey] = useState<string>('');
   const [animKey, setAnimKey] = useState(0);
 
   const triggerAnim = () => {
@@ -153,12 +155,14 @@ const CompactRunCalendar = ({
   const handlePrevYear = () => {
     onChangeYearMonth(olderYear, month);
     setSelectedKey('');
+    setHoveredKey('');
     triggerAnim();
   };
 
   const handleNextYear = () => {
     onChangeYearMonth(newerYear, month);
     setSelectedKey('');
+    setHoveredKey('');
     triggerAnim();
   };
 
@@ -167,10 +171,12 @@ const CompactRunCalendar = ({
     if (month > 1) {
       onChangeYearMonth(year, month - 1);
       setSelectedKey('');
+      setHoveredKey('');
       return;
     }
     onChangeYearMonth(olderYear, 12);
     setSelectedKey('');
+    setHoveredKey('');
   };
 
   const handleNextMonth = () => {
@@ -178,10 +184,12 @@ const CompactRunCalendar = ({
     if (month < 12) {
       onChangeYearMonth(year, month + 1);
       setSelectedKey('');
+      setHoveredKey('');
       return;
     }
     onChangeYearMonth(newerYear, 1);
     setSelectedKey('');
+    setHoveredKey('');
   };
 
   const handleSelectDay = (day: number) => {
@@ -281,6 +289,7 @@ const CompactRunCalendar = ({
             : '';
 
           const isSelected = selectedKey === key;
+          const isHovered = hoveredKey === key;
           const isClickable = dayRuns.length > 0;
           const hasVisual = Boolean(polylineSvgPoints) || !!primaryRun;
 
@@ -327,7 +336,12 @@ const CompactRunCalendar = ({
           }
 
           return (
-            <div key={key} className="relative group">
+            <div
+              key={key}
+              className="relative"
+              onMouseEnter={() => setHoveredKey(key)}
+              onMouseLeave={() => setHoveredKey('')}
+            >
               <button
                 type="button"
                 onClick={() => handleSelectDay(c.day)}
@@ -376,7 +390,13 @@ const CompactRunCalendar = ({
               </button>
 
               {isClickable ? (
-                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-20 pointer-events-none opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition duration-150">
+                <div
+                  className={`absolute left-1/2 -translate-x-1/2 bottom-full z-20 transition duration-150 ${
+                    isHovered
+                      ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
+                      : 'opacity-0 scale-95 translate-y-2 pointer-events-none'
+                  }`}
+                >
                   <div className="bg-gray-900/95 border border-gray-700/70 rounded-lg shadow-xl px-3 py-2.5 w-64">
                     <div className="flex flex-col gap-0.5 mb-2">
                       <div className="flex items-center gap-1.5 text-[12px] text-primary font-bold truncate">
@@ -423,6 +443,16 @@ const CompactRunCalendar = ({
                         </div>
                       </div>
                     </div>
+                    {displayRun ? (
+                      <div className="mt-2 pt-2 border-t border-gray-700/70 flex justify-end">
+                        <Link
+                          to={`/run/${displayRun.run_id}`}
+                          className="inline-flex items-center h-7 px-2.5 rounded-md bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition text-[11px] font-bold tracking-[0.3px]"
+                        >
+                          View Detail <ArrowIcon dir="right" />
+                        </Link>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               ) : null}

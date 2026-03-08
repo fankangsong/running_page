@@ -27,8 +27,8 @@ const RunPolyline = ({ run }: IRunPolylineProps) => {
     const latRange = maxLat - minLat || 1;
 
     const padding = 10;
-    const svgWidth = 300;
-    const svgHeight = 300;
+    const svgWidth = 260;
+    const svgHeight = 260;
 
     const scaleX = (lon: number) =>
       padding + ((lon - minLon) / lonRange) * (svgWidth - 2 * padding);
@@ -60,8 +60,8 @@ const RunPolyline = ({ run }: IRunPolylineProps) => {
 
   return (
     <svg
-      viewBox={`0 0 300 300`}
-      className="w-full h-full"
+      viewBox="0 0 260 260"
+      className="w-[260px] h-[260px]"
       preserveAspectRatio="xMidYMid meet"
     >
       <defs>

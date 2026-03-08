@@ -5,6 +5,7 @@ import RunPolyline from '@/components/RunPolyline';
 import RunDetailPanel from '@/components/RunDetailPanel';
 import useActivities from '@/hooks/useActivities';
 import NotFound from '@/pages/404';
+import { isRun } from '@/utils/utils';
 
 const RunDetail = () => {
   const { runId } = useParams();
@@ -16,6 +17,17 @@ const RunDetail = () => {
     return activities.find((r) => r.run_id === runIdNumber) ?? null;
   }, [activities, runId, runIdNumber]);
 
+  const monthlyDistanceKm = useMemo(() => {
+    if (!run?.start_date_local) return 0;
+    const yearMonth = run.start_date_local.slice(0, 7);
+    const monthDistance = activities.reduce((sum, activity) => {
+      if (!isRun(activity.type)) return sum;
+      if (activity.start_date_local.slice(0, 7) !== yearMonth) return sum;
+      return sum + activity.distance;
+    }, 0);
+    return monthDistance / 1000;
+  }, [activities, run]);
+
   if (!runId || Number.isNaN(runIdNumber) || !run) {
     return <NotFound />;
   }
@@ -23,10 +35,10 @@ const RunDetail = () => {
   return (
     <Layout>
       <div className="max-w-[480px] mx-auto">
-        <div className="w-full text-center">
+        <div className="flex justify-center items-center ">
           <RunPolyline run={run} />
         </div>
-        <RunDetailPanel run={run} />
+        <RunDetailPanel run={run} monthlyDistanceKm={monthlyDistanceKm} />
       </div>
     </Layout>
   );

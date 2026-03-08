@@ -169,10 +169,9 @@ const Index = () => {
         <div className="lg:col-span-6 flex flex-col">
           <div
             id="run-map"
-            className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full h-full min-h-[200px] lg:min-h-[400px]"
+            className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full h-full min-h-[400px] lg:min-h-[400px]"
           >
             <RunMap
-              title={title}
               viewState={viewState}
               geoData={geoData}
               setViewState={setViewState}

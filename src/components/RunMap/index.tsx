@@ -52,7 +52,6 @@ import { RPGeometry } from '@/static/run_countries';
 import './mapbox.css';
 
 interface IRunMapProps {
-  title: string;
   viewState: IViewState;
   setViewState: (_viewState: IViewState) => void;
   changeYear: (_year: string) => void;
@@ -61,7 +60,6 @@ interface IRunMapProps {
 }
 
 const RunMap = ({
-  title,
   viewState,
   setViewState,
   changeYear: _changeYear,
