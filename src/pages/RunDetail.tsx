@@ -36,7 +36,7 @@ const RunDetail = () => {
     <Layout>
       <div className="max-w-[480px] mx-auto">
         <div className="flex justify-center items-center ">
-          <RunPolyline run={run} />
+          <RunPolyline run={run} className="w-[260px] h-[260px]" />
         </div>
         <RunDetailPanel run={run} monthlyDistanceKm={monthlyDistanceKm} />
       </div>

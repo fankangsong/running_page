@@ -181,7 +181,7 @@ const Index = () => {
           </div>
         </div>
       </div>
-      <div className="px-4 lg:px-4 lg:py-24">
+      <div className="px-4 lg:px-4 py-24">
         <ActivityCardList onClick={handleClickPB} />
       </div>
     </Layout>

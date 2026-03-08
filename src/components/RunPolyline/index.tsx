@@ -7,9 +7,10 @@ import { ReactComponent as EndIcon } from '@assets/end.svg';
 
 interface IRunPolylineProps {
   run: Activity;
+  className?: string;
 }
 
-const RunPolyline = ({ run }: IRunPolylineProps) => {
+const RunPolyline = ({ run, className }: IRunPolylineProps) => {
   const { points } = useMemo(() => {
     const coords = pathForRun(run);
     if (coords.length === 0) {
@@ -48,7 +49,9 @@ const RunPolyline = ({ run }: IRunPolylineProps) => {
 
   if (points.length === 0) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-secondary text-sm">
+      <div
+        className={`w-full h-full flex items-center justify-center text-secondary text-sm ${className ?? ''}`}
+      >
         No map data
       </div>
     );
@@ -61,7 +64,7 @@ const RunPolyline = ({ run }: IRunPolylineProps) => {
   return (
     <svg
       viewBox="0 0 260 260"
-      className="w-[260px] h-[260px]"
+      className={className ?? 'w-full h-full'}
       preserveAspectRatio="xMidYMid meet"
     >
       <defs>
