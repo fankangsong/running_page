@@ -8,6 +8,7 @@ import Map, {
   MapRef,
 } from 'react-map-gl';
 import { MapInstance } from 'react-map-gl/src/types/lib';
+import { Link } from 'react-router-dom';
 import useActivities from '@/hooks/useActivities';
 import {
   MAP_LAYER_LIST,
@@ -266,17 +267,40 @@ const RunMap = ({
       </Map>
       {isSingleActivity && run && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-          <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-700/50 rounded-lg shadow-xl px-4 py-3 w-72">
-            <div className="flex flex-col gap-1 mb-3">
-              <div className="flex items-center gap-2 text-sm text-primary font-bold truncate">
-                <div className="shrink-0">
-                  <ActivityIcon size={16} type={run.type} />
+          <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-700/50 rounded-lg shadow-xl px-4 py-3 w-72 relative">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex flex-col gap-1 min-w-0 flex-1">
+                <div className="flex items-center gap-2 text-sm text-primary font-bold truncate">
+                  <div className="shrink-0">
+                    <ActivityIcon size={16} type={run.type} />
+                  </div>
+                  <span className="truncate">{run.name}</span>
                 </div>
-                <span className="truncate">{run.name}</span>
+                <div className="text-xs text-gray-400 font-mono pl-6">
+                  {timeRange}
+                </div>
               </div>
-              <div className="text-xs text-gray-400 font-mono pl-6">
-                {timeRange}
-              </div>
+              <Link
+                to={`/run/${run.run_id}`}
+                className="ml-2 text-gray-400 hover:text-white transition-colors pointer-events-auto shrink-0"
+                title="View Details"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </Link>
             </div>
             <div className="flex justify-between items-end gap-2">
               <div>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import RunPolyline from '@/components/RunPolyline';
@@ -31,6 +31,10 @@ const RunDetail = () => {
   if (!runId || Number.isNaN(runIdNumber) || !run) {
     return <NotFound />;
   }
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, [])
 
   return (
     <Layout>

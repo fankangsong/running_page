@@ -155,6 +155,23 @@ const Index = () => {
           <DashboardStats onClickPB={handleClickPB} />
         </div>
 
+        
+
+        <div className="lg:col-span-6 flex flex-col">
+          <div
+            id="run-map"
+            className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full h-full min-h-[400px] lg:min-h-[400px]"
+          >
+            <RunMap
+              viewState={viewState}
+              geoData={geoData}
+              setViewState={setViewState}
+              changeYear={(y) => changeYearMonth(y, month)}
+              thisYear={year}
+            />
+          </div>
+        </div>
+
         <div className="lg:col-span-4 flex flex-col gap-6 overflow-x-hidden">
           <CompactRunCalendar
             year={year}
@@ -177,21 +194,6 @@ const Index = () => {
               )}
               year={year === 'Total' ? thisYear : year}
               activeMonth={month}
-            />
-          </div>
-        </div>
-
-        <div className="lg:col-span-6 flex flex-col">
-          <div
-            id="run-map"
-            className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full h-full min-h-[400px] lg:min-h-[400px]"
-          >
-            <RunMap
-              viewState={viewState}
-              geoData={geoData}
-              setViewState={setViewState}
-              changeYear={(y) => changeYearMonth(y, month)}
-              thisYear={year}
             />
           </div>
         </div>

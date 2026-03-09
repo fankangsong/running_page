@@ -24,7 +24,7 @@ const data: ISiteMetadataResult = {
       url: '/tracks',
     },
     {
-      name: '🏃',
+      name: 'About',
       url: 'https://imcolin.fan',
     },
   ],

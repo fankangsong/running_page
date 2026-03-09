@@ -1,11 +1,11 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import {
   Activity,
   Coordinate,
   formatPace,
   convertMovingTime2Sec,
   pathForRun,
+  scrollToMap,
 } from '@/utils/utils';
 import ActivityIcon from '@/components/ActivityIcon';
 
@@ -103,7 +103,6 @@ const CompactRunCalendar = ({
   selectedDate,
 }: CompactRunCalendarProps) => {
   const [selectedKey, setSelectedKey] = useState<string>(selectedDate || '');
-  const [hoveredKey, setHoveredKey] = useState<string>('');
   const [animKey, setAnimKey] = useState(0);
 
   useEffect(() => {
@@ -163,14 +162,12 @@ const CompactRunCalendar = ({
   const handlePrevYear = () => {
     onChangeYearMonth(olderYear, month);
     setSelectedKey('');
-    setHoveredKey('');
     triggerAnim();
   };
 
   const handleNextYear = () => {
     onChangeYearMonth(newerYear, month);
     setSelectedKey('');
-    setHoveredKey('');
     triggerAnim();
   };
 
@@ -179,12 +176,10 @@ const CompactRunCalendar = ({
     if (month > 1) {
       onChangeYearMonth(year, month - 1);
       setSelectedKey('');
-      setHoveredKey('');
       return;
     }
     onChangeYearMonth(olderYear, 12);
     setSelectedKey('');
-    setHoveredKey('');
   };
 
   const handleNextMonth = () => {
@@ -192,12 +187,10 @@ const CompactRunCalendar = ({
     if (month < 12) {
       onChangeYearMonth(year, month + 1);
       setSelectedKey('');
-      setHoveredKey('');
       return;
     }
     onChangeYearMonth(newerYear, 1);
     setSelectedKey('');
-    setHoveredKey('');
   };
 
   const handleSelectDay = (day: number) => {
@@ -206,6 +199,7 @@ const CompactRunCalendar = ({
     const dayRuns = runsByDate[key] ?? [];
     if (!dayRuns.length) return;
     onSelectRunIds?.(dayRuns.map((r) => r.run_id));
+    scrollToMap();
   };
 
   return (
@@ -297,58 +291,13 @@ const CompactRunCalendar = ({
             : '';
 
           const isSelected = selectedKey === key;
-          const isHovered = hoveredKey === key;
           const isClickable = dayRuns.length > 0;
           const hasVisual = Boolean(polylineSvgPoints) || !!primaryRun;
-
-          const displayRun = dayRuns.length
-            ? [...dayRuns].sort(
-                (a, b) =>
-                  new Date(b.start_date_local.replace(' ', 'T')).getTime() -
-                  new Date(a.start_date_local.replace(' ', 'T')).getTime()
-              )[0]
-            : null;
-          const displayDistance = displayRun
-            ? (displayRun.distance / 1000).toFixed(2)
-            : '';
-          const displayPace = displayRun?.average_speed
-            ? formatPace(displayRun.average_speed)
-            : '--';
-          const displayHr = displayRun?.average_heartrate
-            ? displayRun.average_heartrate.toFixed(0)
-            : '--';
-          const displayTitle = displayRun?.name || 'Run';
-
-          let timeRange = '';
-          let displayDuration = '';
-          if (displayRun) {
-            const durationTotalSeconds = convertMovingTime2Sec(
-              displayRun.moving_time
-            );
-            const hours = Math.floor(durationTotalSeconds / 3600);
-            const minutes = Math.floor((durationTotalSeconds % 3600) / 60);
-            const seconds = Math.floor(durationTotalSeconds % 60);
-            displayDuration = `${hours}:${pad2(minutes)}:${pad2(seconds)}`;
-
-            const startTime = displayRun.start_date_local.split(' ')[1];
-            if (startTime) {
-              const [h, m, s] = startTime.split(':').map(Number);
-              const startDate = new Date();
-              startDate.setHours(h, m, s);
-              const endDate = new Date(
-                startDate.getTime() + durationTotalSeconds * 1000
-              );
-              const endTime = endDate.toTimeString().split(' ')[0];
-              timeRange = `${startTime}~${endTime}`;
-            }
-          }
 
           return (
             <div
               key={key}
               className="relative"
-              onMouseEnter={() => setHoveredKey(key)}
-              onMouseLeave={() => setHoveredKey('')}
             >
               <button
                 type="button"
@@ -396,74 +345,6 @@ const CompactRunCalendar = ({
                   </div>
                 ) : null}
               </button>
-
-              {isClickable ? (
-                <div
-                  className={`absolute left-1/2 -translate-x-1/2 bottom-full z-20 transition duration-150 ${
-                    isHovered
-                      ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
-                      : 'opacity-0 scale-95 translate-y-2 pointer-events-none'
-                  }`}
-                >
-                  <div className="bg-gray-900/95 border border-gray-700/70 rounded-lg shadow-xl px-3 py-2.5 w-64">
-                    <div className="flex flex-col gap-0.5 mb-2">
-                      <div className="flex items-center gap-1.5 text-[12px] text-primary font-bold truncate">
-                        <div className="shrink-0">
-                          <ActivityIcon size={16} type={displayRun?.type} />
-                        </div>
-                        <span className="truncate">{displayTitle}</span>
-                      </div>
-                      <div className="text-[10px] text-gray-400 font-mono pl-5">
-                        {timeRange}
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-end gap-2">
-                      <div>
-                        <div className="text-[10px] text-blue-400 font-bold tracking-[0.6px] uppercase">
-                          KM
-                        </div>
-                        <div className="text-[14px] font-bold text-primary tabular-nums text-[yellow]">
-                          {displayDistance}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] text-purple-400 font-bold tracking-[0.6px] uppercase">
-                          Time
-                        </div>
-                        <div className="text-[14px] font-bold text-primary tabular-nums text-white">
-                          {displayDuration}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] text-emerald-400 font-bold tracking-[0.6px] uppercase">
-                          Pace
-                        </div>
-                        <div className="text-[14px] font-bold text-primary tabular-nums text-[#81d4fa]">
-                          {displayPace}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] text-red-400 font-bold tracking-[0.6px] uppercase">
-                          BPM
-                        </div>
-                        <div className="text-[14px] font-bold text-primary tabular-nums text-[red]">
-                          {displayHr}
-                        </div>
-                      </div>
-                    </div>
-                    {displayRun ? (
-                      <div className="mt-2 pt-2 border-t border-gray-700/70 flex justify-end">
-                        <Link
-                          to={`/run/${displayRun.run_id}`}
-                          className="inline-flex items-center h-7 px-2.5 rounded-md bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition text-[11px] font-bold tracking-[0.3px]"
-                        >
-                          View Detail <ArrowIcon dir="right" />
-                        </Link>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              ) : null}
             </div>
           );
         })}
