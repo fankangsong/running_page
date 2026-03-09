@@ -54,7 +54,7 @@ const ActivityCardList = ({ onClick }: Props) => {
     colorClass: string
   ) => (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-2 pb-2 border-b border-gray-800">
+      <div className="flex items-center gap-2 py-2 border-b border-gray-800 sticky top-0 z-10 bg-black/90 backdrop-blur-sm -mx-4 px-4 md:mx-0 md:px-0">
         <div className={`text-${colorClass}-400`}>
           <ActivityIcon type={iconType} size={24} />
         </div>

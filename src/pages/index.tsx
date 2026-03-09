@@ -155,7 +155,7 @@ const Index = () => {
           <DashboardStats onClickPB={handleClickPB} />
         </div>
 
-        <div className="lg:col-span-4 flex flex-col gap-6">
+        <div className="lg:col-span-4 flex flex-col gap-6 overflow-x-hidden">
           <CompactRunCalendar
             year={year}
             month={month}
