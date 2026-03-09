@@ -50,6 +50,7 @@ const Index = () => {
   // for auto zoom
   const bounds = getBoundsForGeoData(geoData);
   const [intervalId, setIntervalId] = useState<number>();
+  const [selectedDate, setSelectedDate] = useState<string>('');
   const runsByDate = useMemo(() => groupRunsByDate(runs), [runs]);
   const pendingRunIdRef = useRef<number | null>(null);
 
@@ -98,6 +99,7 @@ const Index = () => {
     const y = date.slice(0, 4);
     const m = parseInt(date.slice(5, 7));
     changeYearMonth(y, m);
+    setSelectedDate(date.slice(0, 10));
     pendingRunIdRef.current = run.run_id;
   };
 
@@ -149,6 +151,7 @@ const Index = () => {
             runsByDate={runsByDate}
             onChangeYearMonth={changeYearMonth}
             onSelectRunIds={(ids) => locateActivity(ids)}
+            selectedDate={selectedDate}
           />
 
 

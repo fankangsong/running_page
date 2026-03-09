@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Activity,
@@ -90,6 +90,7 @@ interface CompactRunCalendarProps {
   runsByDate: Record<string, Activity[]>;
   onChangeYearMonth: (_year: string, _month: number) => void;
   onSelectRunIds?: (_runIds: number[]) => void;
+  selectedDate?: string;
 }
 
 const CompactRunCalendar = ({
@@ -99,10 +100,17 @@ const CompactRunCalendar = ({
   runsByDate,
   onChangeYearMonth,
   onSelectRunIds,
+  selectedDate,
 }: CompactRunCalendarProps) => {
-  const [selectedKey, setSelectedKey] = useState<string>('');
+  const [selectedKey, setSelectedKey] = useState<string>(selectedDate || '');
   const [hoveredKey, setHoveredKey] = useState<string>('');
   const [animKey, setAnimKey] = useState(0);
+
+  useEffect(() => {
+    if (selectedDate) {
+      setSelectedKey(selectedDate);
+    }
+  }, [selectedDate]);
 
   const triggerAnim = () => {
     setAnimKey((prev) => prev + 1);

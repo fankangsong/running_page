@@ -139,6 +139,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
 
     runs.forEach((run) => {
       if (!isRun(run.type)) return;
+      if (!run.summary_polyline) return;
       if (run.average_speed && run.distance >= targetMeters) {
         const seconds = targetMeters / run.average_speed;
         if (seconds < bestSeconds) {
