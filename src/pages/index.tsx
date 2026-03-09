@@ -20,6 +20,11 @@ import {
 } from '@/utils/utils';
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
+const SHENZHEN_VIEW_STATE: IViewState = {
+  longitude: 114.0579,
+  latitude: 22.5431,
+  zoom: 10.5,
+};
 
 const Index = () => {
   const { activities, thisYear, years } = useActivities();
@@ -47,15 +52,22 @@ const Index = () => {
   );
   const [title, setTitle] = useState('');
   const [geoData, setGeoData] = useState(geoJsonForRuns(runs));
-  // for auto zoom
-  const bounds = getBoundsForGeoData(geoData);
+  const getMapViewState = (nextGeoData: typeof geoData): IViewState => {
+    const hasTrack = nextGeoData.features.some(
+      (feature) => feature.geometry.coordinates.length > 0
+    );
+    if (!hasTrack) {
+      return SHENZHEN_VIEW_STATE;
+    }
+    return getBoundsForGeoData(nextGeoData);
+  };
   const [intervalId, setIntervalId] = useState<number>();
   const [selectedDate, setSelectedDate] = useState<string>('');
   const runsByDate = useMemo(() => groupRunsByDate(runs), [runs]);
   const pendingRunIdRef = useRef<number | null>(null);
 
   const [viewState, setViewState] = useState<IViewState>({
-    ...bounds,
+    ...getMapViewState(geoData),
   });
 
   const changeYearMonth = (y: string, m: number) => {
@@ -88,7 +100,7 @@ const Index = () => {
     const nextGeo = geoJsonForRuns(selectedRuns);
     setGeoData(nextGeo);
     setViewState({
-      ...getBoundsForGeoData(nextGeo),
+      ...getMapViewState(nextGeo),
     });
     setTitle(titleForShow(lastRun));
     clearInterval(intervalId);
@@ -114,7 +126,7 @@ const Index = () => {
       }
     }
     setViewState({
-      ...getBoundsForGeoData(fullGeo),
+      ...getMapViewState(fullGeo),
     });
     const runsNum = runs.length;
     // maybe change 20 ?

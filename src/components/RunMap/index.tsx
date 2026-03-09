@@ -154,21 +154,23 @@ const RunMap = ({
     }
   }
 
-  const isSingleRun =
-    geoData.features.length === 1 &&
-    geoData.features[0].geometry.coordinates.length;
+  const isSingleActivity = geoData.features.length === 1;
+  const hasTrack =
+    isSingleActivity && geoData.features[0].geometry.coordinates.length > 0;
   let startLon = 0;
   let startLat = 0;
   let endLon = 0;
   let endLat = 0;
   let run: Activity | null = null;
-  if (isSingleRun) {
+  if (isSingleActivity) {
+    run = geoData.features[0].properties as Activity;
+  }
+  if (hasTrack) {
     const points = geoData.features[0].geometry.coordinates as Coordinate[];
     [startLon, startLat] = points[0];
     [endLon, endLat] = points[points.length - 1];
-    run = geoData.features[0].properties as Activity;
   }
-  let dash = USE_DASH_LINE && !isSingleRun && !isBigMap ? [2, 2] : [2, 0];
+  let dash = USE_DASH_LINE && !isSingleActivity && !isBigMap ? [2, 2] : [2, 0];
   const onMove = React.useCallback(
     ({ viewState }: { viewState: IViewState }) => {
       setViewState(viewState);
@@ -237,7 +239,7 @@ const RunMap = ({
               'line-width': isBigMap && lights ? 1 : 2,
               'line-dasharray': dash,
               'line-opacity':
-                isSingleRun || isBigMap || !lights ? 1 : LINE_OPACITY,
+                isSingleActivity || isBigMap || !lights ? 1 : LINE_OPACITY,
               'line-blur': 1,
             }}
             layout={{
@@ -246,7 +248,7 @@ const RunMap = ({
             }}
           />
         </Source>
-        {isSingleRun && (
+        {hasTrack && (
           <RunMarker
             startLat={startLat}
             startLon={startLon}
@@ -262,7 +264,7 @@ const RunMap = ({
           style={{ opacity: 0.3 }}
         />
       </Map>
-      {isSingleRun && run && (
+      {isSingleActivity && run && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-700/50 rounded-lg shadow-xl px-4 py-3 w-72">
             <div className="flex flex-col gap-1 mb-3">
