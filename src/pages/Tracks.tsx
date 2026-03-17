@@ -126,7 +126,7 @@ const Tracks = () => {
     <Layout>
       <div className="p-4 lg:p-6 space-y-6">
         <div className="flex flex-wrap gap-2 justify-start">
-          <button
+          {/* <button
             className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-200 active:scale-95 ${
               year === 'Total'
                 ? 'bg-accent text-white shadow-md shadow-accent/20'
@@ -136,7 +136,7 @@ const Tracks = () => {
             type="button"
           >
             Total
-          </button>
+          </button> */}
           {years.map((y) => (
             <button
               key={y}
@@ -171,7 +171,7 @@ const Tracks = () => {
             />
           </div>
           <div className="lg:col-span-7">
-            <RunningCharts year={displayYear} />
+            <RunningCharts year={displayYear} runs={displayRuns} />
           </div>
         </div>
       </div>

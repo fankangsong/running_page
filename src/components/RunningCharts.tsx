@@ -1,164 +1,228 @@
-import React, { Suspense, useEffect, useRef, useState } from 'react';
-import { githubStats, totalStat, gridStats } from '@assets/index';
-import { loadSvgComponent } from '@/utils/svgUtils';
+import { useMemo } from 'react';
+import {
+  Activity,
+  Coordinate,
+  convertMovingTime2Sec,
+  formatPace,
+  pathForRun,
+} from '@/utils/utils';
 
-const FailedLoadSvg = () => (
-  <div className="text-gray-500 text-center py-8">
-  </div>
-);
+const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const MONTHS = [
+  'Jan.',
+  'Feb.',
+  'Mar.',
+  'Apr.',
+  'May.',
+  'Jun.',
+  'Jul.',
+  'Aug.',
+  'Sep.',
+  'Oct.',
+  'Nov.',
+  'Dec.',
+];
 
-const LoadingPlaceholder = () => (
-  <div className="w-full min-h-[110px] flex items-center justify-center bg-gray-900/60">
-    <div className="h-10 w-10 rounded-full border-2 border-gray-600 border-t-white animate-spin" />
-  </div>
-);
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const dateKey = (year: string, month: number, day: number) =>
+  `${year}-${pad2(month)}-${pad2(day)}`;
 
-const RunningCalendar = ({ year }: { year: string }) => {
-  const [CalendarSVG, setCalendarSVG] =
-    useState<React.ComponentType<any> | null>(null);
-  const [renderYear, setRenderYear] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const requestIdRef = useRef(0);
-  const switchTimerRef = useRef<number | null>(null);
+const computePolylinePoints = (
+  coordinates: Coordinate[],
+  size = 28,
+  padding = 3
+) => {
+  if (coordinates.length < 2) return '';
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  coordinates.forEach(([x, y]) => {
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  });
+  const dx = Math.max(1e-9, maxX - minX);
+  const dy = Math.max(1e-9, maxY - minY);
+  const scale = (size - padding * 2) / Math.max(dx, dy);
+  return coordinates
+    .map(([x, y]) => {
+      const nx = (x - minX) * scale + padding;
+      const ny = (maxY - y) * scale + padding;
+      return `${nx.toFixed(1)},${ny.toFixed(1)}`;
+    })
+    .join(' ');
+};
 
-  useEffect(() => {
-    requestIdRef.current += 1;
-    const requestId = requestIdRef.current;
-    if (switchTimerRef.current !== null) {
-      window.clearTimeout(switchTimerRef.current);
-      switchTimerRef.current = null;
-    }
-    setCalendarSVG(null);
-    setRenderYear(null);
-    setIsLoading(true);
-    if (year === 'Total') {
-      setIsLoading(false);
-      return;
-    }
-    switchTimerRef.current = window.setTimeout(async () => {
-      let component;
-      const fileName = `github_${year}.svg`;
-      try {
-        component = await loadSvgComponent(githubStats, `./github_${year}.svg`);
-        if (requestIdRef.current !== requestId) return;
-        if (
-          component &&
-          typeof component === 'object' &&
-          'default' in component
-        ) {
-          setCalendarSVG(() => component.default);
-        } else {
-          setCalendarSVG(() => component);
-        }
-        setRenderYear(year);
-        setIsLoading(false);
-      } catch (error) {
-        if (requestIdRef.current !== requestId) return;
-        console.error('Failed to load SVG:', error);
-        const FailedLoadComponent = () => <FailedLoadSvg />;
-        setCalendarSVG(() => FailedLoadComponent);
-        setRenderYear(year);
-        setIsLoading(false);
-      }
-    }, 80);
-    return () => {
-      if (switchTimerRef.current !== null) {
-        window.clearTimeout(switchTimerRef.current);
-        switchTimerRef.current = null;
-      }
-      requestIdRef.current += 1;
-    };
-  }, [year]);
+const formatDuration = (seconds: number) => {
+  if (!seconds) return '0m';
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
+
+const pickStrokeColor = (distanceKm: number) => {
+  if (distanceKm <= 5) return 'text-sky-400';
+  if (distanceKm <= 10) return 'text-emerald-400';
+  if (distanceKm <= 15) return 'text-amber-400';
+  return 'text-rose-400';
+};
+
+interface RunningChartsProps {
+  year: string;
+  runs: Activity[];
+}
+
+const RunningCharts = ({ year, runs }: RunningChartsProps) => {
+  const yearRuns = useMemo(() => {
+    if (year === 'Total') return [];
+    return runs.filter((run) => run.start_date_local?.slice(0, 4) === year);
+  }, [runs, year]);
+
+  const runsByDate = useMemo(() => {
+    const map: Record<string, Activity[]> = {};
+    yearRuns.forEach((run) => {
+      const k = run.start_date_local?.slice(0, 10);
+      if (!k) return;
+      if (!map[k]) map[k] = [];
+      map[k].push(run);
+    });
+    return map;
+  }, [yearRuns]);
 
   if (year === 'Total') {
-    return null;
+    return (
+      <div className="w-full py-10 rounded-card border border-gray-800/50 bg-card text-center text-secondary text-sm">
+        Please select a specific year to view the full calendar tracks.
+      </div>
+    );
   }
 
-  const isReady = renderYear === year && CalendarSVG && !isLoading;
-
-  if (!isReady) {
-    return <LoadingPlaceholder />;
-  }
-
   return (
-    <div className="w-full overflow-x-auto scrollbar-hide min-h-[110px] relative">
-      <Suspense fallback={<LoadingPlaceholder />}>
-        <CalendarSVG key={year} className="w-full h-auto" />
-      </Suspense>
+    <div className="w-full rounded-card border border-gray-800/50 bg-card p-4 lg:p-5">
+      <div className="grid grid-cols-[54px_1fr] gap-3 mb-3">
+        <div />
+        <div className="grid grid-cols-7 gap-1.5">
+          {WEEKDAYS.map((label, idx) => (
+            <div
+              key={`${label}-${idx}`}
+              className="text-[10px] font-bold text-secondary text-center select-none"
+            >
+              {label}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2.5">
+        {MONTHS.map((monthLabel, monthIndex) => {
+          const month = monthIndex + 1;
+          const firstDay = new Date(Number(year), month - 1, 1).getDay();
+          const daysInMonth = new Date(Number(year), month, 0).getDate();
+          const cells: Array<number | null> = [];
+          for (let i = 0; i < firstDay; i += 1) cells.push(null);
+          for (let day = 1; day <= daysInMonth; day += 1) cells.push(day);
+          while (cells.length % 7 !== 0) cells.push(null);
+
+          return (
+            <div key={monthLabel} className="grid grid-cols-[54px_1fr] gap-3">
+              <div className="pt-1 text-[11px] text-secondary font-semibold select-none">
+                {monthLabel}
+              </div>
+              <div className="grid grid-cols-7">
+                {cells.map((day, cellIndex) => {
+                  if (!day) {
+                    return (
+                      <div
+                        key={`${monthLabel}-empty-${cellIndex}`}
+                        className="aspect-square"
+                      />
+                    );
+                  }
+                  const key = dateKey(year, month, day);
+                  const dayRuns = runsByDate[key] ?? [];
+                  const totalDistanceKm =
+                    dayRuns.reduce((sum, run) => sum + run.distance, 0) / 1000;
+                  const totalSeconds = dayRuns.reduce(
+                    (sum, run) => sum + convertMovingTime2Sec(run.moving_time),
+                    0
+                  );
+                  const outdoorRuns = dayRuns.filter((r) => !!r.summary_polyline);
+                  const primaryRun =
+                    outdoorRuns.sort((a, b) => b.distance - a.distance)[0] ||
+                    dayRuns[0];
+                  const points = primaryRun
+                    ? computePolylinePoints(pathForRun(primaryRun))
+                    : '';
+                  const paceText =
+                    totalDistanceKm > 0
+                      ? formatPace((totalDistanceKm * 1000) / Math.max(1, totalSeconds))
+                      : '-';
+
+                  return (
+                    <div key={key} className="group relative">
+                      <div
+                        className={`aspect-square flex items-center justify-center transition ${
+                          dayRuns.length > 0
+                            ? 'bg-gray-900/60 hover:bg-gray-800'
+                            : 'bg-gray-900/20'
+                        }`}
+                      >
+                        {points ? (
+                          <svg viewBox="0 0 28 28" className={`w-6 h-6 ${pickStrokeColor(totalDistanceKm)}`}>
+                            <polyline
+                              points={points}
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        ) : (
+                          <span className="text-[10px] text-secondary tabular-nums">
+                            {day}
+                          </span>
+                        )}
+                      </div>
+
+                      {dayRuns.length > 0 ? (
+                        <div className="pointer-events-none absolute z-30 left-1/2 top-full mt-2 w-56 -translate-x-1/2 rounded-md border border-gray-700 bg-gray-900/95 p-2.5 text-[11px] text-primary opacity-0 shadow-xl transition group-hover:opacity-100">
+                          <div className="font-semibold text-white mb-1">{key}</div>
+                          <div className="flex justify-between text-secondary">
+                            <span>Runs</span>
+                            <span>{dayRuns.length}</span>
+                          </div>
+                          <div className="flex justify-between text-secondary">
+                            <span>Distance</span>
+                            <span>{totalDistanceKm.toFixed(2)} km</span>
+                          </div>
+                          <div className="flex justify-between text-secondary">
+                            <span>Duration</span>
+                            <span>{formatDuration(totalSeconds)}</span>
+                          </div>
+                          <div className="flex justify-between text-secondary">
+                            <span>Pace</span>
+                            <span>{paceText}/km</span>
+                          </div>
+                          {primaryRun ? (
+                            <div className="mt-1.5 border-t border-gray-700 pt-1.5 text-secondary truncate">
+                              {primaryRun.name || 'Run'}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
-  );
-};
-
-const TracksGrid = ({ year }: { year: string }) => {
-  const [GridSvg, setGridSvg] = useState<React.ComponentType<any> | null>(null);
-  const [loadedYear, setLoadedYear] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const requestIdRef = useRef(0);
-  const switchTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    requestIdRef.current += 1;
-    const requestId = requestIdRef.current;
-    if (switchTimerRef.current !== null) {
-      window.clearTimeout(switchTimerRef.current);
-      switchTimerRef.current = null;
-    }
-    setGridSvg(null);
-    setLoadedYear(null);
-    setIsLoading(true);
-    switchTimerRef.current = window.setTimeout(async () => {
-      try {
-        const isTotal = year === 'Total';
-        const component = await loadSvgComponent(
-          isTotal ? totalStat : gridStats,
-          isTotal ? './grid.svg' : `./grid_${year}.svg`
-        );
-        if (requestIdRef.current !== requestId) return;
-        if (
-          component &&
-          typeof component === 'object' &&
-          'default' in component
-        ) {
-          setGridSvg(() => component.default);
-        } else {
-          setGridSvg(() => component);
-        }
-        setLoadedYear(year);
-        setIsLoading(false);
-      } catch (error) {
-        if (requestIdRef.current !== requestId) return;
-        console.error('Failed to load SVG:', error);
-        setIsLoading(false);
-      }
-    }, 80);
-    return () => {
-      if (switchTimerRef.current !== null) {
-        window.clearTimeout(switchTimerRef.current);
-        switchTimerRef.current = null;
-      }
-      requestIdRef.current += 1;
-    };
-  }, [year]);
-
-  const isReady = loadedYear === year && GridSvg && !isLoading;
-
-  return (
-    <div className="w-full py-6 min-h-[360px] relative">
-      {isReady ? (
-        <GridSvg key={year} className="w-full h-auto" />
-      ) : (
-        <LoadingPlaceholder />
-      )}
-    </div>
-  );
-};
-
-const RunningCharts = ({ year }: { year: string }) => {
-  return (
-    <>
-      <RunningCalendar year={year} />
-      <TracksGrid year={year} />
-    </>
   );
 };
 
