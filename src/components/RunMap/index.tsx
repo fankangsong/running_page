@@ -69,6 +69,14 @@ const RunMap = ({
 }: IRunMapProps) => {
   const { provinces } = useActivities();
   const mapRef = useRef<MapRef>();
+  const [internalViewState, setInternalViewState] =
+    useState<IViewState>(viewState);
+  const lastTargetKeyRef = useRef<string>('');
+  const prevHasAnyTrackRef = useRef<boolean>(
+    geoData.features.some((f) => f.geometry.coordinates.length > 0)
+  );
+  const isAnimatingRef = useRef(false);
+  const rafIdRef = useRef<number | null>(null);
   const lights = !PRIVACY_MODE;
   // Fallback style when Mapbox token is missing or unauthorized in dev
   const FALLBACK_STYLE =
@@ -139,12 +147,120 @@ const RunMap = ({
     }, 4000);
     return () => clearTimeout(t);
   }, [MAPBOX_TOKEN, mapLoaded, mapStyleUrl]);
+
+  const hasAnyTrack = React.useMemo(
+    () => geoData.features.some((f) => f.geometry.coordinates.length > 0),
+    [geoData]
+  );
+
+  React.useEffect(() => {
+    prevHasAnyTrackRef.current = hasAnyTrack;
+  }, [hasAnyTrack]);
+
+  React.useEffect(() => {
+    const lon = viewState.longitude;
+    const lat = viewState.latitude;
+    const zoom = viewState.zoom;
+    if (
+      typeof lon !== 'number' ||
+      typeof lat !== 'number' ||
+      typeof zoom !== 'number'
+    ) {
+      setInternalViewState(viewState);
+      return;
+    }
+
+    const key = `${lon.toFixed(6)}|${lat.toFixed(6)}|${zoom.toFixed(3)}`;
+    if (lastTargetKeyRef.current === key) return;
+
+    const currentLon = internalViewState.longitude;
+    const currentLat = internalViewState.latitude;
+    const currentZoom = internalViewState.zoom;
+    const hasCurrent =
+      typeof currentLon === 'number' &&
+      typeof currentLat === 'number' &&
+      typeof currentZoom === 'number';
+    const closeEnough =
+      hasCurrent &&
+      Math.abs(currentLon - lon) < 1e-6 &&
+      Math.abs(currentLat - lat) < 1e-6 &&
+      Math.abs(currentZoom - zoom) < 1e-3;
+    if (closeEnough) {
+      lastTargetKeyRef.current = key;
+      return;
+    }
+
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+
+    lastTargetKeyRef.current = key;
+    if (!hasCurrent || !mapLoaded) {
+      setInternalViewState(viewState);
+      setViewState(viewState);
+      return;
+    }
+
+    isAnimatingRef.current = true;
+    const startTime = performance.now();
+    const durationMs = 800;
+    let from = { longitude: currentLon, latitude: currentLat, zoom: currentZoom };
+    let to = { longitude: lon, latitude: lat, zoom };
+
+    const prevHadTrack = prevHasAnyTrackRef.current;
+    if (!prevHadTrack) {
+      const startZoom = Math.min(3, Math.max(0, zoom - 6));
+      from = { longitude: lon, latitude: lat, zoom: startZoom };
+      to = { longitude: lon, latitude: lat, zoom };
+      setInternalViewState((prev) => ({
+        ...prev,
+        longitude: lon,
+        latitude: lat,
+        zoom: startZoom,
+      }));
+    }
+
+    const easeInOutCubic = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+    const tick = (now: number) => {
+      if (!isAnimatingRef.current) return;
+      const t = Math.min(1, (now - startTime) / durationMs);
+      const e = easeInOutCubic(t);
+      setInternalViewState((prev) => ({
+        ...prev,
+        longitude: lerp(from.longitude, to.longitude, e),
+        latitude: lerp(from.latitude, to.latitude, e),
+        zoom: lerp(from.zoom, to.zoom, e),
+      }));
+      if (t < 1) {
+        rafIdRef.current = requestAnimationFrame(tick);
+        return;
+      }
+      rafIdRef.current = null;
+      isAnimatingRef.current = false;
+      setViewState(to);
+    };
+
+    rafIdRef.current = requestAnimationFrame(tick);
+  }, [
+    internalViewState.latitude,
+    internalViewState.longitude,
+    internalViewState.zoom,
+    mapLoaded,
+    setViewState,
+    viewState.latitude,
+    viewState.longitude,
+    viewState.zoom,
+  ]);
   const filterProvinces = provinces.slice();
   // for geojson format
   filterProvinces.unshift('in', 'name');
 
   const initGeoDataLength = geoData.features.length;
-  const isBigMap = (viewState.zoom ?? 0) <= 3;
+  const isBigMap = (internalViewState.zoom ?? viewState.zoom ?? 0) <= 3;
   if (isBigMap && IS_CHINESE) {
     // Show boundary and line together, combine geoData(only when not combine yet)
     if (geoData.features.length === initGeoDataLength) {
@@ -173,10 +289,26 @@ const RunMap = ({
   }
   let dash = USE_DASH_LINE && !isSingleActivity && !isBigMap ? [2, 2] : [2, 0];
   const onMove = React.useCallback(
-    ({ viewState }: { viewState: IViewState }) => {
-      setViewState(viewState);
+    ({
+      viewState,
+      originalEvent,
+    }: {
+      viewState: IViewState;
+      originalEvent?: any;
+    }) => {
+      if (originalEvent) {
+        isAnimatingRef.current = false;
+        if (rafIdRef.current) {
+          cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = null;
+        }
+      }
+      setInternalViewState(viewState);
+      if (!isAnimatingRef.current || originalEvent) {
+        setViewState(viewState);
+      }
     },
-    []
+    [setViewState]
   );
   const style: React.CSSProperties = {
     width: '100%',
@@ -216,7 +348,7 @@ const RunMap = ({
   return (
     <div className="relative w-full h-full">
       <Map
-        {...viewState}
+        {...internalViewState}
         onMove={onMove}
         style={style}
         mapStyle={mapStyleUrl}
