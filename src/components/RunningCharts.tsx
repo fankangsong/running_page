@@ -1,10 +1,16 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import ActivityIcon from '@/components/ActivityIcon';
 import {
   Activity,
   Coordinate,
   convertMovingTime2Sec,
   formatPace,
+  groupRunsByDate,
+  HIKE_TYPE,
   pathForRun,
+  RUN_TYPE,
+  sortDateFunc,
+  WALK_TYPE,
 } from '@/utils/utils';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -70,32 +76,141 @@ const pickStrokeColor = (distanceKm: number) => {
   return 'text-rose-400';
 };
 
+const pickCellBgColor = (distanceKm: number) => {
+  if (distanceKm <= 5) return 'bg-sky-500/10 hover:bg-sky-500/15';
+  if (distanceKm <= 10) return 'bg-emerald-500/10 hover:bg-emerald-500/15';
+  if (distanceKm <= 15) return 'bg-amber-500/10 hover:bg-amber-500/15';
+  return 'bg-rose-500/10 hover:bg-rose-500/15';
+};
+
 interface RunningChartsProps {
   year: string;
   runs: Activity[];
 }
 
 const RunningCharts = ({ year, runs }: RunningChartsProps) => {
+  const [selectedType, setSelectedType] = useState(RUN_TYPE);
+
+  const totalPolylines = useMemo(() => {
+    const filtered = [...runs]
+      .filter((r) => r.type === selectedType)
+      .sort(sortDateFunc);
+    return filtered
+      .map((r) => {
+        const distanceKm = r.distance / 1000;
+        const seconds = convertMovingTime2Sec(r.moving_time);
+        const points = computePolylinePoints(pathForRun(r));
+        if (!points) return null;
+        const date = r.start_date_local?.slice(0, 10) ?? '';
+        const paceText =
+          distanceKm > 0
+            ? formatPace((distanceKm * 1000) / Math.max(1, seconds))
+            : '-';
+        return { r, distanceKm, seconds, points, date, paceText };
+      })
+      .filter((v) => !!v);
+  }, [runs, selectedType]);
+
   const yearRuns = useMemo(() => {
     if (year === 'Total') return [];
     return runs.filter((run) => run.start_date_local?.slice(0, 4) === year);
   }, [runs, year]);
 
-  const runsByDate = useMemo(() => {
-    const map: Record<string, Activity[]> = {};
-    yearRuns.forEach((run) => {
-      const k = run.start_date_local?.slice(0, 10);
-      if (!k) return;
-      if (!map[k]) map[k] = [];
-      map[k].push(run);
-    });
-    return map;
-  }, [yearRuns]);
+  const runsByDate = useMemo(() => groupRunsByDate(yearRuns), [yearRuns]);
 
   if (year === 'Total') {
     return (
-      <div className="w-full py-10 rounded-card border border-gray-800/50 bg-card text-center text-secondary text-sm">
-        Please select a specific year to view the full calendar tracks.
+      <div className="w-full rounded-card border border-gray-800/50 bg-card p-4 lg:p-5">
+        <div className="flex items-center justify-end mb-3">
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setSelectedType(RUN_TYPE)}
+              className={`p-1.5 rounded-md transition ${
+                selectedType === RUN_TYPE
+                  ? 'bg-gray-800 text-primary'
+                  : 'text-secondary hover:bg-gray-800/60 hover:text-primary'
+              }`}
+            >
+              <ActivityIcon type={RUN_TYPE} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedType(HIKE_TYPE)}
+              className={`p-1.5 rounded-md transition ${
+                selectedType === HIKE_TYPE
+                  ? 'bg-gray-800 text-primary'
+                  : 'text-secondary hover:bg-gray-800/60 hover:text-primary'
+              }`}
+            >
+              <ActivityIcon type={HIKE_TYPE} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedType(WALK_TYPE)}
+              className={`p-1.5 rounded-md transition ${
+                selectedType === WALK_TYPE
+                  ? 'bg-gray-800 text-primary'
+                  : 'text-secondary hover:bg-gray-800/60 hover:text-primary'
+              }`}
+            >
+              <ActivityIcon type={WALK_TYPE} />
+            </button>
+          </div>
+        </div>
+
+        {totalPolylines.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {totalPolylines.map(({ r, distanceKm, seconds, points, date, paceText }) => (
+              <div key={r.run_id} className="group relative">
+                <div
+                  className="w-11 h-11 flex items-center justify-center transition border border-gray-800/50 hover:border-gray-700"
+                >
+                  <svg
+                    viewBox="0 0 28 28"
+                    className={`w-[90%] h-[90%] ${pickStrokeColor(distanceKm)}`}
+                  >
+                    <polyline
+                      points={points}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="0.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+
+                <div className="pointer-events-none absolute z-30 left-1/2 top-full mt-2 w-56 -translate-x-1/2 rounded-md border border-gray-700 bg-gray-900/95 p-2.5 text-[11px] text-primary opacity-0 shadow-xl transition group-hover:opacity-100">
+                  <div className="font-semibold text-white mb-1">{date}</div>
+                  <div className="flex justify-between text-secondary">
+                    <span>Type</span>
+                    <span>{r.type}</span>
+                  </div>
+                  <div className="flex justify-between text-secondary">
+                    <span>Distance</span>
+                    <span>{distanceKm.toFixed(2)} km</span>
+                  </div>
+                  <div className="flex justify-between text-secondary">
+                    <span>Duration</span>
+                    <span>{formatDuration(seconds)}</span>
+                  </div>
+                  <div className="flex justify-between text-secondary">
+                    <span>Pace</span>
+                    <span>{paceText}/km</span>
+                  </div>
+                  <div className="mt-1.5 border-t border-gray-700 pt-1.5 text-secondary truncate">
+                    {r.name || 'Run'}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-10 text-center text-secondary text-sm">
+            No activities with map data.
+          </div>
+        )}
       </div>
     );
   }
@@ -158,7 +273,9 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
                     : '';
                   const paceText =
                     totalDistanceKm > 0
-                      ? formatPace((totalDistanceKm * 1000) / Math.max(1, totalSeconds))
+                      ? formatPace(
+                          (totalDistanceKm * 1000) / Math.max(1, totalSeconds)
+                        )
                       : '-';
 
                   return (
@@ -166,17 +283,20 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
                       <div
                         className={`aspect-square flex items-center justify-center transition ${
                           dayRuns.length > 0
-                            ? 'bg-gray-900/60 hover:bg-gray-800'
+                            ? pickCellBgColor(totalDistanceKm)
                             : 'bg-gray-900/20'
                         }`}
                       >
                         {points ? (
-                          <svg viewBox="0 0 28 28" className={`w-6 h-6 ${pickStrokeColor(totalDistanceKm)}`}>
+                          <svg
+                            viewBox="0 0 28 28"
+                            className={`w-[90%] h-[90%] ${pickStrokeColor(totalDistanceKm)}`}
+                          >
                             <polyline
                               points={points}
                               fill="none"
                               stroke="currentColor"
-                              strokeWidth="1.8"
+                              strokeWidth="0.6"
                               strokeLinecap="round"
                               strokeLinejoin="round"
                             />
