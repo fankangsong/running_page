@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import ActivityIcon from '@/components/ActivityIcon';
 import {
   Activity,
@@ -83,6 +83,120 @@ const pickCellBgColor = (distanceKm: number) => {
   return 'bg-rose-500/10 hover:bg-rose-500/15';
 };
 
+const ActivityPopover = ({
+  title,
+  run,
+  totalDistanceKm,
+  totalSeconds,
+  children,
+  className = '',
+}: {
+  title: string;
+  run: Activity;
+  totalDistanceKm?: number;
+  totalSeconds?: number;
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [posClass, setPosClass] = useState('left-1/2 -translate-x-1/2');
+
+  const updatePosition = () => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const screenW = window.innerWidth;
+    const POPOVER_WIDTH = 224; // w-56 is 14rem = 224px
+
+    if (rect.left < POPOVER_WIDTH / 2) {
+      setPosClass('left-0');
+    } else if (screenW - rect.right < POPOVER_WIDTH / 2) {
+      setPosClass('right-0');
+    } else {
+      setPosClass('left-1/2 -translate-x-1/2');
+    }
+  };
+
+  const handleMouseEnter = () => updatePosition();
+  const handleTouchStart = () => updatePosition();
+  const handleClick = () => updatePosition();
+
+  const distanceKm = totalDistanceKm ?? run.distance / 1000;
+  const seconds = totalSeconds ?? convertMovingTime2Sec(run.moving_time);
+  const paceText =
+    distanceKm > 0
+      ? formatPace((distanceKm * 1000) / Math.max(1, seconds))
+      : '-';
+
+  return (
+    <div
+      ref={containerRef}
+      className={`group relative ${className}`}
+      onMouseEnter={handleMouseEnter}
+      onTouchStart={handleTouchStart}
+      onClick={handleClick}
+    >
+      {children}
+      <div
+        className={`pointer-events-none absolute z-50 top-full mt-2 w-[220px] 
+        rounded-xl border border-white/10 bg-gray-900/95 backdrop-blur-md p-3 
+        shadow-2xl shadow-black/50 transition-all duration-200 ease-out 
+        opacity-0 translate-y-1 scale-95 group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 ${posClass}`}
+      >
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
+          <span className="font-bold text-white text-xs tracking-wide">
+            {title}
+          </span>
+          <span className="text-[10px] text-gray-400 font-medium px-1.5 py-0.5 rounded bg-white/5 border border-white/5">
+            {run.type}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-y-3 gap-x-2">
+          <div>
+            <div className="text-[10px] text-gray-500 font-bold tracking-wider uppercase mb-0.5">
+              KM
+            </div>
+            <div className="text-lg font-bold text-white tabular-nums leading-none">
+              {distanceKm.toFixed(2)}
+            </div>
+          </div>
+          <div>
+            <div className="text-[10px] text-gray-500 font-bold tracking-wider uppercase mb-0.5">
+              Pace
+            </div>
+            <div className="text-lg font-bold text-blue-400 tabular-nums leading-none">
+              {paceText}
+            </div>
+          </div>
+          <div>
+            <div className="text-[10px] text-gray-500 font-bold tracking-wider uppercase mb-0.5">
+              Time
+            </div>
+            <div className="text-lg font-bold text-white tabular-nums leading-none">
+              {formatDuration(seconds)}
+            </div>
+          </div>
+          <div>
+            <div className="text-[10px] text-gray-500 font-bold tracking-wider uppercase mb-0.5">
+              BPM
+            </div>
+            <div className="text-lg font-bold text-red-500 tabular-nums leading-none">
+              {run.average_heartrate?.toFixed(0) || '--'}
+            </div>
+          </div>
+        </div>
+
+        {run.name && (
+          <div className="mt-3 pt-2 border-t border-white/10 text-[10px] text-gray-400 truncate font-medium flex items-center gap-1.5">
+            <span className="w-1 h-1 rounded-full bg-emerald-500/80 shrink-0" />
+            <span className="truncate">{run.name}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 interface RunningChartsProps {
   year: string;
   runs: Activity[];
@@ -120,9 +234,9 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
 
   if (year === 'Total') {
     return (
-      <div className="w-full rounded-card border border-gray-800/50 bg-card p-4 lg:p-5">
+      <div className="w-full rounded-card border border-gray-800/50 bg-card p-2 sm:p-4 lg:p-5 overflow-hidden sm:overflow-visible">
         <div className="flex items-center justify-end mb-3">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center border border-gray-800/50">
             <button
               type="button"
               onClick={() => setSelectedType(RUN_TYPE)}
@@ -161,10 +275,14 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
 
         {totalPolylines.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
-            {totalPolylines.map(({ r, distanceKm, seconds, points, date, paceText }) => (
-              <div key={r.run_id} className="group relative">
+            {totalPolylines.map(({ r, distanceKm, points, date }) => (
+              <ActivityPopover
+                key={r.run_id}
+                title={date}
+                run={r}
+              >
                 <div
-                  className="w-11 h-11 flex items-center justify-center transition border border-gray-800/50 hover:border-gray-700"
+                  className="w-11 h-11 flex items-center justify-center transition "
                 >
                   <svg
                     viewBox="0 0 28 28"
@@ -180,30 +298,7 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
                     />
                   </svg>
                 </div>
-
-                <div className="pointer-events-none absolute z-30 left-1/2 top-full mt-2 w-56 -translate-x-1/2 rounded-md border border-gray-700 bg-gray-900/95 p-2.5 text-[11px] text-primary opacity-0 shadow-xl transition group-hover:opacity-100">
-                  <div className="font-semibold text-white mb-1">{date}</div>
-                  <div className="flex justify-between text-secondary">
-                    <span>Type</span>
-                    <span>{r.type}</span>
-                  </div>
-                  <div className="flex justify-between text-secondary">
-                    <span>Distance</span>
-                    <span>{distanceKm.toFixed(2)} km</span>
-                  </div>
-                  <div className="flex justify-between text-secondary">
-                    <span>Duration</span>
-                    <span>{formatDuration(seconds)}</span>
-                  </div>
-                  <div className="flex justify-between text-secondary">
-                    <span>Pace</span>
-                    <span>{paceText}/km</span>
-                  </div>
-                  <div className="mt-1.5 border-t border-gray-700 pt-1.5 text-secondary truncate">
-                    {r.name || 'Run'}
-                  </div>
-                </div>
-              </div>
+              </ActivityPopover>
             ))}
           </div>
         ) : (
@@ -216,10 +311,10 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
   }
 
   return (
-    <div className="w-full rounded-card border border-gray-800/50 bg-card p-4 lg:p-5">
-      <div className="grid grid-cols-[54px_1fr] gap-3 mb-3">
+    <div className="w-full rounded-card border border-gray-800/50 bg-card p-2 sm:p-4 lg:p-5 overflow-hidden sm:overflow-visible">
+      <div className="grid grid-cols-[32px_1fr] sm:grid-cols-[54px_1fr] gap-2 sm:gap-3 mb-3">
         <div />
-        <div className="grid grid-cols-7 gap-1.5">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1.5">
           {WEEKDAYS.map((label, idx) => (
             <div
               key={`${label}-${idx}`}
@@ -242,11 +337,11 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
           while (cells.length % 7 !== 0) cells.push(null);
 
           return (
-            <div key={monthLabel} className="grid grid-cols-[54px_1fr] gap-3">
-              <div className="pt-1 text-[11px] text-secondary font-semibold select-none">
+            <div key={monthLabel} className="grid grid-cols-[32px_1fr] sm:grid-cols-[54px_1fr] gap-2 sm:gap-3">
+              <div className="pt-1 text-[10px] sm:text-[11px] text-secondary font-semibold select-none">
                 {monthLabel}
               </div>
-              <div className="grid grid-cols-7">
+              <div className="grid grid-cols-7 gap-0.5 sm:gap-1.5">
                 {cells.map((day, cellIndex) => {
                   if (!day) {
                     return (
@@ -279,61 +374,51 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
                       : '-';
 
                   return (
-                    <div key={key} className="group relative">
-                      <div
-                        className={`aspect-square flex items-center justify-center transition ${
-                          dayRuns.length > 0
-                            ? pickCellBgColor(totalDistanceKm)
-                            : 'bg-gray-900/20'
-                        }`}
-                      >
-                        {points ? (
-                          <svg
-                            viewBox="0 0 28 28"
-                            className={`w-[90%] h-[90%] ${pickStrokeColor(totalDistanceKm)}`}
-                          >
-                            <polyline
-                              points={points}
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="0.6"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        ) : (
+                    <div key={key}>
+                       {dayRuns.length > 0 ? (
+                         <ActivityPopover
+                          title={key}
+                          run={primaryRun || dayRuns[0]}
+                          totalDistanceKm={totalDistanceKm}
+                          totalSeconds={totalSeconds}
+                        >
+                           <div
+                             className={`aspect-square flex items-center justify-center transition ${
+                               dayRuns.length > 0
+                                 ? pickCellBgColor(totalDistanceKm)
+                                 : 'bg-gray-900/20'
+                             }`}
+                           >
+                            {points ? (
+                              <svg
+                                viewBox="0 0 28 28"
+                                className={`w-[90%] h-[90%] ${pickStrokeColor(totalDistanceKm)}`}
+                              >
+                                <polyline
+                                  points={points}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="0.6"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            ) : (
+                              <span className="text-[10px] text-secondary tabular-nums">
+                                {day}
+                              </span>
+                            )}
+                          </div>
+                        </ActivityPopover>
+                      ) : (
+                        <div
+                          className={`aspect-square flex items-center justify-center transition bg-gray-900/20`}
+                        >
                           <span className="text-[10px] text-secondary tabular-nums">
                             {day}
                           </span>
-                        )}
-                      </div>
-
-                      {dayRuns.length > 0 ? (
-                        <div className="pointer-events-none absolute z-30 left-1/2 top-full mt-2 w-56 -translate-x-1/2 rounded-md border border-gray-700 bg-gray-900/95 p-2.5 text-[11px] text-primary opacity-0 shadow-xl transition group-hover:opacity-100">
-                          <div className="font-semibold text-white mb-1">{key}</div>
-                          <div className="flex justify-between text-secondary">
-                            <span>Runs</span>
-                            <span>{dayRuns.length}</span>
-                          </div>
-                          <div className="flex justify-between text-secondary">
-                            <span>Distance</span>
-                            <span>{totalDistanceKm.toFixed(2)} km</span>
-                          </div>
-                          <div className="flex justify-between text-secondary">
-                            <span>Duration</span>
-                            <span>{formatDuration(totalSeconds)}</span>
-                          </div>
-                          <div className="flex justify-between text-secondary">
-                            <span>Pace</span>
-                            <span>{paceText}/km</span>
-                          </div>
-                          {primaryRun ? (
-                            <div className="mt-1.5 border-t border-gray-700 pt-1.5 text-secondary truncate">
-                              {primaryRun.name || 'Run'}
-                            </div>
-                          ) : null}
                         </div>
-                      ) : null}
+                      )}
                     </div>
                   );
                 })}
