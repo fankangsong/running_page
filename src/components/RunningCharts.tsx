@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState } from 'react';
 import ActivityIcon from '@/components/ActivityIcon';
 import {
   Activity,
@@ -12,6 +12,12 @@ import {
   sortDateFunc,
   WALK_TYPE,
 } from '@/utils/utils';
+import {
+  ActivityPopoverProvider,
+  ActivityPopover,
+  useHoverActivity,
+  ActivityData,
+} from '@/components/ActivityPopover';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTHS = [
@@ -61,14 +67,6 @@ const computePolylinePoints = (
     .join(' ');
 };
 
-const formatDuration = (seconds: number) => {
-  if (!seconds) return '0m';
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
-};
-
 const pickStrokeColor = (distanceKm: number) => {
   if (distanceKm <= 5) return 'text-sky-400';
   if (distanceKm <= 10) return 'text-emerald-400';
@@ -83,116 +81,223 @@ const pickCellBgColor = (distanceKm: number) => {
   return 'bg-rose-500/10 hover:bg-rose-500/15';
 };
 
-const ActivityPopover = ({
-  title,
-  run,
-  totalDistanceKm,
-  totalSeconds,
-  children,
-  className = '',
-}: {
-  title: string;
-  run: Activity;
-  totalDistanceKm?: number;
-  totalSeconds?: number;
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [posClass, setPosClass] = useState('left-1/2 -translate-x-1/2');
+interface TotalRunItemProps {
+  r: Activity;
+  distanceKm: number;
+  points: string;
+  date: string;
+}
 
-  const updatePosition = () => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const screenW = window.innerWidth;
-    const POPOVER_WIDTH = 224; // w-56 is 14rem = 224px
+const TotalRunItem = ({ r, distanceKm, points, date }: TotalRunItemProps) => {
+  const activityData: ActivityData = useMemo(
+    () => ({
+      title: date,
+      run: r,
+      totalDistanceKm: distanceKm,
+      totalSeconds: convertMovingTime2Sec(r.moving_time),
+    }),
+    [r, distanceKm, date]
+  );
 
-    if (rect.left < POPOVER_WIDTH / 2) {
-      setPosClass('left-0');
-    } else if (screenW - rect.right < POPOVER_WIDTH / 2) {
-      setPosClass('right-0');
-    } else {
-      setPosClass('left-1/2 -translate-x-1/2');
-    }
-  };
-
-  const handleMouseEnter = () => updatePosition();
-  const handleTouchStart = () => updatePosition();
-  const handleClick = () => updatePosition();
-
-  const distanceKm = totalDistanceKm ?? run.distance / 1000;
-  const seconds = totalSeconds ?? convertMovingTime2Sec(run.moving_time);
-  const paceText =
-    distanceKm > 0
-      ? formatPace((distanceKm * 1000) / Math.max(1, seconds))
-      : '-';
+  const { onMouseEnter, onMouseLeave } = useHoverActivity(activityData);
 
   return (
     <div
-      ref={containerRef}
-      className={`group relative ${className}`}
-      onMouseEnter={handleMouseEnter}
-      onTouchStart={handleTouchStart}
-      onClick={handleClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      className="w-11 h-11 flex items-center justify-center transition "
     >
-      {children}
-      <div
-        className={`pointer-events-none absolute z-50 top-full mt-2 w-[220px] 
-        rounded-xl border border-white/10 bg-gray-900/95 backdrop-blur-md p-3 
-        shadow-2xl shadow-black/50 transition-all duration-200 ease-out 
-        opacity-0 translate-y-1 scale-95 group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 ${posClass}`}
+      <svg
+        viewBox="0 0 28 28"
+        className={`w-[90%] h-[90%] ${pickStrokeColor(distanceKm)}`}
       >
-        <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
-          <span className="font-bold text-white text-xs tracking-wide">
-            {title}
-          </span>
-          <span className="text-[10px] text-gray-400 font-medium px-1.5 py-0.5 rounded bg-white/5 border border-white/5">
-            {run.type}
-          </span>
-        </div>
+        <polyline
+          points={points}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="0.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </div>
+  );
+};
 
-        <div className="grid grid-cols-2 gap-y-3 gap-x-2">
-          <div>
-            <div className="text-[10px] text-gray-500 font-bold tracking-wider uppercase mb-0.5">
-              KM
-            </div>
-            <div className="text-lg font-bold text-white tabular-nums leading-none">
-              {distanceKm.toFixed(2)}
-            </div>
-          </div>
-          <div>
-            <div className="text-[10px] text-gray-500 font-bold tracking-wider uppercase mb-0.5">
-              Pace
-            </div>
-            <div className="text-lg font-bold text-blue-400 tabular-nums leading-none">
-              {paceText}
-            </div>
-          </div>
-          <div>
-            <div className="text-[10px] text-gray-500 font-bold tracking-wider uppercase mb-0.5">
-              Time
-            </div>
-            <div className="text-lg font-bold text-white tabular-nums leading-none">
-              {formatDuration(seconds)}
-            </div>
-          </div>
-          <div>
-            <div className="text-[10px] text-gray-500 font-bold tracking-wider uppercase mb-0.5">
-              BPM
-            </div>
-            <div className="text-lg font-bold text-red-500 tabular-nums leading-none">
-              {run.average_heartrate?.toFixed(0) || '--'}
-            </div>
-          </div>
-        </div>
+interface PBMap {
+  best5k?: Activity;
+  best10k?: Activity;
+  bestHalf?: Activity;
+  bestFull?: Activity;
+  longest?: Activity;
+}
 
-        {run.name && (
-          <div className="mt-3 pt-2 border-t border-white/10 text-[10px] text-gray-400 truncate font-medium flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-emerald-500/80 shrink-0" />
-            <span className="truncate">{run.name}</span>
-          </div>
-        )}
-      </div>
+const getBestRun = (runs: Activity[], minDist: number, maxDist: number) => {
+  const candidates = runs.filter(
+    (r) => r.distance / 1000 >= minDist && r.distance / 1000 <= maxDist
+  );
+  if (candidates.length === 0) return undefined;
+  // Sort by average speed (fastest first)
+  return candidates.sort((a, b) => b.average_speed - a.average_speed)[0];
+};
+
+const getLongestRun = (runs: Activity[]) => {
+  if (runs.length === 0) return undefined;
+  return runs.sort((a, b) => b.distance - a.distance)[0];
+};
+
+// Material Icons for PB
+const PBIcon = ({ icon, color }: { icon: string; color: string }) => (
+  <div className={`absolute -top-1.5 -right-1.5 z-10 flex h-4 w-4 items-center justify-center rounded-full ${color} ring-1 ring-gray-900 shadow-sm`}>
+    <span className="material-icons text-white leading-none" style={{ fontSize: '10px' }}>{icon}</span>
+  </div>
+);
+
+interface DayCellProps {
+  day: number | null;
+  monthLabel: string;
+  cellIndex: number;
+  year: string;
+  month: number;
+  runsByDate: Record<string, Activity[]>;
+  pbMap: PBMap;
+}
+
+const DayCell = ({
+  day,
+  monthLabel,
+  cellIndex,
+  year,
+  month,
+  runsByDate,
+  pbMap,
+}: DayCellProps) => {
+  if (!day) {
+    return <div className="aspect-square" />;
+  }
+
+  const key = dateKey(year, month, day);
+  const dayRuns = runsByDate[key] ?? [];
+
+  const totalDistanceKm =
+    dayRuns.reduce((sum, run) => sum + run.distance, 0) / 1000;
+  const totalSeconds = dayRuns.reduce(
+    (sum, run) => sum + convertMovingTime2Sec(run.moving_time),
+    0
+  );
+  const outdoorRuns = dayRuns.filter((r) => !!r.summary_polyline);
+  const primaryRun =
+    outdoorRuns.sort((a, b) => b.distance - a.distance)[0] || dayRuns[0];
+  const points = primaryRun
+    ? computePolylinePoints(pathForRun(primaryRun))
+    : '';
+
+  // Check for PB
+  let pbIcon = null;
+  let pbColor = '';
+  let achievement = undefined;
+
+  if (primaryRun) {
+    if (primaryRun.run_id === pbMap.best5k?.run_id) {
+      pbIcon = 'emoji_events';
+      pbColor = 'bg-emerald-500';
+      achievement = {
+        label: '5k',
+        description: 'Best 5K of the Year',
+        icon: 'emoji_events',
+        colorClass: 'text-emerald-400',
+      };
+    } else if (primaryRun.run_id === pbMap.best10k?.run_id) {
+      pbIcon = 'emoji_events';
+      pbColor = 'bg-blue-500';
+      achievement = {
+        label: '10k',
+        description: 'Best 10K of the Year',
+        icon: 'emoji_events',
+        colorClass: 'text-blue-400',
+      };
+    } else if (primaryRun.run_id === pbMap.bestHalf?.run_id) {
+      pbIcon = 'emoji_events';
+      pbColor = 'bg-purple-500';
+      achievement = {
+        label: 'Half',
+        description: 'Best Half Marathon of the Year',
+        icon: 'emoji_events',
+        colorClass: 'text-purple-400',
+      };
+    } else if (primaryRun.run_id === pbMap.bestFull?.run_id) {
+      pbIcon = 'emoji_events';
+      pbColor = 'bg-rose-500';
+      achievement = {
+        label: 'Full',
+        description: 'Best Marathon of the Year',
+        icon: 'emoji_events',
+        colorClass: 'text-rose-400',
+      };
+    } else if (primaryRun.run_id === pbMap.longest?.run_id) {
+       // Only show longest if not already a PB
+       pbIcon = 'flag';
+       pbColor = 'bg-amber-500';
+       achievement = {
+        label: 'Longest',
+        description: 'Longest Run of the Year',
+        icon: 'flag',
+        colorClass: 'text-amber-400',
+      };
+    }
+  }
+
+  const activityData: ActivityData | null = useMemo(() => {
+    if (dayRuns.length === 0) return null;
+    return {
+      title: key,
+      run: primaryRun,
+      totalDistanceKm,
+      totalSeconds,
+      achievement,
+    };
+  }, [dayRuns, key, primaryRun, totalDistanceKm, totalSeconds, achievement]);
+
+  const { onMouseEnter, onMouseLeave } = useHoverActivity(activityData);
+
+  return (
+    <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} className="relative">
+      {dayRuns.length > 0 ? (
+        <div
+          className={`aspect-square flex items-center justify-center transition relative ${
+            dayRuns.length > 0
+              ? pickCellBgColor(totalDistanceKm)
+              : 'bg-gray-900/20'
+          }`}
+        >
+          {pbIcon && <PBIcon icon={pbIcon} color={pbColor} />}
+          {points ? (
+            <svg
+              viewBox="0 0 28 28"
+              className={`w-[90%] h-[90%] ${pickStrokeColor(totalDistanceKm)}`}
+            >
+              <polyline
+                points={points}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="0.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          ) : (
+            <span className="text-[10px] text-secondary tabular-nums">
+              {day}
+            </span>
+          )}
+        </div>
+      ) : (
+        <div
+          className={`aspect-square flex items-center justify-center transition bg-gray-900/20`}
+        >
+          <span className="text-[10px] text-secondary tabular-nums">{day}</span>
+        </div>
+      )}
     </div>
   );
 };
@@ -202,7 +307,7 @@ interface RunningChartsProps {
   runs: Activity[];
 }
 
-const RunningCharts = ({ year, runs }: RunningChartsProps) => {
+const RunningChartsContent = ({ year, runs }: RunningChartsProps) => {
   const [selectedType, setSelectedType] = useState(RUN_TYPE);
 
   const totalPolylines = useMemo(() => {
@@ -216,11 +321,7 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
         const points = computePolylinePoints(pathForRun(r));
         if (!points) return null;
         const date = r.start_date_local?.slice(0, 10) ?? '';
-        const paceText =
-          distanceKm > 0
-            ? formatPace((distanceKm * 1000) / Math.max(1, seconds))
-            : '-';
-        return { r, distanceKm, seconds, points, date, paceText };
+        return { r, distanceKm, seconds, points, date };
       })
       .filter((v) => !!v);
   }, [runs, selectedType]);
@@ -232,41 +333,58 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
 
   const runsByDate = useMemo(() => groupRunsByDate(yearRuns), [yearRuns]);
 
+  // Calculate PBs for the current year
+  const pbMap: PBMap = useMemo(() => {
+    if (year === 'Total') return {};
+    const runActivities = yearRuns.filter(r => r.type === RUN_TYPE); // Only consider runs for PBs
+    return {
+      best5k: getBestRun(runActivities, 5, 5.5),
+      best10k: getBestRun(runActivities, 10, 10.5),
+      bestHalf: getBestRun(runActivities, 21.0975, 21.5),
+      bestFull: getBestRun(runActivities, 42.195, 42.5),
+      longest: getLongestRun(runActivities),
+    };
+  }, [yearRuns, year]);
+
+
   if (year === 'Total') {
     return (
       <div className="w-full rounded-card border border-gray-800/50 bg-card p-2 sm:p-4 lg:p-5 overflow-hidden sm:overflow-visible">
         <div className="flex items-center justify-end mb-3">
-          <div className="flex items-center border border-gray-800/50">
+          <div className="flex items-center bg-gray-900/50 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden">
             <button
               type="button"
               onClick={() => setSelectedType(RUN_TYPE)}
-              className={`p-1.5 rounded-md transition ${
+              className={`p-2 transition-all duration-200 relative ${
                 selectedType === RUN_TYPE
-                  ? 'bg-gray-800 text-primary'
-                  : 'text-secondary hover:bg-gray-800/60 hover:text-primary'
+                  ? 'bg-gray-700/80 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
+              title="Run"
             >
               <ActivityIcon type={RUN_TYPE} />
             </button>
             <button
               type="button"
               onClick={() => setSelectedType(HIKE_TYPE)}
-              className={`p-1.5 rounded-md transition ${
+              className={`p-2 transition-all duration-200 relative ${
                 selectedType === HIKE_TYPE
-                  ? 'bg-gray-800 text-primary'
-                  : 'text-secondary hover:bg-gray-800/60 hover:text-primary'
+                  ? 'bg-gray-700/80 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
+              title="Hike"
             >
               <ActivityIcon type={HIKE_TYPE} />
             </button>
             <button
               type="button"
               onClick={() => setSelectedType(WALK_TYPE)}
-              className={`p-1.5 rounded-md transition ${
+              className={`p-2 transition-all duration-200 relative ${
                 selectedType === WALK_TYPE
-                  ? 'bg-gray-800 text-primary'
-                  : 'text-secondary hover:bg-gray-800/60 hover:text-primary'
+                  ? 'bg-gray-700/80 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
+              title="Walk"
             >
               <ActivityIcon type={WALK_TYPE} />
             </button>
@@ -276,29 +394,13 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
         {totalPolylines.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {totalPolylines.map(({ r, distanceKm, points, date }) => (
-              <ActivityPopover
+              <TotalRunItem
                 key={r.run_id}
-                title={date}
-                run={r}
-              >
-                <div
-                  className="w-11 h-11 flex items-center justify-center transition "
-                >
-                  <svg
-                    viewBox="0 0 28 28"
-                    className={`w-[90%] h-[90%] ${pickStrokeColor(distanceKm)}`}
-                  >
-                    <polyline
-                      points={points}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="0.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-              </ActivityPopover>
+                r={r}
+                distanceKm={distanceKm}
+                points={points}
+                date={date}
+              />
             ))}
           </div>
         ) : (
@@ -337,91 +439,26 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
           while (cells.length % 7 !== 0) cells.push(null);
 
           return (
-            <div key={monthLabel} className="grid grid-cols-[32px_1fr] sm:grid-cols-[54px_1fr] gap-2 sm:gap-3">
+            <div
+              key={monthLabel}
+              className="grid grid-cols-[32px_1fr] sm:grid-cols-[54px_1fr] gap-2 sm:gap-3"
+            >
               <div className="pt-1 text-[10px] sm:text-[11px] text-secondary font-semibold select-none">
                 {monthLabel}
               </div>
               <div className="grid grid-cols-7 gap-0.5 sm:gap-1.5">
-                {cells.map((day, cellIndex) => {
-                  if (!day) {
-                    return (
-                      <div
-                        key={`${monthLabel}-empty-${cellIndex}`}
-                        className="aspect-square"
-                      />
-                    );
-                  }
-                  const key = dateKey(year, month, day);
-                  const dayRuns = runsByDate[key] ?? [];
-                  const totalDistanceKm =
-                    dayRuns.reduce((sum, run) => sum + run.distance, 0) / 1000;
-                  const totalSeconds = dayRuns.reduce(
-                    (sum, run) => sum + convertMovingTime2Sec(run.moving_time),
-                    0
-                  );
-                  const outdoorRuns = dayRuns.filter((r) => !!r.summary_polyline);
-                  const primaryRun =
-                    outdoorRuns.sort((a, b) => b.distance - a.distance)[0] ||
-                    dayRuns[0];
-                  const points = primaryRun
-                    ? computePolylinePoints(pathForRun(primaryRun))
-                    : '';
-                  const paceText =
-                    totalDistanceKm > 0
-                      ? formatPace(
-                          (totalDistanceKm * 1000) / Math.max(1, totalSeconds)
-                        )
-                      : '-';
-
-                  return (
-                    <div key={key}>
-                       {dayRuns.length > 0 ? (
-                         <ActivityPopover
-                          title={key}
-                          run={primaryRun || dayRuns[0]}
-                          totalDistanceKm={totalDistanceKm}
-                          totalSeconds={totalSeconds}
-                        >
-                           <div
-                             className={`aspect-square flex items-center justify-center transition ${
-                               dayRuns.length > 0
-                                 ? pickCellBgColor(totalDistanceKm)
-                                 : 'bg-gray-900/20'
-                             }`}
-                           >
-                            {points ? (
-                              <svg
-                                viewBox="0 0 28 28"
-                                className={`w-[90%] h-[90%] ${pickStrokeColor(totalDistanceKm)}`}
-                              >
-                                <polyline
-                                  points={points}
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="0.6"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            ) : (
-                              <span className="text-[10px] text-secondary tabular-nums">
-                                {day}
-                              </span>
-                            )}
-                          </div>
-                        </ActivityPopover>
-                      ) : (
-                        <div
-                          className={`aspect-square flex items-center justify-center transition bg-gray-900/20`}
-                        >
-                          <span className="text-[10px] text-secondary tabular-nums">
-                            {day}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                {cells.map((day, cellIndex) => (
+                  <DayCell
+                    key={`${monthLabel}-${cellIndex}`}
+                    day={day}
+                    monthLabel={monthLabel}
+                    cellIndex={cellIndex}
+                    year={year}
+                    month={month}
+                    runsByDate={runsByDate}
+                    pbMap={pbMap}
+                  />
+                ))}
               </div>
             </div>
           );
@@ -430,5 +467,12 @@ const RunningCharts = ({ year, runs }: RunningChartsProps) => {
     </div>
   );
 };
+
+const RunningCharts = (props: RunningChartsProps) => (
+  <ActivityPopoverProvider>
+    <RunningChartsContent {...props} />
+    <ActivityPopover />
+  </ActivityPopoverProvider>
+);
 
 export default RunningCharts;
