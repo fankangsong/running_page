@@ -28,10 +28,7 @@ const StatItem = ({
   onClick,
   className = '',
 }: StatItemProps) => (
-  <div
-    className={`flex flex-col gap-1 ${className}`}
-    onClick={onClick}
-  >
+  <div className={`flex flex-col gap-1 ${className}`} onClick={onClick}>
     <div className="flex items-center gap-2 mb-1">
       <div
         className={`w-6 h-6 rounded-full bg-gray-800/50 flex items-center justify-center shrink-0 ${iconColorClass}`}
@@ -131,7 +128,9 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
     return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
   };
 
-  const getPB = (targetMeters: number): { pace: string; time: string; date: string; run: Activity | null } => {
+  const getPB = (
+    targetMeters: number
+  ): { pace: string; time: string; date: string; run: Activity | null } => {
     let bestSeconds = Infinity;
     let bestPace = '--';
     let bestDate = '';

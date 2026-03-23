@@ -156,8 +156,12 @@ const RunDetailPanel = ({
                   opacity: isHighlighted ? 1 : 0.22,
                 }}
               >
-                <div className="text-[10px] font-black text-black/85">Z{zone.zone}</div>
-                <div className="text-[9px] leading-4 text-black/75">{zone.label}</div>
+                <div className="text-[10px] font-black text-black/85">
+                  Z{zone.zone}
+                </div>
+                <div className="text-[9px] leading-4 text-black/75">
+                  {zone.label}
+                </div>
                 {isHighlighted && currentHeartRate !== null ? (
                   <div className="mt-1 text-[10px] font-black text-black">
                     {/* {currentHeartRate} bpm */}

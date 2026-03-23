@@ -1,10 +1,13 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Activity,
   Coordinate,
-  formatPace,
   convertMovingTime2Sec,
+  formatPace,
   pathForRun,
+  RUN_TYPE,
+  sortDateFunc,
   scrollToMap,
 } from '@/utils/utils';
 import ActivityIcon from '@/components/ActivityIcon';
@@ -18,13 +21,50 @@ const monthLabel = (month: number) => pad2(month);
 const dayKey = (year: string, month: number, day: number) =>
   `${year}-${pad2(month)}-${pad2(day)}`;
 
-const pickOutdoorRun = (runs: Activity[]) => {
-  const outdoor = runs.filter((r) => !!r.summary_polyline);
-  if (!outdoor.length) return null;
-  return outdoor.reduce(
-    (best, r) => (r.distance > best.distance ? r : best),
-    outdoor[0]
-  );
+const WALK_LIKE_TYPES = new Set(['Hike', 'Walk']);
+
+const ACTIVITY_TYPE_DISPLAY_NAMES: Record<string, string> = {
+  Run: 'Running',
+  Walk: 'Walking',
+  Hike: 'Hiking',
+  Ride: 'Cycling',
+  VirtualRide: 'Virtual Cycling',
+  EBikeRide: 'E-Bike Cycling',
+  Swim: 'Swimming',
+  Workout: 'Workout',
+};
+
+const getDisplayType = (type: string) => ACTIVITY_TYPE_DISPLAY_NAMES[type] || type;
+
+const getSwitchableRuns = (runs: Activity[]) => {
+  const polylineRuns = runs.filter((r) => !!r.summary_polyline);
+  if (polylineRuns.length < 2) return [];
+  const typeSet = new Set(polylineRuns.map((r) => r.type));
+  if (typeSet.size < 2) return [];
+  return [...polylineRuns].sort(sortDateFunc);
+};
+
+const displayPriorityForActivity = (run: Activity) => {
+  const hasPolyline = !!run.summary_polyline;
+  if (run.type === RUN_TYPE && hasPolyline) return 0;
+  if (WALK_LIKE_TYPES.has(run.type) && hasPolyline) return 1;
+  if (run.type === RUN_TYPE && !hasPolyline) return 2;
+  if (hasPolyline) return 3;
+  return 4;
+};
+
+const sortActivitiesByDisplayPriority = (runs: Activity[]) =>
+  [...runs].sort((a, b) => {
+    const priorityDiff =
+      displayPriorityForActivity(a) - displayPriorityForActivity(b);
+    if (priorityDiff !== 0) return priorityDiff;
+    if (b.distance !== a.distance) return b.distance - a.distance;
+    return sortDateFunc(a, b);
+  });
+
+const pickDefaultRun = (runs: Activity[]) => {
+  if (!runs.length) return undefined;
+  return sortActivitiesByDisplayPriority(runs)[0];
 };
 
 const computePolylinePoints = (
@@ -58,6 +98,106 @@ const computePolylinePoints = (
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(' ');
+};
+
+const typeStrokeClass = (type: string) => {
+  if (type === RUN_TYPE) return 'text-emerald-400';
+  if (type === 'Hike') return 'text-amber-400';
+  if (type === 'Walk') return 'text-sky-400';
+  if (type === 'Ride' || type === 'VirtualRide' || type === 'EBikeRide') {
+    return 'text-violet-400';
+  }
+  return 'text-gray-300';
+};
+
+const typeTextClass = (type: string) => {
+  if (type === RUN_TYPE) return 'text-emerald-300';
+  if (type === 'Hike') return 'text-amber-300';
+  if (type === 'Walk') return 'text-sky-300';
+  if (type === 'Ride' || type === 'VirtualRide' || type === 'EBikeRide') {
+    return 'text-violet-300';
+  }
+  return 'text-gray-200';
+};
+
+// eslint-disable-next-line no-unused-vars
+const formatDuration = (seconds: number) => {
+  if (!seconds) return '0m';
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+};
+
+interface TypeGroupedRuns {
+  type: string;
+  runs: Activity[];
+  totalDistanceKm: number;
+  totalSeconds: number;
+  paceText: string;
+  avgHeartrate: number | null;
+  hasPolyline: boolean;
+}
+
+const buildTypeGroupedRuns = (runs: Activity[]): TypeGroupedRuns[] => {
+  const grouped = new Map<string, Activity[]>();
+  runs.forEach((run) => {
+    const prev = grouped.get(run.type) ?? [];
+    prev.push(run);
+    grouped.set(run.type, prev);
+  });
+
+  const summaries = [...grouped.entries()].map(([type, typeRuns]) => {
+    const totalDistanceKm =
+      typeRuns.reduce((sum, run) => sum + run.distance, 0) / 1000;
+    const totalSeconds = typeRuns.reduce(
+      (sum, run) => sum + convertMovingTime2Sec(run.moving_time),
+      0
+    );
+    const paceText =
+      totalDistanceKm > 0
+        ? formatPace((totalDistanceKm * 1000) / Math.max(1, totalSeconds))
+        : '-';
+
+    let heartrateSum = 0;
+    let heartrateSeconds = 0;
+    typeRuns.forEach((run) => {
+      const heartrate = run.average_heartrate;
+      if (typeof heartrate === 'number' && Number.isFinite(heartrate)) {
+        const seconds = Math.max(1, convertMovingTime2Sec(run.moving_time));
+        heartrateSum += heartrate * seconds;
+        heartrateSeconds += seconds;
+      }
+    });
+    const avgHeartrate =
+      heartrateSeconds > 0 ? heartrateSum / heartrateSeconds : null;
+    const hasPolyline = typeRuns.some((run) => !!run.summary_polyline);
+
+    return {
+      type,
+      runs: sortActivitiesByDisplayPriority(typeRuns),
+      totalDistanceKm,
+      totalSeconds,
+      paceText,
+      avgHeartrate,
+      hasPolyline,
+    };
+  });
+
+  return summaries.sort((a, b) => {
+    const mockA = {
+      type: a.type,
+      summary_polyline: a.hasPolyline,
+    } as Activity;
+    const mockB = {
+      type: b.type,
+      summary_polyline: b.hasPolyline,
+    } as Activity;
+    const priorityDiff =
+      displayPriorityForActivity(mockA) - displayPriorityForActivity(mockB);
+    if (priorityDiff !== 0) return priorityDiff;
+    return b.totalDistanceKm - a.totalDistanceKm;
+  });
 };
 
 const ArrowIcon = ({ dir }: { dir: 'left' | 'right' }) => (
@@ -104,12 +244,29 @@ const CompactRunCalendar = ({
 }: CompactRunCalendarProps) => {
   const [selectedKey, setSelectedKey] = useState<string>(selectedDate || '');
   const [animKey, setAnimKey] = useState(0);
+  const [hoveredKey, setHoveredKey] = useState('');
+  const [popoverPos, setPopoverPos] = useState<{
+    left: number;
+    top: number;
+    placement: 'top' | 'bottom';
+  } | null>(null);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cellRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const popoverRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (selectedDate) {
       setSelectedKey(selectedDate);
     }
   }, [selectedDate]);
+
+  useEffect(() => {
+    return () => {
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+      }
+    };
+  }, []);
 
   const triggerAnim = () => {
     setAnimKey((prev) => prev + 1);
@@ -159,6 +316,72 @@ const CompactRunCalendar = ({
     return arr;
   }, [daysInMonth, firstDayOffset]);
 
+  const hoveredRuns = hoveredKey ? runsByDate[hoveredKey] ?? [] : [];
+  const hoveredTypeGroups = useMemo(
+    () => buildTypeGroupedRuns(hoveredRuns),
+    [hoveredRuns]
+  );
+
+  const hidePopover = useCallback(() => {
+    setHoveredKey('');
+    setPopoverPos(null);
+  }, []);
+
+  const scheduleHidePopover = useCallback(() => {
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+    }
+    hideTimerRef.current = setTimeout(() => {
+      hidePopover();
+    }, 140);
+  }, [hidePopover]);
+
+  const syncPopoverPosition = useCallback((key: string) => {
+    const anchor = cellRefs.current[key];
+    if (!anchor) return;
+    const rect = anchor.getBoundingClientRect();
+    const width = popoverRef.current?.offsetWidth ?? 260;
+    const height = popoverRef.current?.offsetHeight ?? 150;
+    const viewportPadding = 8;
+
+    let left = rect.left + rect.width / 2 - width / 2;
+    left = Math.max(
+      viewportPadding,
+      Math.min(left, window.innerWidth - width - viewportPadding)
+    );
+
+    let top = rect.bottom + 8;
+    let placement: 'top' | 'bottom' = 'bottom';
+    if (top + height > window.innerHeight - viewportPadding) {
+      top = Math.max(viewportPadding, rect.top - height - 8);
+      placement = 'top';
+    }
+    setPopoverPos({ left, top, placement });
+  }, []);
+
+  const showPopover = useCallback(
+    (key: string) => {
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+      }
+      setHoveredKey(key);
+      syncPopoverPosition(key);
+    },
+    [syncPopoverPosition]
+  );
+
+  useEffect(() => {
+    if (!hoveredKey) return;
+    syncPopoverPosition(hoveredKey);
+    const onViewportChange = () => syncPopoverPosition(hoveredKey);
+    window.addEventListener('resize', onViewportChange);
+    window.addEventListener('scroll', onViewportChange, true);
+    return () => {
+      window.removeEventListener('resize', onViewportChange);
+      window.removeEventListener('scroll', onViewportChange, true);
+    };
+  }, [hoveredKey, syncPopoverPosition]);
+
   const handlePrevYear = () => {
     onChangeYearMonth(olderYear, month);
     setSelectedKey('');
@@ -193,11 +416,19 @@ const CompactRunCalendar = ({
     setSelectedKey('');
   };
 
-  const handleSelectDay = (day: number) => {
+  const handleSelectRunTypeGroup = (key: string, groupedRuns: Activity[]) => {
+    setSelectedKey(key);
+    onSelectRunIds?.(groupedRuns.map((run) => run.run_id));
+    scrollToMap();
+    hidePopover();
+  };
+
+  const handleSelectDay = (day: number, disableMapUpdate: boolean) => {
     const key = dayKey(year, month, day);
     setSelectedKey(key);
     const dayRuns = runsByDate[key] ?? [];
     if (!dayRuns.length) return;
+    if (disableMapUpdate) return;
     onSelectRunIds?.(dayRuns.map((r) => r.run_id));
     scrollToMap();
   };
@@ -280,28 +511,38 @@ const CompactRunCalendar = ({
 
           const key = dayKey(year, month, c.day);
           const dayRuns = runsByDate[key] ?? [];
-          // If multiple runs, prefer outdoor run for polyline
-          const outdoorRun = pickOutdoorRun(dayRuns);
-          // Prefer run with polyline, then any run
-          const primaryRun = outdoorRun || dayRuns[0];
+          const switchableRuns = getSwitchableRuns(dayRuns);
+          const isMultiSportSwitchable = switchableRuns.length > 0;
+          const hasMultiActivities = dayRuns.length > 1;
+          const defaultRun = pickDefaultRun(dayRuns);
+          const primaryRun = defaultRun || dayRuns[0];
 
-          const hasIndoor = dayRuns.some((r) => !r.summary_polyline);
-          const polylineSvgPoints = outdoorRun
-            ? computePolylinePoints(pathForRun(outdoorRun), 36, 4)
-            : '';
+          const primaryPolylinePoints =
+            primaryRun && primaryRun.summary_polyline
+              ? computePolylinePoints(pathForRun(primaryRun), 36, 4)
+              : '';
 
           const isSelected = selectedKey === key;
           const isClickable = dayRuns.length > 0;
-          const hasVisual = Boolean(polylineSvgPoints) || !!primaryRun;
+          const hasVisual = Boolean(primaryPolylinePoints) || !!primaryRun;
 
           return (
             <div
               key={key}
               className="relative"
+              ref={(node) => {
+                cellRefs.current[key] = node;
+              }}
+              onMouseEnter={() => {
+                if (hasMultiActivities) {
+                  showPopover(key);
+                }
+              }}
+              onMouseLeave={scheduleHidePopover}
             >
               <button
                 type="button"
-                onClick={() => handleSelectDay(c.day)}
+                onClick={() => handleSelectDay(c.day, isMultiSportSwitchable)}
                 className={`w-full aspect-square rounded-md relative overflow-hidden flex items-stretch justify-stretch transition ${
                   isSelected
                     ? 'bg-gray-700 shadow-inner'
@@ -311,13 +552,13 @@ const CompactRunCalendar = ({
                 }`}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
-                  {polylineSvgPoints ? (
+                  {primaryPolylinePoints ? (
                     <svg
                       viewBox="0 0 36 36"
-                      className="w-[28px] h-[28px] text-accent"
+                      className={`w-[28px] h-[28px] ${typeStrokeClass(primaryRun?.type || '')}`}
                     >
                       <polyline
-                        points={polylineSvgPoints}
+                        points={primaryPolylinePoints}
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
@@ -327,7 +568,7 @@ const CompactRunCalendar = ({
                       />
                     </svg>
                   ) : primaryRun ? (
-                    <div className="text-yellow-400">
+                    <div className={typeStrokeClass(primaryRun.type)}>
                       <ActivityIcon size={22} type={primaryRun.type} />
                     </div>
                   ) : null}
@@ -339,16 +580,67 @@ const CompactRunCalendar = ({
                   </div>
                 ) : null}
 
-                {polylineSvgPoints && hasIndoor ? (
-                  <div className="absolute bottom-0.5 left-0.5 text-yellow-400 opacity-90">
-                    <ActivityIcon size={22} type={primaryRun?.type} />
-                  </div>
-                ) : null}
               </button>
             </div>
           );
         })}
       </div>
+      {hoveredKey && popoverPos
+        ? createPortal(
+            <div
+              ref={popoverRef}
+              style={{
+                left: `${popoverPos.left}px`,
+                top: `${popoverPos.top}px`,
+              }}
+              className={`fixed z-[70] w-[200px] rounded-xl border border-gray-700/80 bg-gray-900/95 p-2 shadow-2xl backdrop-blur-md animate-[fadeIn_0.2s_ease-out] ${
+                popoverPos.placement === 'bottom'
+                  ? 'origin-top'
+                  : 'origin-bottom'
+              }`}
+              onMouseEnter={() => {
+                if (hideTimerRef.current) {
+                  clearTimeout(hideTimerRef.current);
+                }
+              }}
+              onMouseLeave={scheduleHidePopover}
+            >
+              <div className="flex flex-col gap-1">
+                {hoveredTypeGroups.map((group) => (
+                  <button
+                    key={`${hoveredKey}-${group.type}`}
+                    type="button"
+                    onClick={() => handleSelectRunTypeGroup(hoveredKey, group.runs)}
+                    className="rounded-lg border border-transparent bg-gray-900/20 px-2 py-1.5 text-left transition hover:border-gray-700/80 hover:bg-gray-800/70"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <ActivityIcon size={20} type={group.type} />
+                        <span
+                          className={`truncate text-[12px] font-semibold ${typeTextClass(group.type)}`}
+                        >
+                          {getDisplayType(group.type)}
+                        </span>
+                      </span>
+                      <span
+                        className={`tabular-nums text-sm font-bold ${typeStrokeClass(group.type)}`}
+                      >
+                        {group.totalDistanceKm.toFixed(1)} KM
+                      </span>
+                    </div>
+                    {/* <div className="mt-0.5 pl-5 text-[10px] tabular-nums text-gray-400">
+                      {group.paceText} · {formatDuration(group.totalSeconds)} ·{' '}
+                      {group.avgHeartrate
+                        ? `${group.avgHeartrate.toFixed(0)}bpm`
+                        : '--'}
+                    </div> */}
+                  </button>
+                ))}
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 };

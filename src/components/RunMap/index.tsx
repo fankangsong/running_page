@@ -205,7 +205,11 @@ const RunMap = ({
     isAnimatingRef.current = true;
     const startTime = performance.now();
     const durationMs = 800;
-    let from = { longitude: currentLon, latitude: currentLat, zoom: currentZoom };
+    let from = {
+      longitude: currentLon,
+      latitude: currentLat,
+      zoom: currentZoom,
+    };
     let to = { longitude: lon, latitude: lat, zoom };
 
     const prevHadTrack = prevHasAnyTrackRef.current;

@@ -1,8 +1,9 @@
-import { Activity, formatPace, locationForRun, isRun } from '@/utils/utils';
+import { Activity, formatPace, locationForRun } from '@/utils/utils';
 
 interface ITracksStatsProps {
   runs: Activity[];
   year: string;
+  selectedType: string;
   onSelectCity?: (_city: string) => void;
   selectedCity?: string | null;
   topN?: number;
@@ -12,11 +13,13 @@ interface ITracksStatsProps {
 const TracksStats = ({
   runs,
   year,
+  selectedType,
   onSelectCity,
   selectedCity = null,
   topN = 12,
   selectedCountry = null,
 }: ITracksStatsProps) => {
+  const typedRuns = runs.filter((run) => run.type === selectedType);
   let sumDistance = 0;
   let streak = 0;
   let totalMetersAvail = 0;
@@ -26,8 +29,7 @@ const TracksStats = ({
   const countryDistances: Record<string, number> = {};
   const provinceDistances: Record<string, number> = {};
 
-  runs.forEach((run) => {
-    if (!isRun(run.type)) return;
+  typedRuns.forEach((run) => {
     sumDistance += run.distance || 0;
     if (run.average_speed) {
       totalMetersAvail += run.distance || 0;
@@ -81,7 +83,7 @@ const TracksStats = ({
             Runs
           </span>
           <div className="text-[32px] font-bold leading-[1.2] bg-gradient-to-r from-[#4fc3f7] to-[#81d4fa] bg-clip-text text-transparent">
-            {runs.length}
+            {typedRuns.length}
           </div>
         </div>
         <div className="flex flex-col gap-1">

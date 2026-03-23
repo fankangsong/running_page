@@ -1,10 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import ActivityIcon from '@/components/ActivityIcon';
 import {
   Activity,
   Coordinate,
   convertMovingTime2Sec,
-  formatPace,
   groupRunsByDate,
   HIKE_TYPE,
   pathForRun,
@@ -148,30 +147,27 @@ const getLongestRun = (runs: Activity[]) => {
 
 // Material Icons for PB
 const PBIcon = ({ icon, color }: { icon: string; color: string }) => (
-  <div className={`absolute -top-1.5 -right-1.5 z-10 flex h-4 w-4 items-center justify-center rounded-full ${color} ring-1 ring-gray-900 shadow-sm`}>
-    <span className="material-icons text-white leading-none" style={{ fontSize: '10px' }}>{icon}</span>
+  <div
+    className={`absolute -top-1.5 -right-1.5 z-10 flex h-4 w-4 items-center justify-center rounded-full ${color} ring-1 ring-gray-900 shadow-sm`}
+  >
+    <span
+      className="material-icons text-white leading-none"
+      style={{ fontSize: '10px' }}
+    >
+      {icon}
+    </span>
   </div>
 );
 
 interface DayCellProps {
   day: number | null;
-  monthLabel: string;
-  cellIndex: number;
   year: string;
   month: number;
   runsByDate: Record<string, Activity[]>;
   pbMap: PBMap;
 }
 
-const DayCell = ({
-  day,
-  monthLabel,
-  cellIndex,
-  year,
-  month,
-  runsByDate,
-  pbMap,
-}: DayCellProps) => {
+const DayCell = ({ day, year, month, runsByDate, pbMap }: DayCellProps) => {
   if (!day) {
     return <div className="aspect-square" />;
   }
@@ -235,10 +231,10 @@ const DayCell = ({
         colorClass: 'text-rose-400',
       };
     } else if (primaryRun.run_id === pbMap.longest?.run_id) {
-       // Only show longest if not already a PB
-       pbIcon = 'flag';
-       pbColor = 'bg-amber-500';
-       achievement = {
+      // Only show longest if not already a PB
+      pbIcon = 'flag';
+      pbColor = 'bg-amber-500';
+      achievement = {
         label: 'Longest',
         description: 'Longest Run of the Year',
         icon: 'flag',
@@ -261,7 +257,11 @@ const DayCell = ({
   const { onMouseEnter, onMouseLeave } = useHoverActivity(activityData);
 
   return (
-    <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} className="relative">
+    <div
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      className="relative"
+    >
       {dayRuns.length > 0 ? (
         <div
           className={`aspect-square flex items-center justify-center transition relative ${
@@ -305,11 +305,16 @@ const DayCell = ({
 interface RunningChartsProps {
   year: string;
   runs: Activity[];
+  selectedType: string;
+  onSelectType: (_type: string) => void;
 }
 
-const RunningChartsContent = ({ year, runs }: RunningChartsProps) => {
-  const [selectedType, setSelectedType] = useState(RUN_TYPE);
-
+const RunningChartsContent = ({
+  year,
+  runs,
+  selectedType,
+  onSelectType,
+}: RunningChartsProps) => {
   const totalPolylines = useMemo(() => {
     const filtered = [...runs]
       .filter((r) => r.type === selectedType)
@@ -328,15 +333,18 @@ const RunningChartsContent = ({ year, runs }: RunningChartsProps) => {
 
   const yearRuns = useMemo(() => {
     if (year === 'Total') return [];
-    return runs.filter((run) => run.start_date_local?.slice(0, 4) === year);
-  }, [runs, year]);
+    return runs.filter(
+      (run) =>
+        run.start_date_local?.slice(0, 4) === year && run.type === selectedType
+    );
+  }, [runs, selectedType, year]);
 
   const runsByDate = useMemo(() => groupRunsByDate(yearRuns), [yearRuns]);
 
   // Calculate PBs for the current year
   const pbMap: PBMap = useMemo(() => {
-    if (year === 'Total') return {};
-    const runActivities = yearRuns.filter(r => r.type === RUN_TYPE); // Only consider runs for PBs
+    if (year === 'Total' || selectedType !== RUN_TYPE) return {};
+    const runActivities = yearRuns.filter((r) => r.type === RUN_TYPE);
     return {
       best5k: getBestRun(runActivities, 5, 5.5),
       best10k: getBestRun(runActivities, 10, 10.5),
@@ -344,8 +352,7 @@ const RunningChartsContent = ({ year, runs }: RunningChartsProps) => {
       bestFull: getBestRun(runActivities, 42.195, 42.5),
       longest: getLongestRun(runActivities),
     };
-  }, [yearRuns, year]);
-
+  }, [selectedType, yearRuns, year]);
 
   if (year === 'Total') {
     return (
@@ -354,7 +361,7 @@ const RunningChartsContent = ({ year, runs }: RunningChartsProps) => {
           <div className="flex items-center bg-gray-900/50 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden">
             <button
               type="button"
-              onClick={() => setSelectedType(RUN_TYPE)}
+              onClick={() => onSelectType(RUN_TYPE)}
               className={`p-2 transition-all duration-200 relative ${
                 selectedType === RUN_TYPE
                   ? 'bg-gray-700/80 text-white'
@@ -366,7 +373,7 @@ const RunningChartsContent = ({ year, runs }: RunningChartsProps) => {
             </button>
             <button
               type="button"
-              onClick={() => setSelectedType(HIKE_TYPE)}
+              onClick={() => onSelectType(HIKE_TYPE)}
               className={`p-2 transition-all duration-200 relative ${
                 selectedType === HIKE_TYPE
                   ? 'bg-gray-700/80 text-white'
@@ -378,7 +385,7 @@ const RunningChartsContent = ({ year, runs }: RunningChartsProps) => {
             </button>
             <button
               type="button"
-              onClick={() => setSelectedType(WALK_TYPE)}
+              onClick={() => onSelectType(WALK_TYPE)}
               className={`p-2 transition-all duration-200 relative ${
                 selectedType === WALK_TYPE
                   ? 'bg-gray-700/80 text-white'
@@ -414,6 +421,46 @@ const RunningChartsContent = ({ year, runs }: RunningChartsProps) => {
 
   return (
     <div className="w-full rounded-card border border-gray-800/50 bg-card p-2 sm:p-4 lg:p-5 overflow-hidden sm:overflow-visible">
+      <div className="flex items-center justify-end mb-3">
+        <div className="flex items-center bg-gray-900/50 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden">
+          <button
+            type="button"
+            onClick={() => onSelectType(RUN_TYPE)}
+            className={`p-2 transition-all duration-200 relative ${
+              selectedType === RUN_TYPE
+                ? 'bg-gray-700/80 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+            title="Run"
+          >
+            <ActivityIcon type={RUN_TYPE} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onSelectType(HIKE_TYPE)}
+            className={`p-2 transition-all duration-200 relative ${
+              selectedType === HIKE_TYPE
+                ? 'bg-gray-700/80 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+            title="Hike"
+          >
+            <ActivityIcon type={HIKE_TYPE} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onSelectType(WALK_TYPE)}
+            className={`p-2 transition-all duration-200 relative ${
+              selectedType === WALK_TYPE
+                ? 'bg-gray-700/80 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+            title="Walk"
+          >
+            <ActivityIcon type={WALK_TYPE} />
+          </button>
+        </div>
+      </div>
       <div className="grid grid-cols-[32px_1fr] sm:grid-cols-[54px_1fr] gap-2 sm:gap-3 mb-3">
         <div />
         <div className="grid grid-cols-7 gap-0.5 sm:gap-1.5">
@@ -451,8 +498,6 @@ const RunningChartsContent = ({ year, runs }: RunningChartsProps) => {
                   <DayCell
                     key={`${monthLabel}-${cellIndex}`}
                     day={day}
-                    monthLabel={monthLabel}
-                    cellIndex={cellIndex}
                     year={year}
                     month={month}
                     runsByDate={runsByDate}

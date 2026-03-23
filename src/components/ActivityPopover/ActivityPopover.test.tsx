@@ -1,6 +1,10 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ActivityPopoverProvider, ActivityPopover, useHoverActivity } from './index';
+import {
+  ActivityPopoverProvider,
+  ActivityPopover,
+  useHoverActivity,
+} from './index';
 import { Activity } from '@/utils/utils';
 
 // Mock ReactDOM.createPortal
@@ -91,14 +95,14 @@ describe('ActivityPopover', () => {
     );
 
     const trigger = screen.getByTestId('trigger');
-    
+
     // Enter
     fireEvent.mouseEnter(trigger);
     expect(screen.getByText('Test Run')).toBeInTheDocument();
 
     // Leave
     fireEvent.mouseLeave(trigger);
-    
+
     // Should still be there immediately (delay)
     expect(screen.getByText('Test Run')).toBeInTheDocument();
 
@@ -114,7 +118,7 @@ describe('ActivityPopover', () => {
     // renderData is state.
     // hidePopover sets isVisible=false.
     // The component stays rendered but with opacity-0 class.
-    
+
     const popover = screen.getByText('Test Run').closest('.fixed');
     expect(popover).toHaveClass('opacity-0');
   });
@@ -129,14 +133,17 @@ describe('ActivityPopover', () => {
 
     const trigger = screen.getByTestId('trigger');
     // Mock getBoundingClientRect
-    trigger.getBoundingClientRect = vi.fn(() => ({
-      top: 100,
-      left: 100,
-      bottom: 150,
-      right: 150,
-      width: 50,
-      height: 50,
-    } as DOMRect));
+    trigger.getBoundingClientRect = vi.fn(
+      () =>
+        ({
+          top: 100,
+          left: 100,
+          bottom: 150,
+          right: 150,
+          width: 50,
+          height: 50,
+        } as DOMRect)
+    );
 
     fireEvent.mouseEnter(trigger);
 

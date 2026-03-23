@@ -155,8 +155,6 @@ const Index = () => {
           <DashboardStats onClickPB={handleClickPB} />
         </div>
 
-        
-
         <div className="lg:col-span-6 flex flex-col">
           <div
             id="run-map"
@@ -182,7 +180,6 @@ const Index = () => {
             onSelectRunIds={(ids) => locateActivity(ids)}
             selectedDate={selectedDate}
           />
-
 
           <div>
             <MonthlyBarChart

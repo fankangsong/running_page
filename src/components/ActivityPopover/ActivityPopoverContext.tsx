@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, ReactNode, useCallback, useRef } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useCallback,
+  useRef,
+} from 'react';
 import { Activity } from '@/utils/utils';
 
 export interface ActivityData {
@@ -23,9 +30,15 @@ interface ActivityPopoverContextType {
   hidePopover: (delay?: number) => void;
 }
 
-const ActivityPopoverContext = createContext<ActivityPopoverContextType | undefined>(undefined);
+const ActivityPopoverContext = createContext<
+  ActivityPopoverContextType | undefined
+>(undefined);
 
-export const ActivityPopoverProvider = ({ children }: { children: ReactNode }) => {
+export const ActivityPopoverProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
   const [activityData, setActivityData] = useState<ActivityData | null>(null);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -47,7 +60,7 @@ export const ActivityPopoverProvider = ({ children }: { children: ReactNode }) =
     if (hideTimerRef.current) {
       clearTimeout(hideTimerRef.current);
     }
-    
+
     if (delay > 0) {
       hideTimerRef.current = setTimeout(() => {
         setIsVisible(false);
@@ -59,7 +72,9 @@ export const ActivityPopoverProvider = ({ children }: { children: ReactNode }) =
   }, []);
 
   return (
-    <ActivityPopoverContext.Provider value={{ activityData, anchorRect, isVisible, showPopover, hidePopover }}>
+    <ActivityPopoverContext.Provider
+      value={{ activityData, anchorRect, isVisible, showPopover, hidePopover }}
+    >
       {children}
     </ActivityPopoverContext.Provider>
   );
@@ -68,7 +83,9 @@ export const ActivityPopoverProvider = ({ children }: { children: ReactNode }) =
 export const useActivityPopover = () => {
   const context = useContext(ActivityPopoverContext);
   if (!context) {
-    throw new Error('useActivityPopover must be used within an ActivityPopoverProvider');
+    throw new Error(
+      'useActivityPopover must be used within an ActivityPopoverProvider'
+    );
   }
   return context;
 };

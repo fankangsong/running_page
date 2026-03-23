@@ -7,7 +7,6 @@ interface ActivityCardProps {
   colorClass: string;
 }
 
-
 const ActivityCard = ({ run, onClick, colorClass }: ActivityCardProps) => {
   const displayTitle = run.name || 'Run';
   const displayDistance = (run.distance / 1000).toFixed(1);
@@ -16,9 +15,7 @@ const ActivityCard = ({ run, onClick, colorClass }: ActivityCardProps) => {
   const durationTotalSeconds = convertMovingTime2Sec(run.moving_time);
   const hours = Math.floor(durationTotalSeconds / 3600);
   const minutes = Math.floor((durationTotalSeconds % 3600) / 60);
-  const displayDuration =
-    hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-
+  const displayDuration = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 
   return (
     <div
@@ -40,7 +37,7 @@ const ActivityCard = ({ run, onClick, colorClass }: ActivityCardProps) => {
             {displayDate}
           </div>
         </div>
-        
+
         <div className="flex justify-between items-baseline text-xs mt-1">
           <div className="font-mono text-base font-bold text-gray-400 group-hover:text-gray-200 transition-colors leading-none">
             {displayDistance}

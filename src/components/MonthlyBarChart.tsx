@@ -84,7 +84,10 @@ const MonthlyBarChart = ({
         </div>
         <div className="text-xs text-gray-400">{year}</div>
       </div>
-      <div className="h-16 md:h-24 flex items-end gap-2" onMouseLeave={() => setHoverState(null)}>
+      <div
+        className="h-16 md:h-24 flex items-end gap-2"
+        onMouseLeave={() => setHoverState(null)}
+      >
         {totals.map((v, i) => {
           const h = `${Math.round((v.total / max) * 100)}%`;
           const isActive = activeMonth ? i + 1 === activeMonth : false;
@@ -136,7 +139,13 @@ const ChartPopover = ({
   month,
   anchorRect,
 }: {
-  data: { total: number; run: number; hike: number; walk: number; ride: number };
+  data: {
+    total: number;
+    run: number;
+    hike: number;
+    walk: number;
+    ride: number;
+  };
   month: string;
   anchorRect: DOMRect;
 }) => {
@@ -146,7 +155,8 @@ const ChartPopover = ({
   useEffect(() => {
     if (popoverRef.current) {
       const popoverRect = popoverRef.current.getBoundingClientRect();
-      const left = anchorRect.left + anchorRect.width / 2 - popoverRect.width / 2;
+      const left =
+        anchorRect.left + anchorRect.width / 2 - popoverRect.width / 2;
       const top = anchorRect.top - popoverRect.height - 8; // 8px gap
 
       setStyle({
@@ -173,7 +183,8 @@ const ChartPopover = ({
           <div className="flex justify-between items-center text-[10px] gap-4">
             <span className="text-blue-400 font-medium">Running</span>
             <span className="font-mono text-gray-300">
-              {data.run.toFixed(1)} <span className="text-[8px] text-gray-500">KM</span>
+              {data.run.toFixed(1)}{' '}
+              <span className="text-[8px] text-gray-500">KM</span>
             </span>
           </div>
         )}
@@ -181,7 +192,8 @@ const ChartPopover = ({
           <div className="flex justify-between items-center text-[10px] gap-4">
             <span className="text-emerald-400 font-medium">Hiking</span>
             <span className="font-mono text-gray-300">
-              {data.hike.toFixed(1)} <span className="text-[8px] text-gray-500">KM</span>
+              {data.hike.toFixed(1)}{' '}
+              <span className="text-[8px] text-gray-500">KM</span>
             </span>
           </div>
         )}
@@ -189,7 +201,8 @@ const ChartPopover = ({
           <div className="flex justify-between items-center text-[10px] gap-4">
             <span className="text-yellow-400 font-medium">Walking</span>
             <span className="font-mono text-gray-300">
-              {data.walk.toFixed(1)} <span className="text-[8px] text-gray-500">KM</span>
+              {data.walk.toFixed(1)}{' '}
+              <span className="text-[8px] text-gray-500">KM</span>
             </span>
           </div>
         )}
@@ -197,7 +210,8 @@ const ChartPopover = ({
           <div className="flex justify-between items-center text-[10px] gap-4">
             <span className="text-purple-400 font-medium">Cycling</span>
             <span className="font-mono text-gray-300">
-              {data.ride.toFixed(1)} <span className="text-[8px] text-gray-500">KM</span>
+              {data.ride.toFixed(1)}{' '}
+              <span className="text-[8px] text-gray-500">KM</span>
             </span>
           </div>
         )}

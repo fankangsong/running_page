@@ -8,6 +8,7 @@ import {
   filterAndSortRuns,
   filterYearRuns,
   filterCityRuns,
+  RUN_TYPE,
   sortDateFunc,
 } from '@/utils/utils';
 
@@ -32,6 +33,7 @@ const Tracks = () => {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState(RUN_TYPE);
 
   const [displayYear, setDisplayYear] = useState(year);
   const [displayRuns, setDisplayRuns] = useState(activities);
@@ -161,6 +163,7 @@ const Tracks = () => {
             <TracksStats
               runs={displayRuns}
               year={displayYear}
+              selectedType={selectedType}
               onSelectCity={handleSelectCity}
               selectedCity={selectedCity}
               topN={12}
@@ -171,7 +174,12 @@ const Tracks = () => {
             />
           </div>
           <div className="lg:col-span-7">
-            <RunningCharts year={displayYear} runs={displayRuns} />
+            <RunningCharts
+              year={displayYear}
+              runs={displayRuns}
+              selectedType={selectedType}
+              onSelectType={setSelectedType}
+            />
           </div>
         </div>
       </div>
