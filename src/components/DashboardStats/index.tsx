@@ -25,10 +25,9 @@ const StatItem = ({
   icon,
   iconColorClass = 'text-primary',
   valueSizeClass = 'text-2xl lg:text-3xl',
-  onClick,
   className = '',
 }: StatItemProps) => (
-  <div className={`flex flex-col gap-1 ${className}`} onClick={onClick}>
+  <div className={`flex flex-col gap-1 ${className}`}>
     <div className="flex items-center gap-2 mb-1">
       <div
         className={`w-6 h-6 rounded-full bg-gray-800/50 flex items-center justify-center shrink-0 ${iconColorClass}`}
@@ -60,11 +59,7 @@ const StatItem = ({
   </div>
 );
 
-interface DashboardStatsProps {
-  onClickPB?: (_run: Activity) => void;
-}
-
-const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
+const DashboardStats = () => {
   const { activities: runs } = useActivities();
 
   // Logic from TotalStat
@@ -164,16 +159,17 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
   const pb15 = getPB(15000);
 
   return (
-    <div className="bg-card rounded-2xl shadow-xl border border-white/5 overflow-hidden">
+    <div className="w-full bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden">
       <div className="flex flex-col md:flex-row">
         {/* Total Stats Section */}
-        <div className="flex-1 p-4 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
+        <div className="flex-1 p-4 lg:p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8">
             <StatItem
               label="Total"
               value={totalKm}
               unit="km"
               iconColorClass="text-blue-400"
+              className="cursor-default "
               icon={
                 <svg
                   viewBox="0 0 24 24"
@@ -194,6 +190,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
               value={avgPace}
               unit="/km"
               iconColorClass="text-emerald-400"
+              className="cursor-default "
               icon={
                 <svg
                   viewBox="0 0 24 24"
@@ -215,6 +212,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
               value={maxDistStr}
               unit="km"
               iconColorClass="text-purple-400"
+              className="cursor-default "
               icon={
                 <svg
                   viewBox="0 0 24 24"
@@ -237,7 +235,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
         <div className="h-px md:h-auto md:w-px bg-white/10" />
 
         {/* PB Stats Section */}
-        <div className="flex-1 p-4 bg-gradient-to-br from-gray-900/30 to-black/20">
+        <div className="flex-1 p-4 lg:p-6 bg-gradient-to-br from-gray-900/30 to-black/20">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8">
             <StatItem
               label="5K PB"
@@ -254,8 +252,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
                   </span>
                 </div>
               }
-              className="cursor-pointer hover:bg-white/5 rounded transition-colors p-2 -m-2"
-              onClick={() => pb5.run && onClickPB?.(pb5.run)}
+              className="cursor-default "
             />
             <StatItem
               label="10K PB"
@@ -272,8 +269,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
                   </span>
                 </div>
               }
-              className="cursor-pointer hover:bg-white/5 rounded transition-colors p-2 -m-2"
-              onClick={() => pb10.run && onClickPB?.(pb10.run)}
+              className="cursor-default "
             />
             <StatItem
               label="15K PB"
@@ -290,8 +286,7 @@ const DashboardStats = ({ onClickPB }: DashboardStatsProps) => {
                   </span>
                 </div>
               }
-              className="cursor-pointer hover:bg-white/5 rounded transition-colors p-2 -m-2"
-              onClick={() => pb15.run && onClickPB?.(pb15.run)}
+              className="cursor-default "
             />
           </div>
         </div>

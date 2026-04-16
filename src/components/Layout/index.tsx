@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import useSiteMetadata from '@/hooks/useSiteMetadata';
 import styles from './style.module.scss';
 
-const Layout = ({ children }: React.PropsWithChildren) => {
+const Layout = ({ children, fullWidth = false }: React.PropsWithChildren<{ fullWidth?: boolean }>) => {
   const { siteTitle, description } = useSiteMetadata();
 
   return (
@@ -22,7 +22,7 @@ const Layout = ({ children }: React.PropsWithChildren) => {
         />
       </Helmet>
       <Header />
-      <main className="flex-grow w-full max-w-full md:max-w-[1000px] mx-auto p-4 md:p-8 min-w-0">
+      <main className={`flex-grow w-full mx-auto min-w-0 ${fullWidth ? 'max-w-full p-0' : 'max-w-full md:max-w-[1000px] p-4 md:p-8'}`}>
         {children}
       </main>
       <Footer />

@@ -348,6 +348,37 @@ export const dayOfWeek = (time: string) => {
   return WEEK_TITLE_EN[dayOfWeek];
 };
 
+// styling functions
+export const colorFromPace = (pace: number) => {
+  const colorMap = [
+    { min: 0, max: 240, color: '#f44336' },
+    { min: 240, max: 300, color: '#ff9800' },
+    { min: 300, max: 360, color: '#ffeb3b' },
+    { min: 360, max: 420, color: '#4caf50' },
+    { min: 420, max: 480, color: '#2196f3' },
+    { min: 480, max: 540, color: '#3f51b5' },
+    { min: 540, max: 600, color: '#9c27b0' },
+    { min: 600, max: 1000, color: '#673ab7' },
+  ];
+  const item = colorMap.find((c) => pace >= c.min && pace <= c.max);
+  return item ? item.color : colorMap[colorMap.length - 1].color;
+};
+
+export const AEROBIC_ZONES = [
+  { zone: 1, min: 0, max: 120, color: '#64b5f6', label: '0-119' },
+  { zone: 2, min: 120, max: 140, color: '#66bb6a', label: '120-139' },
+  { zone: 3, min: 140, max: 160, color: '#ffee58', label: '140-159' },
+  { zone: 4, min: 160, max: 180, color: '#ffa726', label: '160-179' },
+  { zone: 5, min: 180, max: Infinity, color: '#ef5350', label: '180+' },
+];
+
+export const getAerobicZone = (heartRate: number | null | undefined) => {
+  if (!heartRate || !Number.isFinite(heartRate)) return null;
+  return AEROBIC_ZONES.find(
+    (zone) => heartRate >= zone.min && (zone.max === Infinity || heartRate < zone.max)
+  );
+};
+
 export {
   titleForShow,
   formatPace,

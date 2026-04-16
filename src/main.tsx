@@ -5,6 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import Index from './pages';
 import Tracks from './pages/Tracks';
 import RunDetail from './pages/RunDetail';
+import Heatmap from './pages/Heatmap';
 import NotFound from './pages/404';
 import ReactGA from 'react-ga4';
 import {
@@ -22,8 +23,12 @@ if (USE_GOOGLE_ANALYTICS) {
 
 const routes = createHashRouter([
   {
-    path: '/',
+    path: '/map',
     element: withOptionalGAPageTracking(<Index />),
+  },
+  {
+    path: '/',
+    element: withOptionalGAPageTracking(<Heatmap />),
   },
   {
     path: '/tracks',

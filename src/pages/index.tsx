@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import Layout from '@/components/Layout';
 import RunMap from '@/components/RunMap';
-import DashboardStats from '@/components/DashboardStats';
 import MonthlyBarChart from '@/components/MonthlyBarChart';
 import CompactRunCalendar from '@/components/CompactRunCalendar';
-import ActivityCardList from '@/components/ActivityCardList';
 import useActivities from '@/hooks/useActivities';
 import {
   IViewState,
@@ -149,49 +147,34 @@ const Index = () => {
   }, [runs]);
 
   return (
-    <Layout>
-      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 lg:p-6">
-        <div className="lg:col-span-10">
-          <DashboardStats onClickPB={handleClickPB} />
-        </div>
-
-        <div className="lg:col-span-6 flex flex-col">
-          <div
-            id="run-map"
-            className="bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden relative w-full h-full min-h-[400px] lg:min-h-[400px]"
-          >
-            <RunMap
-              viewState={viewState}
-              geoData={geoData}
-              setViewState={setViewState}
-              changeYear={(y) => changeYearMonth(y, month)}
-              thisYear={year}
-            />
-          </div>
-        </div>
-
-        <div className="lg:col-span-4 flex flex-col gap-6 overflow-x-hidden">
-          <CompactRunCalendar
-            year={year}
-            month={month}
-            years={years}
-            runsByDate={runsByDate}
-            onChangeYearMonth={changeYearMonth}
-            onSelectRunIds={(ids) => locateActivity(ids)}
-            selectedDate={selectedDate}
+    <Layout fullWidth>
+      <div className="relative w-full h-[calc(100vh-64px)] flex overflow-hidden">
+        <div
+          id="run-map"
+          className="absolute inset-0 bg-background z-0"
+        >
+          <RunMap
+            viewState={viewState}
+            geoData={geoData}
+            setViewState={setViewState}
+            changeYear={(y) => changeYearMonth(y, month)}
+            thisYear={year}
           />
+        </div>
 
-          <div>
-            <MonthlyBarChart
-              runs={filterAndSortRuns(
-                activities,
-                year === 'Total' ? thisYear : year,
-                filterYearRuns,
-                sortDateFunc
-              )}
-              year={year === 'Total' ? thisYear : year}
-              activeMonth={month}
-            />
+        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[400px] lg:right-6 lg:top-6 lg:bottom-6 p-4 lg:p-0 z-10 pointer-events-none flex flex-col justify-end lg:justify-start overflow-hidden">
+          <div className="pointer-events-auto bg-card/90 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 flex flex-col w-full max-h-[60%] lg:max-h-full">
+            <div className="overflow-y-auto overflow-x-hidden custom-scrollbar p-4 lg:p-6 w-full h-full flex-1">
+              <CompactRunCalendar
+                year={year}
+                month={month}
+                years={years}
+                runsByDate={runsByDate}
+                onChangeYearMonth={changeYearMonth}
+                onSelectRunIds={(ids) => locateActivity(ids)}
+                selectedDate={selectedDate}
+              />
+            </div>
           </div>
         </div>
       </div>

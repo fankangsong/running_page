@@ -434,8 +434,8 @@ const CompactRunCalendar = ({
   };
 
   return (
-    <div className="bg-card rounded-card shadow-lg border border-gray-800/50 p-3">
-      <div className="flex items-center justify-between mb-2">
+    <div className="w-full h-full flex flex-col">
+      <div className="flex items-center justify-between mb-2 shrink-0">
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -502,11 +502,11 @@ const CompactRunCalendar = ({
 
       <div
         key={animKey}
-        className="grid grid-cols-7 gap-1 animate-[fadeIn_0.3s_ease-out]"
+        className="grid grid-cols-7 gap-1 flex-grow animate-[fadeIn_0.3s_ease-out]"
       >
         {cells.map((c, i) => {
           if (!c.inMonth) {
-            return <div key={`e-${i}`} className="w-full aspect-square" />;
+            return <div key={`e-${i}`} className="w-full aspect-square min-h-0" />;
           }
 
           const key = dayKey(year, month, c.day);
@@ -543,7 +543,7 @@ const CompactRunCalendar = ({
               <button
                 type="button"
                 onClick={() => handleSelectDay(c.day, isMultiSportSwitchable)}
-                className={`w-full aspect-square rounded-md relative overflow-hidden flex items-stretch justify-stretch transition ${
+                className={`w-full aspect-square min-h-0 rounded-md relative overflow-hidden flex items-stretch justify-stretch transition ${
                   isSelected
                     ? 'bg-gray-700 shadow-inner'
                     : isClickable
