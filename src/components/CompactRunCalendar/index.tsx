@@ -69,8 +69,8 @@ const pickDefaultRun = (runs: Activity[]) => {
 
 const computePolylinePoints = (
   coordinates: Coordinate[],
-  size = 36,
-  padding = 4
+  size = 28,
+  padding = 3
 ) => {
   if (coordinates.length < 2) return '';
 
@@ -212,13 +212,9 @@ const ArrowIcon = ({ dir }: { dir: 'left' | 'right' }) => (
     strokeLinejoin="round"
   >
     {dir === 'left' ? (
-      <>
-        <polyline points="15 18 9 12 15 6" />
-      </>
+      <polyline points="15 18 9 12 15 6" />
     ) : (
-      <>
-        <polyline points="9 18 15 12 9 6" />
-      </>
+      <polyline points="9 18 15 12 9 6" />
     )}
   </svg>
 );
@@ -434,26 +430,26 @@ const CompactRunCalendar = ({
   };
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="flex items-center justify-between mb-2 shrink-0">
+    <div className="w-full h-full flex flex-col gap-2">
+      <div className="flex items-center justify-between shrink-0">
         <div className="flex items-center gap-1">
           <button
             type="button"
             aria-label="Prev year"
-            className="w-7 h-7 rounded-md bg-gray-800/60 text-secondary hover:text-primary hover:bg-gray-700/70 active:scale-95 transition"
+            className="w-6 h-6 rounded-md bg-gray-800/60 text-secondary hover:text-primary hover:bg-gray-700/70 active:scale-95 transition"
             onClick={handlePrevYear}
           >
             <span className="flex items-center justify-center">
               <ArrowIcon dir="left" />
             </span>
           </button>
-          <div className="text-sm font-bold tabular-nums text-primary">
+          <span className="text-sm font-bold text-primary min-w-[70px] text-center">
             {year}
-          </div>
+          </span>
           <button
             type="button"
             aria-label="Next year"
-            className="w-7 h-7 rounded-md bg-gray-800/60 text-secondary hover:text-primary hover:bg-gray-700/70 active:scale-95 transition"
+            className="w-6 h-6 rounded-md bg-gray-800/60 text-secondary hover:text-primary hover:bg-gray-700/70 active:scale-95 transition"
             onClick={handleNextYear}
           >
             <span className="flex items-center justify-center">
@@ -466,20 +462,20 @@ const CompactRunCalendar = ({
           <button
             type="button"
             aria-label="Prev month"
-            className="w-7 h-7 rounded-md bg-gray-800/60 text-secondary hover:text-primary hover:bg-gray-700/70 active:scale-95 transition"
+            className="w-6 h-6 rounded-md bg-gray-800/60 text-secondary hover:text-primary hover:bg-gray-700/70 active:scale-95 transition"
             onClick={handlePrevMonth}
           >
             <span className="flex items-center justify-center">
               <ArrowIcon dir="left" />
             </span>
           </button>
-          <div className="text-sm font-bold tabular-nums text-primary">
+          <div className="text-sm font-bold tabular-nums text-primary min-w-[28px] text-center">
             {monthLabel(month)}
           </div>
           <button
             type="button"
             aria-label="Next month"
-            className="w-7 h-7 rounded-md bg-gray-800/60 text-secondary hover:text-primary hover:bg-gray-700/70 active:scale-95 transition"
+            className="w-6 h-6 rounded-md bg-gray-800/60 text-secondary hover:text-primary hover:bg-gray-700/70 active:scale-95 transition"
             onClick={handleNextMonth}
           >
             <span className="flex items-center justify-center">
@@ -493,7 +489,7 @@ const CompactRunCalendar = ({
         {WEEKDAYS.map((w) => (
           <div
             key={w}
-            className="text-center text-[10px] font-bold text-secondary select-none"
+            className="text-center text-[10px] font-medium text-secondary"
           >
             {w}
           </div>
@@ -501,9 +497,9 @@ const CompactRunCalendar = ({
       </div>
 
       <div
-        key={animKey}
-        className="grid grid-cols-7 gap-1 flex-grow animate-[fadeIn_0.3s_ease-out]"
-      >
+          key={animKey}
+          className="grid grid-cols-7 gap-1 w-full flex-grow relative animate-[fadeIn_0.3s_ease-out]"
+        >
         {cells.map((c, i) => {
           if (!c.inMonth) {
             return <div key={`e-${i}`} className="w-full aspect-square min-h-0" />;
@@ -519,7 +515,7 @@ const CompactRunCalendar = ({
 
           const primaryPolylinePoints =
             primaryRun && primaryRun.summary_polyline
-              ? computePolylinePoints(pathForRun(primaryRun), 36, 4)
+              ? computePolylinePoints(pathForRun(primaryRun), 28, 3)
               : '';
 
           const isSelected = selectedKey === key;
@@ -542,8 +538,11 @@ const CompactRunCalendar = ({
             >
               <button
                 type="button"
-                onClick={() => handleSelectDay(c.day, isMultiSportSwitchable)}
-                className={`w-full aspect-square min-h-0 rounded-md relative overflow-hidden flex items-stretch justify-stretch transition ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelectDay(c.day, isMultiSportSwitchable);
+                }}
+                className={`w-full aspect-square min-h-0 rounded-[4px] relative overflow-hidden flex items-stretch justify-stretch transition ${
                   isSelected
                     ? 'bg-gray-700 shadow-inner'
                     : isClickable
@@ -554,14 +553,14 @@ const CompactRunCalendar = ({
                 <div className="absolute inset-0 flex items-center justify-center">
                   {primaryPolylinePoints ? (
                     <svg
-                      viewBox="0 0 36 36"
-                      className={`w-[28px] h-[28px] ${typeStrokeClass(primaryRun?.type || '')}`}
+                      viewBox="0 0 28 28"
+                      className={`w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] ${typeStrokeClass(primaryRun?.type || '')}`}
                     >
                       <polyline
                         points={primaryPolylinePoints}
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="2"
+                        strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         opacity="0.95"
@@ -569,9 +568,12 @@ const CompactRunCalendar = ({
                     </svg>
                   ) : primaryRun ? (
                     <div className={typeStrokeClass(primaryRun.type)}>
-                      <ActivityIcon size={22} type={primaryRun.type} />
+                      <ActivityIcon size={12} type={primaryRun.type} />
                     </div>
                   ) : null}
+                  {isMultiSportSwitchable && (
+                    <div className="absolute right-[2px] top-[2px] h-[3px] w-[3px] rounded-full bg-white shadow-sm" />
+                  )}
                 </div>
 
                 {!hasVisual ? (
@@ -581,6 +583,15 @@ const CompactRunCalendar = ({
                 ) : null}
 
               </button>
+              {hasVisual && (
+                <div
+                  className={`pointer-events-none absolute bottom-[1px] left-[2px] text-[10px] font-bold tracking-tighter leading-none scale-75 origin-bottom-left ${
+                    isSelected ? 'text-gray-300' : 'text-gray-500'
+                  }`}
+                >
+                  {c.day}
+                </div>
+              )}
             </div>
           );
         })}

@@ -193,6 +193,28 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
     return data;
   }, [filteredActivities, activities, timeSpan, dimension, referenceDate]);
 
+  // 4. Calculate Aerobic Zone distribution data based on selected dimension
+  const zoneDistribution = useMemo(() => {
+    const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    filteredActivities.forEach(a => {
+      const hr = a.average_heartrate;
+      if (!hr) return;
+      const zone = getAerobicZone(hr);
+      if (!zone) return;
+      
+      if (dimension === 'distance') {
+        dist[zone.zone] += a.distance / 1000;
+      } else if (dimension === 'time') {
+        dist[zone.zone] += convertMovingTime2Sec(a.moving_time); // seconds
+      } else if (dimension === 'count') {
+        dist[zone.zone] += 1;
+      }
+    });
+    return dist;
+  }, [filteredActivities, dimension]);
+
+  const maxZoneValue = Math.max(...Object.values(zoneDistribution), 0);
+
   const maxValue = Math.max(...chartData.map(d => d.value), 1); // Avoid div by 0
 
   // Title formatting
@@ -345,26 +367,37 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
             <div className="w-6 h-6 rounded-full bg-gray-800/50 flex items-center justify-center shrink-0 text-cyan-400">
               <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
             </div>
-            <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">Avg Aerobic Zone</span>
+            <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">Aerobic Zones</span>
           </div>
           <div className="grid grid-cols-5 gap-1.5 w-full h-full pb-1">
             {AEROBIC_ZONES.map((zone) => {
-              const isHighlighted = metrics.aerobicZoneText === `Z${zone.zone}`;
+              const val = zoneDistribution[zone.zone] || 0;
+              const isHighlighted = val > 0 && val === maxZoneValue;
+              let displayVal = '-';
+              if (val > 0) {
+                if (dimension === 'time') displayVal = formatDuration(val);
+                else if (dimension === 'distance') displayVal = val.toFixed(1);
+                else displayVal = val.toString();
+              }
+
               return (
                 <div
                   key={zone.zone}
-                  className={`rounded-md p-1 text-center transition-all flex flex-col justify-center ${
+                  className={`rounded-md p-1 text-center transition-all flex flex-col justify-center gap-0.5 ${
                     isHighlighted
                       ? 'border border-white/50 shadow-[0_0_8px_rgba(255,255,255,0.2)] scale-[1.05]'
                       : 'border border-white/5'
                   }`}
                   style={{
                     backgroundColor: zone.color,
-                    opacity: isHighlighted ? 1 : 0.2,
+                    opacity: val > 0 ? (isHighlighted ? 1 : 0.6) : 0.2,
                   }}
                 >
-                  <div className={`text-[10px] font-black ${isHighlighted ? 'text-black' : 'text-black/80'}`}>
+                  <div className={`text-[10px] font-black leading-none ${val > 0 ? 'text-black' : 'text-black/80'}`}>
                     Z{zone.zone}
+                  </div>
+                  <div className={`text-[9px] font-bold leading-none tracking-tighter ${val > 0 ? 'text-black/90' : 'text-black/50'}`}>
+                    {displayVal}
                   </div>
                 </div>
               );

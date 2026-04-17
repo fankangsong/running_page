@@ -394,12 +394,12 @@ const RunMap = ({
           />
         )}
         {/* <span className={styles.runTitle}>{title}</span> */}
-        <FullscreenControl style={fullscreenButton} />
-        <NavigationControl
-          showCompass={false}
-          position={'bottom-right'}
-          style={{ opacity: 0.3 }}
-        />
+        <div className="absolute left-6 top-6 z-10 hidden sm:block">
+          <NavigationControl showCompass={false} />
+        </div>
+        <div className="absolute right-6 bottom-6 z-10 hidden sm:block">
+          <FullscreenControl />
+        </div>
       </Map>
       {isSingleActivity && run && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none">

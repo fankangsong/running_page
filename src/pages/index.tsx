@@ -158,13 +158,13 @@ const Index = () => {
             geoData={geoData}
             setViewState={setViewState}
             changeYear={(y) => changeYearMonth(y, month)}
-            thisYear={year}
+            thisYear={year} 
           />
         </div>
 
-        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[400px] lg:right-6 lg:top-6 lg:bottom-6 p-4 lg:p-0 z-10 pointer-events-none flex flex-col justify-end lg:justify-start overflow-hidden">
-          <div className="pointer-events-auto bg-card/90 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 flex flex-col w-full max-h-[60%] lg:max-h-full">
-            <div className="overflow-y-auto overflow-x-hidden custom-scrollbar p-4 lg:p-6 w-full h-full flex-1">
+        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[320px] lg:right-10 lg:top-10 lg:bottom-10 p-4 lg:p-0 z-10 pointer-events-none flex flex-col justify-end lg:justify-start">
+          <div className="pointer-events-auto bg-card/90 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 flex flex-col w-full max-h-[50%] lg:max-h-full transition-all">
+            <div className="overflow-y-auto overflow-x-hidden custom-scrollbar p-3 lg:p-4 w-full h-full flex-1">
               <CompactRunCalendar
                 year={year}
                 month={month}

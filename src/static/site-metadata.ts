@@ -20,7 +20,7 @@ const data: ISiteMetadataResult = {
       url: '/',
     },
     {
-      name: 'Map',
+      name: 'Maps',
       url: '/map',
     },
     {
