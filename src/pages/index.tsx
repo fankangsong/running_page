@@ -1,182 +1,183 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Layout from '@/components/Layout';
-import RunMap from '@/components/RunMap';
-import MonthlyBarChart from '@/components/MonthlyBarChart';
-import CompactRunCalendar from '@/components/CompactRunCalendar';
+import YearSelector from '@/components/YearSelector';
+import AnnualHeatmap, { HeatmapData } from '@/components/AnnualHeatmap';
+import ActivityStats from '@/components/ActivityStats';
+import DashboardStats from '@/components/DashboardStats';
 import useActivities from '@/hooks/useActivities';
 import {
-  IViewState,
   filterAndSortRuns,
   filterYearRuns,
-  filterYearMonthRuns,
-  geoJsonForRuns,
-  getBoundsForGeoData,
-  groupRunsByDate,
   sortDateFunc,
-  titleForShow,
-  RunIds,
+  dateKeyForRun,
 } from '@/utils/utils';
 
-const pad2 = (n: number) => String(n).padStart(2, '0');
-const SHENZHEN_VIEW_STATE: IViewState = {
-  longitude: 114.0579,
-  latitude: 22.5431,
-  zoom: 10.5,
-};
-
 const Index = () => {
-  const { activities, thisYear, years } = useActivities();
-  const initialMonth = (() => {
-    const thisYearRuns = filterAndSortRuns(
-      activities,
-      thisYear,
-      filterYearRuns,
-      sortDateFunc
-    );
-    const m = thisYearRuns[0]?.start_date_local?.slice(5, 7);
-    const parsed = m ? Number(m) : NaN;
-    if (parsed >= 1 && parsed <= 12) return parsed;
-    return new Date().getMonth() + 1;
-  })();
-  const [year, setYear] = useState(thisYear);
-  const [month, setMonth] = useState<number>(initialMonth);
-  const [runs, setActivity] = useState(
-    filterAndSortRuns(
-      activities,
-      `${thisYear}-${pad2(initialMonth)}`,
-      filterYearMonthRuns,
-      sortDateFunc
-    )
-  );
-  const [title, setTitle] = useState('');
-  const [geoData, setGeoData] = useState(geoJsonForRuns(runs));
-  const getMapViewState = (nextGeoData: typeof geoData): IViewState => {
-    const hasTrack = nextGeoData.features.some(
-      (feature) => feature.geometry.coordinates.length > 0
-    );
-    if (!hasTrack) {
-      return SHENZHEN_VIEW_STATE;
-    }
-    return getBoundsForGeoData(nextGeoData);
-  };
-  const [intervalId, setIntervalId] = useState<number>();
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const runsByDate = useMemo(() => groupRunsByDate(runs), [runs]);
-  const pendingRunIdRef = useRef<number | null>(null);
+  const { activities, years: activityYears } = useActivities();
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [yearStats, setYearStats] = useState({ count: 0, distance: 0 });
 
-  const [viewState, setViewState] = useState<IViewState>({
-    ...getMapViewState(geoData),
-  });
+  // Generate years from activities
+  const years = useMemo(() => {
+    const yrs = activityYears.map(Number);
+    if (!yrs.includes(currentYear)) yrs.unshift(currentYear);
+    return yrs.sort((a, b) => b - a);
+  }, [activityYears, currentYear]);
 
-  const changeYearMonth = (y: string, m: number) => {
-    setYear(y);
-    setMonth(m);
-    const ym = `${y}-${pad2(m)}`;
-    setActivity(
-      filterAndSortRuns(activities, ym, filterYearMonthRuns, sortDateFunc)
-    );
-    setTitle(`${ym} Running Heatmap`);
-    clearInterval(intervalId);
-  };
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
 
-  const locateActivity = (runIds: RunIds) => {
-    const ids = new Set(runIds);
+    // Use a tiny timeout to allow the loading overlay to render for a split second,
+    // providing a smooth transition as per the spec, while avoiding long artificial delays.
+    const timer = setTimeout(() => {
+      const yearRuns = filterAndSortRuns(
+        activities,
+        selectedYear.toString(),
+        filterYearRuns,
+        sortDateFunc
+      );
 
-    const selectedRuns = !runIds.length
-      ? runs
-      : runs.filter((r: any) => ids.has(r.run_id));
+      const dateMap = new Map<string, number>();
+      let totalDistance = 0;
 
-    if (!selectedRuns.length) {
-      return;
-    }
+      yearRuns.forEach((run) => {
+        const dateKey = dateKeyForRun(run);
+        if (!dateKey) return;
+        const dist = run.distance / 1000.0;
+        totalDistance += dist;
+        dateMap.set(dateKey, (dateMap.get(dateKey) || 0) + dist);
+      });
 
-    const lastRun = selectedRuns.sort(sortDateFunc)[0];
+      const data: HeatmapData[] = Array.from(dateMap.entries()).map(
+        ([date, value]) => ({
+          date,
+          value,
+        })
+      );
 
-    if (!lastRun) {
-      return;
-    }
-    const nextGeo = geoJsonForRuns(selectedRuns);
-    setGeoData(nextGeo);
-    setViewState({
-      ...getMapViewState(nextGeo),
-    });
-    setTitle(titleForShow(lastRun));
-    clearInterval(intervalId);
+      if (isMounted) {
+        setHeatmapData(data);
+        setYearStats({
+          count: yearRuns.length,
+          distance: totalDistance,
+        });
+        setIsLoading(false);
+      }
+    }, 50);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [selectedYear, activities]);
+
+  const handleDayClick = (date: string, value: number) => {
+    console.log(`Clicked on ${date} with value ${value}`);
+    // Future: navigate to daily detail or open a modal
   };
 
   const handleClickPB = (run: any) => {
     const date = run.start_date_local;
     const y = date.slice(0, 4);
-    const m = parseInt(date.slice(5, 7));
-    changeYearMonth(y, m);
-    setSelectedDate(date.slice(0, 10));
-    pendingRunIdRef.current = run.run_id;
+    setSelectedYear(parseInt(y));
+    // Since heatmap currently only focuses on year, navigating to the specific year is enough.
+    // If we want to highlight the specific date, we could add a new prop to AnnualHeatmap.
   };
 
-  useEffect(() => {
-    const fullGeo = geoJsonForRuns(runs);
-    if (pendingRunIdRef.current) {
-      const targetRun = runs.find((r) => r.run_id === pendingRunIdRef.current);
-      if (targetRun) {
-        locateActivity([pendingRunIdRef.current]);
-        pendingRunIdRef.current = null;
-        return;
-      }
-    }
-    setViewState({
-      ...getMapViewState(fullGeo),
-    });
-    const runsNum = runs.length;
-    // maybe change 20 ?
-    const sliceNume = runsNum >= 20 ? runsNum / 20 : 1;
-    if (runsNum === 0) {
-      setGeoData(fullGeo);
-      return;
-    }
-    let i = sliceNume;
-    const id = setInterval(() => {
-      if (i >= runsNum) {
-        clearInterval(id);
-      }
-
-      const tempRuns = runs.slice(0, i);
-      setGeoData(geoJsonForRuns(tempRuns));
-      i += sliceNume;
-    }, 100);
-    setIntervalId(id);
-  }, [runs]);
-
   return (
-    <Layout fullWidth>
-      <div className="relative w-full h-[calc(100vh-64px)] flex overflow-hidden">
-        <div
-          id="run-map"
-          className="absolute inset-0 bg-background z-0"
-        >
-          <RunMap
-            viewState={viewState}
-            geoData={geoData}
-            setViewState={setViewState}
-            changeYear={(y) => changeYearMonth(y, month)}
-            thisYear={year} 
-          />
+    <Layout>
+      <div className="flex flex-col gap-6 lg:p-6 w-full">
+        {/* Dashboard Stats */}
+        <div className="w-full">
+          <DashboardStats />
         </div>
 
-        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[320px] lg:right-10 lg:top-10 lg:bottom-10 p-4 lg:p-0 z-10 pointer-events-none flex flex-col justify-end lg:justify-start">
-          <div className="pointer-events-auto bg-card/90 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 flex flex-col w-full max-h-[50%] lg:max-h-full transition-all">
-            <div className="overflow-y-auto overflow-x-hidden custom-scrollbar p-3 lg:p-4 w-full h-full flex-1">
-              <CompactRunCalendar
-                year={year}
-                month={month}
+        {/* Heatmap Card */}
+        <div className="relative w-full bg-card rounded-card shadow-lg border border-gray-800/50 p-6 md:p-8 overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-orange-500/10 to-transparent pointer-events-none" />
+          
+          <div className="relative z-10">
+            {/* Header area of the card */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="w-6 h-6 text-orange-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">
+                    YEARLY HEATMAP
+                  </h2>
+                </div>
+                
+                <div className="flex items-baseline gap-6">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider">
+                      TOTAL RUNS
+                    </span>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className="text-3xl md:text-4xl font-condensed font-black text-accent tracking-tight leading-none">
+                        {yearStats.count}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-px h-8 bg-gray-800/50 hidden md:block"></div>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider">
+                      TOTAL DISTANCE
+                    </span>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className="text-3xl md:text-4xl font-condensed font-black text-accent tracking-tight leading-none">
+                        {yearStats.distance.toFixed(1)}
+                      </span>
+                      <span className="text-xs font-medium text-secondary">KM</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <YearSelector
                 years={years}
-                runsByDate={runsByDate}
-                onChangeYearMonth={changeYearMonth}
-                onSelectRunIds={(ids) => locateActivity(ids)}
-                selectedDate={selectedDate}
+                selectedYear={selectedYear}
+                onSelect={setSelectedYear}
+              />
+            </div>
+
+            {/* We show loading overlay to avoid screen flash/layout shift */}
+            {isLoading && heatmapData.length > 0 && (
+              <div className="absolute inset-0 bg-card/80 backdrop-blur-sm z-10 flex items-center justify-center transition-opacity duration-300 rounded-lg">
+                <div className="text-secondary font-medium animate-pulse">
+                  Loading {selectedYear} data...
+                </div>
+              </div>
+            )}
+
+            <div className="mt-4">
+              <AnnualHeatmap
+                year={selectedYear}
+                data={heatmapData}
+                onDayClick={handleDayClick}
+                isLoading={isLoading && heatmapData.length === 0}
               />
             </div>
           </div>
         </div>
+
+        {/* Activity Stats Module */}
+        <ActivityStats activities={activities} />
       </div>
     </Layout>
   );

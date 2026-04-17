@@ -375,7 +375,8 @@ export const AEROBIC_ZONES = [
 export const getAerobicZone = (heartRate: number | null | undefined) => {
   if (!heartRate || !Number.isFinite(heartRate)) return null;
   return AEROBIC_ZONES.find(
-    (zone) => heartRate >= zone.min && (zone.max === Infinity || heartRate < zone.max)
+    (zone) =>
+      heartRate >= zone.min && (zone.max === Infinity || heartRate < zone.max)
   );
 };
 

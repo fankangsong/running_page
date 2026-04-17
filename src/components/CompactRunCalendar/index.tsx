@@ -34,7 +34,8 @@ const ACTIVITY_TYPE_DISPLAY_NAMES: Record<string, string> = {
   Workout: 'Workout',
 };
 
-const getDisplayType = (type: string) => ACTIVITY_TYPE_DISPLAY_NAMES[type] || type;
+const getDisplayType = (type: string) =>
+  ACTIVITY_TYPE_DISPLAY_NAMES[type] || type;
 
 const getSwitchableRuns = (runs: Activity[]) => {
   const polylineRuns = runs.filter((r) => !!r.summary_polyline);
@@ -497,12 +498,14 @@ const CompactRunCalendar = ({
       </div>
 
       <div
-          key={animKey}
-          className="grid grid-cols-7 gap-1 w-full flex-grow relative animate-[fadeIn_0.3s_ease-out]"
-        >
+        key={animKey}
+        className="grid grid-cols-7 gap-1 w-full flex-grow relative animate-[fadeIn_0.3s_ease-out]"
+      >
         {cells.map((c, i) => {
           if (!c.inMonth) {
-            return <div key={`e-${i}`} className="w-full aspect-square min-h-0" />;
+            return (
+              <div key={`e-${i}`} className="w-full aspect-square min-h-0" />
+            );
           }
 
           const key = dayKey(year, month, c.day);
@@ -544,9 +547,9 @@ const CompactRunCalendar = ({
                 }}
                 className={`w-full aspect-square min-h-0 rounded-[4px] relative overflow-hidden flex items-stretch justify-stretch transition ${
                   isSelected
-                    ? 'bg-gray-700 shadow-inner'
+                    ? 'bg-gray-700/50 shadow-inner'
                     : isClickable
-                    ? 'bg-gray-900/30 hover:bg-gray-800/40'
+                    ? 'hover:bg-gray-800/40'
                     : 'bg-transparent'
                 }`}
               >
@@ -554,7 +557,9 @@ const CompactRunCalendar = ({
                   {primaryPolylinePoints ? (
                     <svg
                       viewBox="0 0 28 28"
-                      className={`w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] ${typeStrokeClass(primaryRun?.type || '')}`}
+                      className={`w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] ${typeStrokeClass(
+                        primaryRun?.type || ''
+                      )}`}
                     >
                       <polyline
                         points={primaryPolylinePoints}
@@ -581,7 +586,6 @@ const CompactRunCalendar = ({
                     {c.day}
                   </div>
                 ) : null}
-
               </button>
               {hasVisual && (
                 <div
@@ -621,20 +625,26 @@ const CompactRunCalendar = ({
                   <button
                     key={`${hoveredKey}-${group.type}`}
                     type="button"
-                    onClick={() => handleSelectRunTypeGroup(hoveredKey, group.runs)}
+                    onClick={() =>
+                      handleSelectRunTypeGroup(hoveredKey, group.runs)
+                    }
                     className="rounded-lg border border-transparent bg-gray-900/20 px-2 py-1.5 text-left transition hover:border-gray-700/80 hover:bg-gray-800/70"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="flex min-w-0 items-center gap-1.5">
                         <ActivityIcon size={20} type={group.type} />
                         <span
-                          className={`truncate text-[12px] font-semibold ${typeTextClass(group.type)}`}
+                          className={`truncate text-[12px] font-semibold ${typeTextClass(
+                            group.type
+                          )}`}
                         >
                           {getDisplayType(group.type)}
                         </span>
                       </span>
                       <span
-                        className={`tabular-nums text-sm font-bold ${typeStrokeClass(group.type)}`}
+                        className={`tabular-nums text-sm font-bold ${typeStrokeClass(
+                          group.type
+                        )}`}
                       >
                         {group.totalDistanceKm.toFixed(1)} KM
                       </span>

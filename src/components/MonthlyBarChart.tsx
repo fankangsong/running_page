@@ -111,7 +111,7 @@ const MonthlyBarChart = ({
                 />
               </div>
               <div
-                className={`text-[10px] transition-colors duration-300 ${
+                className={`font-condensed text-[10px] font-bold transition-colors duration-300 ${
                   isActive ? 'text-primary' : 'text-gray-400'
                 } group-hover:text-primary`}
               >
@@ -175,43 +175,53 @@ const ChartPopover = ({
       style={style}
     >
       <div className="w-max bg-gray-900/95 backdrop-blur-sm rounded-lg p-2.5 shadow-xl border border-white/10 flex flex-col gap-1.5 min-w-[130px]">
-        <div className="text-xs font-bold text-white mb-0.5 border-b border-white/10 pb-1.5 flex justify-between items-center">
+        <div className="font-condensed text-xs font-bold text-white mb-0.5 border-b border-white/10 pb-1.5 flex justify-between items-center">
           <span>{month}</span>
-          <span className="text-emerald-400">{data.total.toFixed(1)} km</span>
+          <span className="text-emerald-400 text-sm">
+            {data.total.toFixed(1)} km
+          </span>
         </div>
         {data.run > 0 && (
           <div className="flex justify-between items-center text-[10px] gap-4">
             <span className="text-blue-400 font-medium">Running</span>
-            <span className="font-mono text-gray-300">
+            <span className="font-condensed text-gray-300 font-bold text-xs">
               {data.run.toFixed(1)}{' '}
-              <span className="text-[8px] text-gray-500">KM</span>
+              <span className="text-[8px] text-gray-500 font-sans font-normal">
+                KM
+              </span>
             </span>
           </div>
         )}
         {data.hike > 0 && (
           <div className="flex justify-between items-center text-[10px] gap-4">
             <span className="text-emerald-400 font-medium">Hiking</span>
-            <span className="font-mono text-gray-300">
+            <span className="font-condensed text-gray-300 font-bold text-xs">
               {data.hike.toFixed(1)}{' '}
-              <span className="text-[8px] text-gray-500">KM</span>
+              <span className="text-[8px] text-gray-500 font-sans font-normal">
+                KM
+              </span>
             </span>
           </div>
         )}
         {data.walk > 0 && (
           <div className="flex justify-between items-center text-[10px] gap-4">
             <span className="text-yellow-400 font-medium">Walking</span>
-            <span className="font-mono text-gray-300">
+            <span className="font-condensed text-gray-300 font-bold text-xs">
               {data.walk.toFixed(1)}{' '}
-              <span className="text-[8px] text-gray-500">KM</span>
+              <span className="text-[8px] text-gray-500 font-sans font-normal">
+                KM
+              </span>
             </span>
           </div>
         )}
         {data.ride > 0 && (
           <div className="flex justify-between items-center text-[10px] gap-4">
             <span className="text-purple-400 font-medium">Cycling</span>
-            <span className="font-mono text-gray-300">
+            <span className="font-condensed text-gray-300 font-bold text-xs">
               {data.ride.toFixed(1)}{' '}
-              <span className="text-[8px] text-gray-500">KM</span>
+              <span className="text-[8px] text-gray-500 font-sans font-normal">
+                KM
+              </span>
             </span>
           </div>
         )}

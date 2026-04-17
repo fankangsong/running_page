@@ -12,7 +12,12 @@ interface AnnualHeatmapProps {
   isLoading?: boolean;
 }
 
-const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({ year, data, onDayClick, isLoading }) => {
+const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
+  year,
+  data,
+  onDayClick,
+  isLoading,
+}) => {
   const [hoveredDay, setHoveredDay] = useState<{
     date: string;
     value: number;
@@ -39,40 +44,46 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({ year, data, onDayClick, i
   const weeks = useMemo(() => {
     const firstDayOfYear = new Date(year, 0, 1);
     const lastDayOfYear = new Date(year, 11, 31);
-    
+
     // Day of week: 0 (Sun) to 6 (Sat)
     const startDayOfWeek = firstDayOfYear.getDay();
-    
+
     // Start generating from the first Sunday before or on Jan 1st
     const currentDate = new Date(firstDayOfYear);
     currentDate.setDate(currentDate.getDate() - startDayOfWeek);
-    
-    const weeksArray: { date: string | null; value: number; isCurrentYear: boolean }[][] = [];
-    
+
+    const weeksArray: {
+      date: string | null;
+      value: number;
+      isCurrentYear: boolean;
+    }[][] = [];
+
     while (currentDate <= lastDayOfYear || currentDate.getDay() !== 0) {
       if (currentDate.getDay() === 0) {
         weeksArray.push([]);
       }
-      
-      const dateString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+
+      const dateString = `${currentDate.getFullYear()}-${String(
+        currentDate.getMonth() + 1
+      ).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
       const isCurrentYear = currentDate.getFullYear() === year;
-      
+
       weeksArray[weeksArray.length - 1].push({
         date: dateString,
         value: dataMap.get(dateString) || 0,
-        isCurrentYear
+        isCurrentYear,
       });
-      
+
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     return weeksArray;
   }, [year, dataMap]);
 
   const getIntensityClass = (value: number) => {
     if (value === 0) return 'bg-card border border-gray-800';
     if (maxValue === 0) return 'bg-accent/20';
-    
+
     const ratio = value / maxValue;
     if (ratio < 0.25) return 'bg-accent/20';
     if (ratio < 0.5) return 'bg-accent/40';
@@ -81,7 +92,12 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({ year, data, onDayClick, i
     return 'bg-accent';
   };
 
-  const handleMouseEnter = (e: React.MouseEvent, date: string, value: number, isCurrentYear: boolean) => {
+  const handleMouseEnter = (
+    e: React.MouseEvent,
+    date: string,
+    value: number,
+    isCurrentYear: boolean
+  ) => {
     if (!isCurrentYear || isLoading) return;
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     setHoveredDay({
@@ -96,15 +112,28 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({ year, data, onDayClick, i
     setHoveredDay(null);
   };
 
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
   // Calculate month labels positions based on the first occurrence of a month in the first day of the week
   const monthLabels = useMemo(() => {
     const labels: { month: string; colIndex: number }[] = [];
     let currentMonth = -1;
-    
+
     weeks.forEach((week, index) => {
-      const firstDayOfWeek = week.find(d => d.isCurrentYear);
+      const firstDayOfWeek = week.find((d) => d.isCurrentYear);
       if (firstDayOfWeek && firstDayOfWeek.date) {
         const month = parseInt(firstDayOfWeek.date.split('-')[1], 10) - 1;
         if (month !== currentMonth) {
@@ -113,7 +142,7 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({ year, data, onDayClick, i
         }
       }
     });
-    
+
     return labels;
   }, [weeks]);
 
@@ -160,11 +189,27 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({ year, data, onDayClick, i
                           ? 'bg-gray-800/70 animate-pulse'
                           : getIntensityClass(day.value)
                         : 'bg-transparent'
-                    } ${day.isCurrentYear && !isLoading ? 'cursor-pointer hover:ring-1 hover:ring-primary' : ''}`}
-                    onMouseEnter={(e) => handleMouseEnter(e, day.date || '', day.value, day.isCurrentYear)}
+                    } ${
+                      day.isCurrentYear && !isLoading
+                        ? 'cursor-pointer hover:ring-1 hover:ring-primary'
+                        : ''
+                    }`}
+                    onMouseEnter={(e) =>
+                      handleMouseEnter(
+                        e,
+                        day.date || '',
+                        day.value,
+                        day.isCurrentYear
+                      )
+                    }
                     onMouseLeave={handleMouseLeave}
                     onClick={() => {
-                      if (!isLoading && day.isCurrentYear && day.date && onDayClick) {
+                      if (
+                        !isLoading &&
+                        day.isCurrentYear &&
+                        day.date &&
+                        onDayClick
+                      ) {
                         onDayClick(day.date, day.value);
                       }
                     }}
@@ -213,7 +258,11 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({ year, data, onDayClick, i
           }}
         >
           <div className="font-bold mb-1">{hoveredDay.date}</div>
-          <div>{hoveredDay.value > 0 ? `${hoveredDay.value.toFixed(1)} km` : 'No activity'}</div>
+          <div>
+            {hoveredDay.value > 0
+              ? `${hoveredDay.value.toFixed(1)} km`
+              : 'No activity'}
+          </div>
         </div>
       )}
     </div>

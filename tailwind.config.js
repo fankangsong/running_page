@@ -14,7 +14,8 @@ export default {
         card: '1rem', // 16px
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Roboto', 'system-ui', 'sans-serif'],
+        condensed: ['"Roboto Condensed"', 'system-ui', 'sans-serif'],
       },
     },
   },

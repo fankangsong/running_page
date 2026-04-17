@@ -35,27 +35,46 @@
 
 ### 3.3 字号与排版规范 (Typography)
 
-全局字体族为 `font-sans` (`Inter`, `system-ui`)。
+全局字体族为 `font-sans` (`Inter`, `system-ui`)，用于数字的特殊字体为 `font-condensed`。
 
-- **模块大标题**: `text-xl` 或 `text-2xl font-bold text-primary`。
+- **模块大标题 (Section Titles)**：
+  - 必须极其醒目且具有动感：`text-xl md:text-2xl font-black italic uppercase tracking-wider`。
+  - **渐变色文字 (Gradient Text)**：废弃纯色文字，统一使用主题相关的渐变色填充文字（例如：`text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200`）。
 - **分类标签/小标题**: 极小且大写，`text-[10px] font-bold text-secondary uppercase tracking-wider`。
 - **普通说明文本**: `text-xs` 或 `text-sm text-gray-500`。
 
-### 3.4 指标数字与单位设计 (Metrics & Units)
+### 3.4 指标大数字排版与设计 (Big Numbers Layout)
 
-指标展示是本项目的核心，具有非常明确的层级对比设计。
+指标展示是本项目的核心，采用极端的对比设计来引导视觉焦点，具有非常明确的层级和空间规范。
 
-- **指标数字 (Values)**:
-  - 必须极其醒目：`text-xl lg:text-2xl` 甚至 `lg:text-3xl`。
-  - 字体字重：`font-black` (900)。
+- **空间布局 (Layout)**：
+  - **居中对齐**：使用 `items-center text-center` 确保数字在卡片网格中稳定居中。
+  - **疏密间距**：单个数据项内部（Label、Value、Subtext）间距极小（`gap-1`）；而卡片外部留白和数据项之间留白较大（`p-6 md:p-8`, `gap-6 md:gap-8`），提供充足的“呼吸空间”。
+- **分类标签 (Label)**：
+  - 必须作为顶部说明书：极小字号 `text-[10px] md:text-xs`。
+  - 大写且拉宽间距：`uppercase tracking-wider`。
+  - 颜色弱化：`text-secondary` (`#8E8E93`)。
+- **核心指标数字 (Values)**：
+  - 必须极其醒目：`text-3xl md:text-4xl` 甚至更大。
+  - 紧凑型字体与字重：`font-condensed font-black` (900)。
   - 间距：`tracking-tight` (收紧字间距)，`leading-none` (无额外行高)。
-  - 颜色：`text-primary` (白色)。
+  - 颜色语义：
+    - 客观汇总数据使用 **纯白色 (`text-primary`)**。
+    - 荣誉/突破性数据（如 PB）使用 **高亮橙红色 (`text-accent`)** 以提供情绪奖励。
   - _可选_：可配合 `CyclingText` 组件增加数字滚动动画。
-- **指标单位 (Units)**:
+- **指标单位 (Units)**：
   - 紧跟在数字之后，基线对齐：父容器需使用 `flex items-baseline gap-1`。
   - 字号缩小：`text-xs` (12px)。
   - 字体字重：`font-medium` (500)。
   - 颜色弱化：`text-secondary` (`#8E8E93`)。
+- **底部补充 (Subtext)**：
+  - 小字号灰色常规体：`text-[10px] md:text-xs font-medium text-gray-500`，用于提供日期或上下文。
+
+### 3.5 背景质感与层次 (Background & Texture)
+
+为了避免纯色卡片过于死板，增加 UI 的厚度和光源感：
+- **卡片底色**：基于 `bg-card` 和 `border-gray-800/50` 描边。
+- **顶部渐变点缀 (Gradient)**：在卡片内部顶部加入绝对定位的微弱向下渐隐层（如 `from-white/5 to-transparent` 或呼应主题色的 `from-orange-500/10 to-transparent`），并设置 `pointer-events-none` 避免遮挡交互。
 
 ## 4. 假设与决策 (Assumptions & Decisions)
 
@@ -67,5 +86,6 @@
 （作为指导规则，此部分用于在后续开发中进行自检）
 
 - 检查新增卡片的 `className` 是否包含 `bg-card rounded-card` 且无违和的白底。
-- 检查指标数字是否使用了 `font-black text-primary`，单位是否使用了 `text-xs text-secondary` 且与数字基线对齐。
+- 检查模块大标题是否使用了斜体和渐变色文字（`italic text-transparent bg-clip-text bg-gradient-to-r`）。
+- 检查指标数字是否使用了 `font-condensed font-black` 且居中对齐，单位是否使用了 `text-xs text-secondary` 且与数字基线对齐。
 - 检查鼠标悬停在图表或按钮上时，是否有平滑的过渡动画（如 `transition-all duration-300`）。

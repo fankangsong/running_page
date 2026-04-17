@@ -10,51 +10,39 @@ interface StatItemProps {
   value: string | number;
   unit?: string;
   subtext: React.ReactNode;
-  icon: React.ReactNode;
-  iconColorClass?: string;
-  valueSizeClass?: string;
-  onClick?: () => void;
+  valueColorClass?: string;
   className?: string;
 }
 
-const StatItem = ({
+const BigNumberStat = ({
   label,
   value,
   unit,
   subtext,
-  icon,
-  iconColorClass = 'text-primary',
-  valueSizeClass = 'text-2xl lg:text-3xl',
+  valueColorClass = 'text-primary',
   className = '',
 }: StatItemProps) => (
-  <div className={`flex flex-col gap-1 ${className}`}>
-    <div className="flex items-center gap-2 mb-1">
+  <div className={`flex flex-col items-start text-left gap-1 ${className}`}>
+    <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate">
+      {label}
+    </span>
+    <div className="flex items-baseline justify-start gap-1 mt-1">
       <div
-        className={`w-6 h-6 rounded-full bg-gray-800/50 flex items-center justify-center shrink-0 ${iconColorClass}`}
-      >
-        {icon}
-      </div>
-      <span className="text-[10px] font-bold text-secondary uppercase tracking-wider truncate">
-        {label}
-      </span>
-    </div>
-    <div className="flex items-baseline gap-1">
-      <div
-        className={`${valueSizeClass} font-black text-primary tracking-tight leading-none`}
+        className={`text-3xl md:text-4xl font-condensed font-black ${valueColorClass} tracking-tight leading-none`}
       >
         <CyclingText
-          className="text-[#4fc3f7]"
+          className={valueColorClass}
           text={String(value)}
           hoverPlay={true}
           interval={50}
         />
       </div>
       {unit && (
-        <span className="text-xs font-medium text-secondary">{unit}</span>
+        <span className={`text-xs font-medium text-secondary`}>{unit}</span>
       )}
     </div>
-    <div className="text-[10px] font-medium text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis">
-      {subtext}
+    <div className="text-[10px] md:text-xs font-medium text-gray-500 mt-1 whitespace-nowrap overflow-hidden text-ellipsis">
+      {subtext || '\u00A0'}
     </div>
   </div>
 );
@@ -123,6 +111,16 @@ const DashboardStats = () => {
     return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
   };
 
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
   const getPB = (
     targetMeters: number
   ): { pace: string; time: string; date: string; run: Activity | null } => {
@@ -157,136 +155,107 @@ const DashboardStats = () => {
   const pb5 = getPB(5000);
   const pb10 = getPB(10000);
   const pb15 = getPB(15000);
+  const pbHalf = getPB(21097.5);
 
   return (
-    <div className="w-full bg-card rounded-card shadow-lg border border-gray-800/50 overflow-hidden">
-      <div className="flex flex-col md:flex-row">
-        {/* Total Stats Section */}
-        <div className="flex-1 p-4 lg:p-6 bg-gradient-to-br from-gray-900/50 to-gray-800/30">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8">
-            <StatItem
-              label="Total"
+    <div className="flex flex-col gap-6 w-full">
+      {/* Summary Section */}
+      <div className="relative w-full bg-card rounded-card shadow-lg border border-gray-800/50 p-6 md:p-8 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-6">
+            <svg
+              viewBox="0 0 24 24"
+              className="w-6 h-6 text-emerald-400"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">
+              SUMMARY
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+            <BigNumberStat
+              label="TOTAL DISTANCE"
               value={totalKm}
-              unit="km"
-              iconColorClass="text-blue-400"
-              className="cursor-default "
-              icon={
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                </svg>
-              }
-              subtext={`${runs.length} runs · ${totalHours}h`}
+              unit="KM"
+              subtext={`${runs.length} runs`}
+              valueColorClass="text-primary"
             />
-            <StatItem
-              label="Avg Pace"
+            <BigNumberStat
+              label="TOTAL TIME"
+              value={totalHours}
+              unit="H"
+              subtext={`${avgWeeklyKm} km/wk`}
+              valueColorClass="text-primary"
+            />
+            <BigNumberStat
+              label="AVERAGE PACE"
               value={avgPace}
-              unit="/km"
-              iconColorClass="text-emerald-400"
-              className="cursor-default "
-              icon={
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 6v6l4 2" />
-                </svg>
-              }
-              subtext={`${avgHeartRate} bpm · ${avgWeeklyKm} km/wk`}
+              unit="/KM"
+              subtext={`${avgHeartRate} bpm`}
+              valueColorClass="text-primary"
             />
-            <StatItem
-              label="Longest"
+            <BigNumberStat
+              label="LONGEST RUN"
               value={maxDistStr}
-              unit="km"
-              iconColorClass="text-purple-400"
-              className="cursor-default "
-              icon={
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-              }
+              unit="KM"
               subtext={`${maxCount} runs`}
+              valueColorClass="text-primary"
             />
           </div>
         </div>
+      </div>
 
-        {/* Divider */}
-        <div className="h-px md:h-auto md:w-px bg-white/10" />
-
-        {/* PB Stats Section */}
-        <div className="flex-1 p-4 lg:p-6 bg-gradient-to-br from-gray-900/30 to-black/20">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8">
-            <StatItem
-              label="5K PB"
-              value={pb5.pace}
-              unit="/km"
-              valueSizeClass="text-xl lg:text-2xl"
-              iconColorClass="text-orange-400"
-              icon={<span className="text-[10px] font-black">5K</span>}
-              subtext={
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-mono text-gray-400">{pb5.time}</span>
-                  <span className="text-[10px] opacity-70">
-                    {pb5.date} {pb5.run?.start_date_local.split(' ')[1]}
-                  </span>
-                </div>
-              }
-              className="cursor-default "
+      {/* Personal Bests Section */}
+      <div className="relative w-full bg-card rounded-card shadow-lg border border-gray-800/50 p-6 md:p-8 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-orange-500/10 to-transparent pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-6">
+            <svg
+              viewBox="0 0 24 24"
+              className="w-6 h-6 text-blue-400"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+            </svg>
+            <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
+              PERSONAL BESTS
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+            <BigNumberStat
+              label="FASTEST 5K"
+              value={pb5.time}
+              subtext={formatDate(pb5.date)}
+              valueColorClass="text-accent"
             />
-            <StatItem
-              label="10K PB"
-              value={pb10.pace}
-              unit="/km"
-              valueSizeClass="text-xl lg:text-2xl"
-              iconColorClass="text-orange-400"
-              icon={<span className="text-[10px] font-black">10K</span>}
-              subtext={
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-mono text-gray-400">{pb10.time}</span>
-                  <span className="text-[10px] opacity-70">
-                    {pb10.date} {pb10.run?.start_date_local.split(' ')[1]}
-                  </span>
-                </div>
-              }
-              className="cursor-default "
+            <BigNumberStat
+              label="FASTEST 10K"
+              value={pb10.time}
+              subtext={formatDate(pb10.date)}
+              valueColorClass="text-accent"
             />
-            <StatItem
-              label="15K PB"
-              value={pb15.pace}
-              unit="/km"
-              valueSizeClass="text-xl lg:text-2xl"
-              iconColorClass="text-orange-400"
-              icon={<span className="text-[10px] font-black">15K</span>}
-              subtext={
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-mono text-gray-400">{pb15.time}</span>
-                  <span className="text-[10px] opacity-70">
-                    {pb15.date} {pb15.run?.start_date_local.split(' ')[1]}
-                  </span>
-                </div>
-              }
-              className="cursor-default "
+            <BigNumberStat
+              label="FASTEST 15K"
+              value={pb15.time}
+              subtext={formatDate(pb15.date)}
+              valueColorClass="text-accent"
+            />
+            <BigNumberStat
+              label="HALF MARATHON"
+              value={pbHalf.time}
+              subtext={formatDate(pbHalf.date)}
+              valueColorClass="text-accent"
             />
           </div>
         </div>

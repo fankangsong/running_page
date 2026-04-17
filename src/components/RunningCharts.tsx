@@ -356,8 +356,111 @@ const RunningChartsContent = ({
 
   if (year === 'Total') {
     return (
-      <div className="w-full rounded-card border border-gray-800/50 bg-card p-2 sm:p-4 lg:p-5 overflow-hidden sm:overflow-visible">
-        <div className="flex items-center justify-end mb-3">
+      <div className="relative w-full bg-card rounded-card shadow-lg border border-gray-800/50 p-6 md:p-8 overflow-hidden sm:overflow-visible">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none rounded-card" />
+        <div className="relative z-10">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+            <div className="flex items-center gap-3">
+              <svg
+                viewBox="0 0 24 24"
+                className="w-6 h-6 text-purple-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+                ACTIVITIES MAP
+              </h2>
+            </div>
+            <div className="flex items-center bg-gray-900/50 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden">
+              <button
+                type="button"
+                onClick={() => onSelectType(RUN_TYPE)}
+                className={`p-2 transition-all duration-200 relative ${
+                  selectedType === RUN_TYPE
+                    ? 'bg-gray-700/80 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+                title="Run"
+              >
+                <ActivityIcon type={RUN_TYPE} />
+              </button>
+              <button
+                type="button"
+                onClick={() => onSelectType(HIKE_TYPE)}
+                className={`p-2 transition-all duration-200 relative ${
+                  selectedType === HIKE_TYPE
+                    ? 'bg-gray-700/80 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+                title="Hike"
+              >
+                <ActivityIcon type={HIKE_TYPE} />
+              </button>
+              <button
+                type="button"
+                onClick={() => onSelectType(WALK_TYPE)}
+                className={`p-2 transition-all duration-200 relative ${
+                  selectedType === WALK_TYPE
+                    ? 'bg-gray-700/80 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+                title="Walk"
+              >
+                <ActivityIcon type={WALK_TYPE} />
+              </button>
+            </div>
+          </div>
+
+          {totalPolylines.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {totalPolylines.map(({ r, distanceKm, points, date }) => (
+                <TotalRunItem
+                  key={r.run_id}
+                  r={r}
+                  distanceKm={distanceKm}
+                  points={points}
+                  date={date}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="py-10 text-center text-secondary text-sm">
+              No activities with map data.
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full bg-card rounded-card shadow-lg border border-gray-800/50 p-6 md:p-8 overflow-hidden sm:overflow-visible">
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none rounded-card" />
+      <div className="relative z-10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+          <div className="flex items-center gap-3">
+            <svg
+              viewBox="0 0 24 24"
+              className="w-6 h-6 text-purple-400"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+              ACTIVITIES MAP
+            </h2>
+          </div>
           <div className="flex items-center bg-gray-900/50 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden">
             <button
               type="button"
@@ -397,71 +500,7 @@ const RunningChartsContent = ({
             </button>
           </div>
         </div>
-
-        {totalPolylines.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5">
-            {totalPolylines.map(({ r, distanceKm, points, date }) => (
-              <TotalRunItem
-                key={r.run_id}
-                r={r}
-                distanceKm={distanceKm}
-                points={points}
-                date={date}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="py-10 text-center text-secondary text-sm">
-            No activities with map data.
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-full rounded-card border border-gray-800/50 bg-card p-2 sm:p-4 lg:p-5 overflow-hidden sm:overflow-visible">
-      <div className="flex items-center justify-end mb-3">
-        <div className="flex items-center bg-gray-900/50 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden">
-          <button
-            type="button"
-            onClick={() => onSelectType(RUN_TYPE)}
-            className={`p-2 transition-all duration-200 relative ${
-              selectedType === RUN_TYPE
-                ? 'bg-gray-700/80 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-            title="Run"
-          >
-            <ActivityIcon type={RUN_TYPE} />
-          </button>
-          <button
-            type="button"
-            onClick={() => onSelectType(HIKE_TYPE)}
-            className={`p-2 transition-all duration-200 relative ${
-              selectedType === HIKE_TYPE
-                ? 'bg-gray-700/80 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-            title="Hike"
-          >
-            <ActivityIcon type={HIKE_TYPE} />
-          </button>
-          <button
-            type="button"
-            onClick={() => onSelectType(WALK_TYPE)}
-            className={`p-2 transition-all duration-200 relative ${
-              selectedType === WALK_TYPE
-                ? 'bg-gray-700/80 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-            title="Walk"
-          >
-            <ActivityIcon type={WALK_TYPE} />
-          </button>
-        </div>
-      </div>
-      <div className="grid grid-cols-[32px_1fr] sm:grid-cols-[54px_1fr] gap-2 sm:gap-3 mb-3">
+        <div className="grid grid-cols-[32px_1fr] sm:grid-cols-[54px_1fr] gap-2 sm:gap-3 mb-3">
         <div />
         <div className="grid grid-cols-7 gap-0.5 sm:gap-1.5">
           {WEEKDAYS.map((label, idx) => (
@@ -475,39 +514,40 @@ const RunningChartsContent = ({
         </div>
       </div>
 
-      <div className="space-y-2.5">
-        {MONTHS.map((monthLabel, monthIndex) => {
-          const month = monthIndex + 1;
-          const firstDay = new Date(Number(year), month - 1, 1).getDay();
-          const daysInMonth = new Date(Number(year), month, 0).getDate();
-          const cells: Array<number | null> = [];
-          for (let i = 0; i < firstDay; i += 1) cells.push(null);
-          for (let day = 1; day <= daysInMonth; day += 1) cells.push(day);
-          while (cells.length % 7 !== 0) cells.push(null);
+        <div className="space-y-2.5">
+          {MONTHS.map((monthLabel, monthIndex) => {
+            const month = monthIndex + 1;
+            const firstDay = new Date(Number(year), month - 1, 1).getDay();
+            const daysInMonth = new Date(Number(year), month, 0).getDate();
+            const cells: Array<number | null> = [];
+            for (let i = 0; i < firstDay; i += 1) cells.push(null);
+            for (let day = 1; day <= daysInMonth; day += 1) cells.push(day);
+            while (cells.length % 7 !== 0) cells.push(null);
 
-          return (
-            <div
-              key={monthLabel}
-              className="grid grid-cols-[32px_1fr] sm:grid-cols-[54px_1fr] gap-2 sm:gap-3"
-            >
-              <div className="pt-1 text-[10px] sm:text-[11px] text-secondary font-semibold select-none">
-                {monthLabel}
+            return (
+              <div
+                key={monthLabel}
+                className="grid grid-cols-[32px_1fr] sm:grid-cols-[54px_1fr] gap-2 sm:gap-3"
+              >
+                <div className="pt-1 text-[10px] sm:text-[11px] text-secondary font-semibold select-none">
+                  {monthLabel}
+                </div>
+                <div className="grid grid-cols-7 gap-0.5 sm:gap-1.5">
+                  {cells.map((day, cellIndex) => (
+                    <DayCell
+                      key={`${monthLabel}-${cellIndex}`}
+                      day={day}
+                      year={year}
+                      month={month}
+                      runsByDate={runsByDate}
+                      pbMap={pbMap}
+                    />
+                  ))}
+                </div>
               </div>
-              <div className="grid grid-cols-7 gap-0.5 sm:gap-1.5">
-                {cells.map((day, cellIndex) => (
-                  <DayCell
-                    key={`${monthLabel}-${cellIndex}`}
-                    day={day}
-                    year={year}
-                    month={month}
-                    runsByDate={runsByDate}
-                    pbMap={pbMap}
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

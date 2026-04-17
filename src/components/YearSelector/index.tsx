@@ -7,7 +7,11 @@ interface YearSelectorProps {
   onSelect: (year: number) => void;
 }
 
-const YearSelector: React.FC<YearSelectorProps> = ({ years, selectedYear, onSelect }) => {
+const YearSelector: React.FC<YearSelectorProps> = ({
+  years,
+  selectedYear,
+  onSelect,
+}) => {
   const options = years.map((year) => ({
     label: year.toString(),
     value: year,

@@ -5,7 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import Index from './pages';
 import Tracks from './pages/Tracks';
 import RunDetail from './pages/RunDetail';
-import Heatmap from './pages/Heatmap';
+import Maps from './pages/maps';
 import NotFound from './pages/404';
 import ReactGA from 'react-ga4';
 import {
@@ -15,6 +15,12 @@ import {
 import '@/styles/index.scss';
 import '@/styles/tailwind.css';
 import 'material-icons/iconfont/material-icons.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+import '@fontsource/roboto-condensed/400.css';
+import '@fontsource/roboto-condensed/700.css';
+import '@fontsource/roboto-condensed/900.css';
 import { withOptionalGAPageTracking } from './utils/trackRoute';
 
 if (USE_GOOGLE_ANALYTICS) {
@@ -24,11 +30,11 @@ if (USE_GOOGLE_ANALYTICS) {
 const routes = createHashRouter([
   {
     path: '/map',
-    element: withOptionalGAPageTracking(<Index />),
+    element: withOptionalGAPageTracking(<Maps />),
   },
   {
     path: '/',
-    element: withOptionalGAPageTracking(<Heatmap />),
+    element: withOptionalGAPageTracking(<Index />),
   },
   {
     path: '/tracks',
