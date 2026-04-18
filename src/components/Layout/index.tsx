@@ -9,7 +9,8 @@ import styles from './style.module.scss';
 const Layout = ({
   children,
   fullWidth = false,
-}: React.PropsWithChildren<{ fullWidth?: boolean }>) => {
+  hideFooter = false,
+}: React.PropsWithChildren<{ fullWidth?: boolean; hideFooter?: boolean }>) => {
   const { siteTitle, description } = useSiteMetadata();
 
   return (
@@ -34,7 +35,7 @@ const Layout = ({
       >
         {children}
       </main>
-      <Footer />
+      {!hideFooter && <Footer />}
     </div>
   );
 };

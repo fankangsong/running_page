@@ -401,7 +401,7 @@ const RunMap = ({
           <FullscreenControl />
         </div>
       </Map>
-      {isSingleActivity && run && (
+      {/* {isSingleActivity && run && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
           <div className="bg-gray-900/70 backdrop-blur-sm border border-gray-700/50 rounded-lg shadow-xl px-4 py-3 w-72 relative">
             <div className="flex items-start justify-between mb-3">
@@ -474,7 +474,7 @@ const RunMap = ({
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

@@ -9,9 +9,11 @@ interface StatItemProps {
   label: string;
   value: string | number;
   unit?: string;
-  subtext: React.ReactNode;
+  subtext?: React.ReactNode;
   valueColorClass?: string;
   className?: string;
+  valueSizeClass?: string;
+  labelSizeClass?: string;
 }
 
 const BigNumberStat = ({
@@ -21,14 +23,18 @@ const BigNumberStat = ({
   subtext,
   valueColorClass = 'text-primary',
   className = '',
+  valueSizeClass = 'text-5xl md:text-7xl',
+  labelSizeClass = 'text-xs md:text-sm',
 }: StatItemProps) => (
-  <div className={`flex flex-col items-start text-left gap-1 ${className}`}>
-    <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate">
+  <div className={`flex flex-col items-start text-left ${className}`}>
+    <span
+      className={`font-sans font-black text-secondary uppercase tracking-widest ${labelSizeClass}`}
+    >
       {label}
     </span>
-    <div className="flex items-baseline justify-start gap-1 mt-1">
+    <div className="flex items-baseline justify-start gap-1 md:gap-2 mt-1 md:mt-2">
       <div
-        className={`text-3xl md:text-4xl font-condensed font-black ${valueColorClass} tracking-tight leading-none`}
+        className={`${valueSizeClass} font-condensed font-black ${valueColorClass} tracking-tighter leading-none`}
       >
         <CyclingText
           className={valueColorClass}
@@ -38,17 +44,28 @@ const BigNumberStat = ({
         />
       </div>
       {unit && (
-        <span className={`text-xs font-medium text-secondary`}>{unit}</span>
+        <span
+          className={`text-sm md:text-xl font-bold text-secondary uppercase tracking-widest`}
+        >
+          {unit}
+        </span>
       )}
     </div>
-    <div className="text-[10px] md:text-xs font-medium text-gray-500 mt-1 whitespace-nowrap overflow-hidden text-ellipsis">
-      {subtext || '\u00A0'}
-    </div>
+    {subtext && (
+      <div className="text-xs md:text-sm font-medium text-gray-500 mt-2 whitespace-nowrap overflow-hidden text-ellipsis uppercase tracking-wider">
+        {subtext}
+      </div>
+    )}
   </div>
 );
 
-const DashboardStats = () => {
-  const { activities: runs } = useActivities();
+interface DashboardStatsProps {
+  runs?: Activity[];
+}
+
+const DashboardStats = ({ runs: propRuns }: DashboardStatsProps) => {
+  const { activities } = useActivities();
+  const runs = propRuns || activities;
 
   // Logic from TotalStat
   let sumDistance = 0;
@@ -158,104 +175,102 @@ const DashboardStats = () => {
   const pbHalf = getPB(21097.5);
 
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div className="flex flex-col gap-16 md:gap-24 w-full py-8">
       {/* Summary Section */}
-      <div className="relative w-full bg-card rounded-card shadow-lg border border-gray-800/50 p-6 md:p-8 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-6">
-            <svg
-              viewBox="0 0 24 24"
-              className="w-6 h-6 text-emerald-400"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-            </svg>
-            <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">
+      <div className="relative w-full">
+        <div className="relative z-10 flex flex-col gap-8 md:gap-12">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200 leading-none">
               SUMMARY
             </h2>
+            <div className="h-1 w-24 bg-gradient-to-r from-emerald-400 to-teal-200 mt-2" />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            <BigNumberStat
-              label="TOTAL DISTANCE"
-              value={totalKm}
-              unit="KM"
-              subtext={`${runs.length} runs`}
-              valueColorClass="text-primary"
-            />
-            <BigNumberStat
-              label="TOTAL TIME"
-              value={totalHours}
-              unit="H"
-              subtext={`${avgWeeklyKm} km/wk`}
-              valueColorClass="text-primary"
-            />
-            <BigNumberStat
-              label="AVERAGE PACE"
-              value={avgPace}
-              unit="/KM"
-              subtext={`${avgHeartRate} bpm`}
-              valueColorClass="text-primary"
-            />
-            <BigNumberStat
-              label="LONGEST RUN"
-              value={maxDistStr}
-              unit="KM"
-              subtext={`${maxCount} runs`}
-              valueColorClass="text-primary"
-            />
+
+          <div className="flex flex-col gap-8 md:gap-16">
+            {/* Hero Stat */}
+            <div className="w-full">
+              <BigNumberStat
+                label="TOTAL DISTANCE"
+                value={totalKm}
+                unit="KM"
+                subtext={`${runs.length} runs`}
+                valueColorClass="text-emerald-400"
+                valueSizeClass="text-7xl md:text-[12rem]"
+                labelSizeClass="text-sm md:text-xl"
+              />
+            </div>
+
+            {/* Secondary Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 border-t border-gray-800/50 pt-8">
+              <BigNumberStat
+                label="TOTAL TIME"
+                value={totalHours}
+                unit="H"
+                subtext={`${avgWeeklyKm} km/wk`}
+                valueColorClass="text-blue-400"
+                valueSizeClass="text-5xl md:text-7xl"
+              />
+              <BigNumberStat
+                label="AVERAGE PACE"
+                value={avgPace}
+                unit="/KM"
+                subtext={`Avg speed`}
+                valueColorClass="text-purple-400"
+                valueSizeClass="text-5xl md:text-7xl"
+              />
+              <BigNumberStat
+                label="AVG HEART RATE"
+                value={avgHeartRate}
+                unit="BPM"
+                subtext={`Heart rate`}
+                valueColorClass="text-orange-400"
+                valueSizeClass="text-5xl md:text-7xl"
+                className="col-span-2 md:col-span-1"
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Personal Bests Section */}
-      <div className="relative w-full bg-card rounded-card shadow-lg border border-gray-800/50 p-6 md:p-8 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-orange-500/10 to-transparent pointer-events-none" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-6">
-            <svg
-              viewBox="0 0 24 24"
-              className="w-6 h-6 text-blue-400"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-            </svg>
-            <h2 className="text-xl md:text-2xl font-black italic uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
-              PERSONAL BESTS
+      <div className="relative w-full">
+        <div className="relative z-10 flex flex-col gap-8 md:gap-12">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 leading-none">
+              RECORDS
             </h2>
+            <div className="h-1 w-24 bg-gradient-to-r from-blue-400 to-indigo-400 mt-2" />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
             <BigNumberStat
               label="FASTEST 5K"
               value={pb5.time}
               subtext={formatDate(pb5.date)}
               valueColorClass="text-accent"
+              valueSizeClass="text-6xl md:text-8xl"
             />
             <BigNumberStat
               label="FASTEST 10K"
               value={pb10.time}
               subtext={formatDate(pb10.date)}
               valueColorClass="text-accent"
+              valueSizeClass="text-6xl md:text-8xl"
             />
             <BigNumberStat
               label="FASTEST 15K"
               value={pb15.time}
               subtext={formatDate(pb15.date)}
               valueColorClass="text-accent"
+              valueSizeClass="text-6xl md:text-8xl"
             />
             <BigNumberStat
-              label="HALF MARATHON"
-              value={pbHalf.time}
-              subtext={formatDate(pbHalf.date)}
+              label="LONGEST RUN"
+              value={maxDistStr}
+              unit="KM"
+              subtext={`${maxCount} runs`}
               valueColorClass="text-accent"
+              valueSizeClass="text-6xl md:text-8xl"
             />
           </div>
         </div>

@@ -10,6 +10,7 @@ import {
   filterYearRuns,
   sortDateFunc,
   dateKeyForRun,
+  isRun,
 } from '@/utils/utils';
 
 const Index = () => {
@@ -20,12 +21,21 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [yearStats, setYearStats] = useState({ count: 0, distance: 0 });
 
-  // Generate years from activities
+  // Filter only running activities
+  const runningActivities = useMemo(() => {
+    return activities.filter((a) => isRun(a.type));
+  }, [activities]);
+
+  // Generate years from running activities
   const years = useMemo(() => {
-    const yrs = activityYears.map(Number);
-    if (!yrs.includes(currentYear)) yrs.unshift(currentYear);
-    return yrs.sort((a, b) => b - a);
-  }, [activityYears, currentYear]);
+    const yrsSet = new Set<number>();
+    runningActivities.forEach((a) => {
+      const year = new Date(a.start_date_local).getFullYear();
+      if (!isNaN(year)) yrsSet.add(year);
+    });
+    if (!yrsSet.has(currentYear)) yrsSet.add(currentYear);
+    return Array.from(yrsSet).sort((a, b) => b - a);
+  }, [runningActivities, currentYear]);
 
   useEffect(() => {
     let isMounted = true;
@@ -35,7 +45,7 @@ const Index = () => {
     // providing a smooth transition as per the spec, while avoiding long artificial delays.
     const timer = setTimeout(() => {
       const yearRuns = filterAndSortRuns(
-        activities,
+        runningActivities,
         selectedYear.toString(),
         filterYearRuns,
         sortDateFunc
@@ -73,7 +83,7 @@ const Index = () => {
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [selectedYear, activities]);
+  }, [selectedYear, runningActivities]);
 
   const handleDayClick = (date: string, value: number) => {
     console.log(`Clicked on ${date} with value ${value}`);
@@ -93,7 +103,7 @@ const Index = () => {
       <div className="flex flex-col gap-6 lg:p-6 w-full">
         {/* Dashboard Stats */}
         <div className="w-full">
-          <DashboardStats />
+          <DashboardStats runs={runningActivities} />
         </div>
 
         {/* Heatmap Card */}
@@ -156,28 +166,32 @@ const Index = () => {
               />
             </div>
 
-            {/* We show loading overlay to avoid screen flash/layout shift */}
-            {isLoading && heatmapData.length > 0 && (
-              <div className="absolute inset-0 bg-card/80 backdrop-blur-sm z-10 flex items-center justify-center transition-opacity duration-300 rounded-lg">
+            <div className="relative min-h-[180px] md:min-h-[180px]">
+              {/* We show loading overlay to avoid screen flash/layout shift */}
+              <div 
+                className={`absolute inset-0 bg-card/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg transition-all duration-300 pointer-events-none ${
+                  isLoading ? 'opacity-100 visible' : 'opacity-0 invisible'
+                }`}
+              >
                 <div className="text-secondary font-medium animate-pulse">
                   Loading {selectedYear} data...
                 </div>
               </div>
-            )}
 
-            <div className="mt-4">
-              <AnnualHeatmap
-                year={selectedYear}
-                data={heatmapData}
-                onDayClick={handleDayClick}
-                isLoading={isLoading && heatmapData.length === 0}
-              />
+              <div className={`mt-4 transition-opacity duration-500 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
+                <AnnualHeatmap
+                  year={selectedYear}
+                  data={heatmapData}
+                  onDayClick={handleDayClick}
+                  isLoading={isLoading && heatmapData.length === 0}
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Activity Stats Module */}
-        <ActivityStats activities={activities} />
+        <ActivityStats activities={runningActivities} />
       </div>
     </Layout>
   );

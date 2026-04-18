@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useRef } from 'react';
 import Layout from '@/components/Layout';
 import RunMap from '@/components/RunMap';
 import MonthlyBarChart from '@/components/MonthlyBarChart';
-import CompactRunCalendar from '@/components/CompactRunCalendar';
+import RunListSidebar from '@/components/RunListSidebar';
 import useActivities from '@/hooks/useActivities';
 import {
   IViewState,
@@ -15,6 +15,7 @@ import {
   sortDateFunc,
   titleForShow,
   RunIds,
+  isRun,
 } from '@/utils/utils';
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
@@ -26,24 +27,53 @@ const SHENZHEN_VIEW_STATE: IViewState = {
 
 const Maps = () => {
   const { activities, thisYear, years } = useActivities();
-  const initialMonth = (() => {
-    const thisYearRuns = filterAndSortRuns(
-      activities,
-      thisYear,
-      filterYearRuns,
-      sortDateFunc
-    );
-    const m = thisYearRuns[0]?.start_date_local?.slice(5, 7);
-    const parsed = m ? Number(m) : NaN;
-    if (parsed >= 1 && parsed <= 12) return parsed;
-    return new Date().getMonth() + 1;
-  })();
-  const [year, setYear] = useState(thisYear);
-  const [month, setMonth] = useState<number>(initialMonth);
+
+  const { availableYearMonths, availableYearMonthList } = useMemo(() => {
+    const yearMonths: Record<string, Set<number>> = {};
+    
+    activities.forEach((run) => {
+      if (!isRun(run.type)) return;
+      const dateStr = run.start_date_local;
+      if (!dateStr) return;
+      
+      const y = dateStr.slice(0, 4);
+      const m = parseInt(dateStr.slice(5, 7), 10);
+      
+      if (!yearMonths[y]) {
+        yearMonths[y] = new Set();
+      }
+      yearMonths[y].add(m);
+    });
+
+    const result: Record<string, number[]> = {};
+    const list: { year: string; month: number }[] = [];
+
+    // Sort years descending
+    const sortedYears = Object.keys(yearMonths).sort((a, b) => Number(b) - Number(a));
+    
+    sortedYears.forEach((y) => {
+      // Sort months descending
+      const sortedMonths = Array.from(yearMonths[y]).sort((a, b) => b - a);
+      result[y] = sortedMonths;
+      
+      sortedMonths.forEach((m) => {
+        list.push({ year: y, month: m });
+      });
+    });
+
+    return { availableYearMonths: result, availableYearMonthList: list };
+  }, [activities]);
+
+  const initialSelection = availableYearMonthList.length > 0 
+    ? availableYearMonthList[0] 
+    : { year: thisYear, month: new Date().getMonth() + 1 };
+
+  const [year, setYear] = useState(initialSelection.year);
+  const [month, setMonth] = useState<number>(initialSelection.month);
   const [runs, setActivity] = useState(
     filterAndSortRuns(
       activities,
-      `${thisYear}-${pad2(initialMonth)}`,
+      `${initialSelection.year}-${pad2(initialSelection.month)}`,
       filterYearMonthRuns,
       sortDateFunc
     )
@@ -60,8 +90,7 @@ const Maps = () => {
     return getBoundsForGeoData(nextGeoData);
   };
   const [intervalId, setIntervalId] = useState<number>();
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const runsByDate = useMemo(() => groupRunsByDate(runs), [runs]);
+  const [selectedRunId, setSelectedRunId] = useState<number | null>(null);
   const pendingRunIdRef = useRef<number | null>(null);
 
   const [viewState, setViewState] = useState<IViewState>({
@@ -76,6 +105,7 @@ const Maps = () => {
       filterAndSortRuns(activities, ym, filterYearMonthRuns, sortDateFunc)
     );
     setTitle(`${ym} Running Heatmap`);
+    setSelectedRunId(null);
     clearInterval(intervalId);
   };
 
@@ -95,6 +125,13 @@ const Maps = () => {
     if (!lastRun) {
       return;
     }
+    
+    if (runIds.length === 1) {
+      setSelectedRunId(runIds[0]);
+    } else {
+      setSelectedRunId(null);
+    }
+    
     const nextGeo = geoJsonForRuns(selectedRuns);
     setGeoData(nextGeo);
     setViewState({
@@ -109,7 +146,6 @@ const Maps = () => {
     const y = date.slice(0, 4);
     const m = parseInt(date.slice(5, 7));
     changeYearMonth(y, m);
-    setSelectedDate(date.slice(0, 10));
     pendingRunIdRef.current = run.run_id;
   };
 
@@ -147,8 +183,8 @@ const Maps = () => {
   }, [runs]);
 
   return (
-    <Layout fullWidth>
-      <div className="relative w-full h-[calc(100vh-64px)] flex overflow-hidden">
+    <Layout fullWidth hideFooter>
+      <div className="relative w-full h-[calc(100vh-72px)] md:h-[calc(100vh-64px)] flex overflow-hidden">
         <div id="run-map" className="absolute inset-0 bg-background z-0">
           <RunMap
             viewState={viewState}
@@ -159,21 +195,18 @@ const Maps = () => {
           />
         </div>
 
-        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[320px] lg:right-10 lg:top-10 lg:bottom-10 p-4 lg:p-0 z-10 pointer-events-none flex flex-col justify-end lg:justify-start">
-          <div className="pointer-events-auto relative bg-card/90 backdrop-blur-xl rounded-card shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-gray-800/50 flex flex-col w-full max-h-[50%] lg:max-h-full transition-all overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-            <div className="relative z-10 overflow-y-auto overflow-x-hidden custom-scrollbar p-3 lg:p-4 w-full h-full flex-1">
-              <CompactRunCalendar
-                year={year}
-                month={month}
-                years={years}
-                runsByDate={runsByDate}
-                onChangeYearMonth={changeYearMonth}
-                onSelectRunIds={(ids) => locateActivity(ids)}
-                selectedDate={selectedDate}
-              />
-            </div>
-          </div>
+        <div className="absolute left-0 top-0 bottom-0 w-full md:w-auto lg:left-20 lg:top-6 lg:bottom-10 p-4 lg:p-0 z-10 pointer-events-none flex flex-col justify-end lg:justify-start">
+          <RunListSidebar
+            runs={runs}
+            year={year}
+            month={month}
+            years={years}
+            onChangeYearMonth={changeYearMonth}
+            onSelectRun={(runId) => locateActivity([runId])}
+            selectedRunId={selectedRunId}
+            availableYearMonths={availableYearMonths}
+            availableYearMonthList={availableYearMonthList}
+          />
         </div>
       </div>
     </Layout>

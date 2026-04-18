@@ -6,6 +6,7 @@ import Index from './pages';
 import Tracks from './pages/Tracks';
 import RunDetail from './pages/RunDetail';
 import Maps from './pages/maps';
+import Hiking from './pages/hiking';
 import NotFound from './pages/404';
 import ReactGA from 'react-ga4';
 import {
@@ -39,6 +40,10 @@ const routes = createHashRouter([
   {
     path: '/tracks',
     element: withOptionalGAPageTracking(<Tracks />),
+  },
+  {
+    path: '/hiking',
+    element: withOptionalGAPageTracking(<Hiking />),
   },
   {
     path: '/run/:runId',

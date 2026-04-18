@@ -461,44 +461,6 @@ const RunningChartsContent = ({
               ACTIVITIES MAP
             </h2>
           </div>
-          <div className="flex items-center bg-gray-900/50 border border-white/10 rounded-lg backdrop-blur-sm overflow-hidden">
-            <button
-              type="button"
-              onClick={() => onSelectType(RUN_TYPE)}
-              className={`p-2 transition-all duration-200 relative ${
-                selectedType === RUN_TYPE
-                  ? 'bg-gray-700/80 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-              title="Run"
-            >
-              <ActivityIcon type={RUN_TYPE} />
-            </button>
-            <button
-              type="button"
-              onClick={() => onSelectType(HIKE_TYPE)}
-              className={`p-2 transition-all duration-200 relative ${
-                selectedType === HIKE_TYPE
-                  ? 'bg-gray-700/80 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-              title="Hike"
-            >
-              <ActivityIcon type={HIKE_TYPE} />
-            </button>
-            <button
-              type="button"
-              onClick={() => onSelectType(WALK_TYPE)}
-              className={`p-2 transition-all duration-200 relative ${
-                selectedType === WALK_TYPE
-                  ? 'bg-gray-700/80 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-              title="Walk"
-            >
-              <ActivityIcon type={WALK_TYPE} />
-            </button>
-          </div>
         </div>
         <div className="grid grid-cols-[32px_1fr] sm:grid-cols-[54px_1fr] gap-2 sm:gap-3 mb-3">
         <div />

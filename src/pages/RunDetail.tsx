@@ -17,15 +17,24 @@ const RunDetail = () => {
     return activities.find((r) => r.run_id === runIdNumber) ?? null;
   }, [activities, runId, runIdNumber]);
 
-  const monthlyDistanceKm = useMemo(() => {
-    if (!run?.start_date_local) return 0;
+  const { monthlyDistanceKm, monthRunDates } = useMemo(() => {
+    if (!run?.start_date_local) return { monthlyDistanceKm: 0, monthRunDates: [] };
     const yearMonth = run.start_date_local.slice(0, 7);
-    const monthDistance = activities.reduce((sum, activity) => {
-      if (!isRun(activity.type)) return sum;
-      if (activity.start_date_local.slice(0, 7) !== yearMonth) return sum;
-      return sum + activity.distance;
-    }, 0);
-    return monthDistance / 1000;
+    let monthDistance = 0;
+    const runDates = new Set<string>();
+
+    activities.forEach((activity) => {
+      if (!isRun(activity.type)) return;
+      if (activity.start_date_local.slice(0, 7) === yearMonth) {
+        monthDistance += activity.distance;
+        runDates.add(activity.start_date_local.slice(0, 10));
+      }
+    });
+    
+    return {
+      monthlyDistanceKm: monthDistance / 1000,
+      monthRunDates: Array.from(runDates),
+    };
   }, [activities, run]);
 
   if (!runId || Number.isNaN(runIdNumber) || !run) {
@@ -42,7 +51,11 @@ const RunDetail = () => {
         <div className="flex justify-center items-center ">
           <RunPolyline run={run} className="w-[260px] h-[260px]" />
         </div>
-        <RunDetailPanel run={run} monthlyDistanceKm={monthlyDistanceKm} />
+        <RunDetailPanel 
+          run={run} 
+          monthlyDistanceKm={monthlyDistanceKm} 
+          monthRunDates={monthRunDates}
+        />
       </div>
     </Layout>
   );

@@ -24,6 +24,10 @@ const data: ISiteMetadataResult = {
       url: '/map',
     },
     {
+      name: 'Hiking',
+      url: '/hiking',
+    },
+    {
       name: 'Tracks',
       url: '/tracks',
     },

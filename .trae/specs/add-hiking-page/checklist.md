@@ -1,0 +1,8 @@
+- [x] 侧边栏组件 (`RunListSidebar`) 成功支持通过 `showFilter=false` 隐藏年月选择器
+- [x] 侧边栏组件在 `showFilter=false` 时，列表中的日期显示包含年份信息
+- [x] 创建了 `src/pages/hiking.tsx` 文件，成功复用地图和侧边栏布局
+- [x] `hiking.tsx` 中只包含 `Hike` 和 `Walk` 类型的数据
+- [x] 徒步页面加载时，地图能自动调整视野包含所有的徒步/步行轨迹
+- [x] 点击徒步页面的侧边栏项，地图能成功聚焦并定位到具体的轨迹
+- [x] `src/main.tsx` 中成功注册了 `/hiking` 路由
+- [x] `src/static/site-metadata.ts` 的导航栏成功添加了 "Hiking" 链接

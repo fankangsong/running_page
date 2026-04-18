@@ -98,7 +98,7 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
     value: number,
     isCurrentYear: boolean
   ) => {
-    if (!isCurrentYear || isLoading) return;
+    if (!isCurrentYear || isLoading || value === 0) return;
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     setHoveredDay({
       date,
@@ -148,6 +148,22 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
 
   return (
     <div className="relative w-full overflow-x-auto overflow-y-hidden custom-scrollbar">
+      <style>{`
+        @keyframes heatmapFadeIn {
+          from { 
+            opacity: 0; 
+            transform: scale(0.5); 
+          }
+          to { 
+            opacity: 1; 
+            transform: scale(1); 
+          }
+        }
+        .heatmap-cell-anim {
+          opacity: 0;
+          animation: heatmapFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+      `}</style>
       <div className="min-w-max inline-block">
         <div className="flex mb-2 h-6 relative">
           <div className="w-8"></div> {/* Spacer for day labels */}
@@ -177,31 +193,36 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
           </div>
 
           {/* Grid */}
-          <div className="flex gap-1">
-            {weeks.map((week, weekIdx) => (
-              <div key={weekIdx} className="flex flex-col gap-1">
-                {week.map((day, dayIdx) => (
-                  <div
-                    key={`${weekIdx}-${dayIdx}`}
-                    className={`w-2.5 h-2.5 rounded-sm transition-colors duration-200 ${
+        <div className="flex gap-1">
+          {weeks.map((week, weekIdx) => (
+            <div key={`${year}-${weekIdx}`} className="flex flex-col gap-1">
+              {week.map((day, dayIdx) => (
+                <div
+                  key={`${year}-${weekIdx}-${dayIdx}-${isLoading ? 'loading' : 'loaded'}`}
+                  className={`w-2.5 h-2.5 rounded-sm transition-colors duration-200 ${
+                    day.isCurrentYear
+                      ? isLoading
+                        ? 'bg-gray-800/70 animate-pulse'
+                        : `${getIntensityClass(day.value)} heatmap-cell-anim`
+                      : 'bg-transparent'
+                  } ${
+                    day.isCurrentYear && !isLoading && day.value > 0
+                      ? 'cursor-pointer hover:ring-1 hover:ring-primary'
+                      : ''
+                  }`}
+                  style={
+                    day.isCurrentYear && !isLoading
+                      ? { animationDelay: `${weekIdx * 20 + dayIdx * 5}ms` }
+                      : {}
+                  }
+                  onMouseEnter={(e) =>
+                    handleMouseEnter(
+                      e,
+                      day.date || '',
+                      day.value,
                       day.isCurrentYear
-                        ? isLoading
-                          ? 'bg-gray-800/70 animate-pulse'
-                          : getIntensityClass(day.value)
-                        : 'bg-transparent'
-                    } ${
-                      day.isCurrentYear && !isLoading
-                        ? 'cursor-pointer hover:ring-1 hover:ring-primary'
-                        : ''
-                    }`}
-                    onMouseEnter={(e) =>
-                      handleMouseEnter(
-                        e,
-                        day.date || '',
-                        day.value,
-                        day.isCurrentYear
-                      )
-                    }
+                    )
+                  }
                     onMouseLeave={handleMouseLeave}
                     onClick={() => {
                       if (
