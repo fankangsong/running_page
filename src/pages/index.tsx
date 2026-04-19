@@ -145,6 +145,7 @@ const Index = () => {
                         text={String(yearStats.count)}
                         className="text-3xl md:text-4xl font-condensed font-black text-accent tracking-tight leading-none"
                         hoverPlay={true}
+                        interval={50}
                       />
                     </div>
                   </div>
@@ -158,6 +159,7 @@ const Index = () => {
                         text={yearStats.distance.toFixed(1)}
                         className="text-3xl md:text-4xl font-condensed font-black text-accent tracking-tight leading-none"
                         hoverPlay={true}
+                        interval={50}
                       />
                       <span className="text-xs font-medium text-secondary">KM</span>
                     </div>
