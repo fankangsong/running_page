@@ -50,16 +50,10 @@ const CyclingText = forwardRef<CyclingTextHandle, CyclingTextProps>(
     };
 
     const [displayText, setDisplayText] = useState(() => getInitialText(text));
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const textRef = useRef(text); // Keep track of latest text prop
     const onCompleteRef = useRef(onComplete);
     const isPlayingRef = useRef(false);
-
-    // Update refs
-    useEffect(() => {
-      textRef.current = text;
-      onCompleteRef.current = onComplete;
-    }, [text, onComplete]);
 
     const play = useCallback(() => {
       if (intervalRef.current) {
@@ -121,6 +115,21 @@ const CyclingText = forwardRef<CyclingTextHandle, CyclingTextProps>(
         setDisplayText(currentChars.join(''));
       }, interval);
     }, [interval, step]);
+
+    // Update refs and handle text changes
+    useEffect(() => {
+      const isTextChanged = textRef.current !== text;
+      textRef.current = text;
+      onCompleteRef.current = onComplete;
+      
+      if (isTextChanged) {
+        if (!manualStart) {
+          play();
+        } else {
+          setDisplayText(getInitialText(text));
+        }
+      }
+    }, [text, onComplete, play, manualStart]);
 
     const handleMouseEnter = useCallback(() => {
       if (hoverPlay && !isPlayingRef.current) {

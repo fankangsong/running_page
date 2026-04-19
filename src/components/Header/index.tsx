@@ -29,13 +29,13 @@ const Header = () => {
           <CyclingText
             ref={runRef}
             text="RUN"
-            className="inline-block group-hover:scale-105 origin-left transition-transform duration-300"
+            className="inline-block group-hover:scale-105 origin-left transition-transform duration-300 pr-2"
             hoverPlay={true}
           />
           <CyclingText
             ref={colinRef}
             text="COLIN"
-            className="text-white inline-block group-hover:scale-105 origin-left transition-transform duration-300"
+            className="text-white inline-block group-hover:scale-105 origin-left transition-transform duration-300 pr-2"
             hoverPlay={true}
           />
         </Link>

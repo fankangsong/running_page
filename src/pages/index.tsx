@@ -4,6 +4,7 @@ import YearSelector from '@/components/YearSelector';
 import AnnualHeatmap, { HeatmapData } from '@/components/AnnualHeatmap';
 import ActivityStats from '@/components/ActivityStats';
 import DashboardStats from '@/components/DashboardStats';
+import CyclingText from '@/components/CyclingText';
 import useActivities from '@/hooks/useActivities';
 import {
   filterAndSortRuns,
@@ -140,9 +141,11 @@ const Index = () => {
                       TOTAL RUNS
                     </span>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-3xl md:text-4xl font-condensed font-black text-accent tracking-tight leading-none">
-                        {yearStats.count}
-                      </span>
+                      <CyclingText
+                        text={String(yearStats.count)}
+                        className="text-3xl md:text-4xl font-condensed font-black text-accent tracking-tight leading-none"
+                        hoverPlay={true}
+                      />
                     </div>
                   </div>
                   <div className="w-px h-8 bg-gray-800/50 hidden md:block"></div>
@@ -151,9 +154,11 @@ const Index = () => {
                       TOTAL DISTANCE
                     </span>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-3xl md:text-4xl font-condensed font-black text-accent tracking-tight leading-none">
-                        {yearStats.distance.toFixed(1)}
-                      </span>
+                      <CyclingText
+                        text={yearStats.distance.toFixed(1)}
+                        className="text-3xl md:text-4xl font-condensed font-black text-accent tracking-tight leading-none"
+                        hoverPlay={true}
+                      />
                       <span className="text-xs font-medium text-secondary">KM</span>
                     </div>
                   </div>
