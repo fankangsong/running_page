@@ -25,20 +25,33 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
     y: number;
   } | null>(null);
 
+  const [hoveredLegendIndex, setHoveredLegendIndex] = useState<number | null>(null);
+  const [hiddenLegendIndices, setHiddenLegendIndices] = useState<number[]>([]);
+
+  const getLegendIndex = (value: number) => {
+    if (value === 0) return -1;
+    if (value < 5) return 0;
+    if (value < 10) return 1;
+    if (value < 15) return 2;
+    if (value < 20) return 3;
+    if (value < 25) return 4;
+    return 5;
+  };
+
+  const legendItems = useMemo(() => [
+    { label: '< 5', title: '0 - 4.99 km', colorClass: 'bg-blue-400' },
+    { label: '5 ~ 10', title: '5 - 9.99 km', colorClass: 'bg-emerald-400' },
+    { label: '10 ~ 15', title: '10 - 14.99 km', colorClass: 'bg-yellow-400' },
+    { label: '15 ~ 20', title: '15 - 19.99 km', colorClass: 'bg-orange-400' },
+    { label: '20 ~ 25', title: '20 - 24.99 km', colorClass: 'bg-accent' },
+    { label: '≥ 25', title: '≥ 25 km', colorClass: 'bg-purple-500' },
+  ], []);
+
   // Group data by date string for O(1) lookup
   const dataMap = useMemo(() => {
     const map = new Map<string, number>();
     data.forEach((d) => map.set(d.date, d.value));
     return map;
-  }, [data]);
-
-  // Find max value to determine intensity levels
-  const maxValue = useMemo(() => {
-    let max = 0;
-    data.forEach((d) => {
-      if (d.value > max) max = d.value;
-    });
-    return max;
   }, [data]);
 
   const weeks = useMemo(() => {
@@ -80,25 +93,14 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
     return weeksArray;
   }, [year, dataMap]);
 
-  const getIntensityClass = (value: number) => {
-    if (value === 0) return 'bg-card border border-gray-800';
-    if (maxValue === 0) return 'bg-accent/20';
-
-    const ratio = value / maxValue;
-    if (ratio < 0.25) return 'bg-accent/20';
-    if (ratio < 0.5) return 'bg-accent/40';
-    if (ratio < 0.75) return 'bg-accent/60';
-    if (ratio < 0.9) return 'bg-accent/80';
-    return 'bg-accent';
-  };
-
   const handleMouseEnter = (
     e: React.MouseEvent,
     date: string,
     value: number,
-    isCurrentYear: boolean
+    isCurrentYear: boolean,
+    isHidden: boolean
   ) => {
-    if (!isCurrentYear || isLoading || value === 0) return;
+    if (!isCurrentYear || isLoading || value === 0 || isHidden) return;
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     setHoveredDay({
       date,
@@ -196,76 +198,117 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
         <div className="flex gap-1">
           {weeks.map((week, weekIdx) => (
             <div key={`${year}-${weekIdx}`} className="flex flex-col gap-1">
-              {week.map((day, dayIdx) => (
-                <div
-                  key={`${year}-${weekIdx}-${dayIdx}-${isLoading ? 'loading' : 'loaded'}`}
-                  className={`w-2.5 h-2.5 rounded-sm transition-colors duration-200 ${
-                    day.isCurrentYear
-                      ? isLoading
-                        ? 'bg-gray-800/70 animate-pulse'
-                        : `${getIntensityClass(day.value)} heatmap-cell-anim`
-                      : 'bg-transparent'
-                  } ${
-                    day.isCurrentYear && !isLoading && day.value > 0
-                      ? 'cursor-pointer hover:ring-1 hover:ring-primary'
-                      : ''
-                  }`}
-                  style={
-                    day.isCurrentYear && !isLoading
-                      ? { animationDelay: `${weekIdx * 20 + dayIdx * 5}ms` }
-                      : {}
+              {week.map((day, dayIdx) => {
+                const cellLegendIdx = getLegendIndex(day.value);
+                const isHidden = hiddenLegendIndices.includes(cellLegendIdx);
+                const isLegendHovered = hoveredLegendIndex !== null;
+                const isCurrentLegendHovered = hoveredLegendIndex === cellLegendIdx;
+
+                let cellClass = '';
+                if (!day.isCurrentYear) {
+                  cellClass = 'bg-transparent';
+                } else if (isLoading) {
+                  cellClass = 'bg-gray-800/70 animate-pulse';
+                } else if (day.value === 0) {
+                  cellClass = 'bg-card border border-gray-800';
+                } else {
+                  const baseColor = legendItems[cellLegendIdx].colorClass;
+                  if (isCurrentLegendHovered) {
+                    cellClass = `${baseColor} opacity-100 ring-1 ring-primary z-10`;
+                  } else if (isHidden) {
+                    cellClass = 'bg-card border border-gray-800';
+                  } else if (isLegendHovered) {
+                    cellClass = `${baseColor} opacity-20`;
+                  } else {
+                    cellClass = `${baseColor} heatmap-cell-anim`;
                   }
-                  onMouseEnter={(e) =>
-                    handleMouseEnter(
-                      e,
-                      day.date || '',
-                      day.value,
-                      day.isCurrentYear
-                    )
-                  }
+                }
+
+                const interactionClass = day.isCurrentYear && !isLoading && day.value > 0 && !isHidden
+                  ? 'cursor-pointer hover:ring-1 hover:ring-primary hover:z-10'
+                  : '';
+
+                return (
+                  <div
+                    key={`${year}-${weekIdx}-${dayIdx}-${isLoading ? 'loading' : 'loaded'}`}
+                    className={`w-2.5 h-2.5 rounded-sm transition-all duration-200 relative ${cellClass} ${interactionClass}`}
+                    style={
+                      day.isCurrentYear && !isLoading
+                        ? { animationDelay: `${weekIdx * 20 + dayIdx * 5}ms` }
+                        : {}
+                    }
+                    onMouseEnter={(e) => {
+                      if (isHidden && !isCurrentLegendHovered) return;
+                      handleMouseEnter(
+                        e,
+                        day.date || '',
+                        day.value,
+                        day.isCurrentYear,
+                        isHidden && !isCurrentLegendHovered
+                      );
+                    }}
                     onMouseLeave={handleMouseLeave}
                     onClick={() => {
                       if (
                         !isLoading &&
                         day.isCurrentYear &&
                         day.date &&
-                        onDayClick
+                        onDayClick &&
+                        (!isHidden || isCurrentLegendHovered)
                       ) {
                         onDayClick(day.date, day.value);
                       }
                     }}
                   />
-                ))}
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center justify-end gap-2 mt-4 text-xs text-secondary">
-          <span>Less</span>
+        <div className="flex justify-end mt-6">
           <div className="flex gap-1">
             {isLoading ? (
-              <>
-                <div className="w-2.5 h-2.5 rounded-sm bg-gray-800/70 animate-pulse"></div>
-                <div className="w-2.5 h-2.5 rounded-sm bg-gray-800/70 animate-pulse"></div>
-                <div className="w-2.5 h-2.5 rounded-sm bg-gray-800/70 animate-pulse"></div>
-                <div className="w-2.5 h-2.5 rounded-sm bg-gray-800/70 animate-pulse"></div>
-                <div className="w-2.5 h-2.5 rounded-sm bg-gray-800/70 animate-pulse"></div>
-                <div className="w-2.5 h-2.5 rounded-sm bg-gray-800/70 animate-pulse"></div>
-              </>
+              [...Array(6)].map((_, i) => (
+                <div key={i} className="flex flex-col items-center gap-1">
+                  <div className="w-8 h-2 rounded-sm bg-gray-800/70 animate-pulse"></div>
+                  <span className="text-[10px] text-gray-800/50 animate-pulse font-medium">...</span>
+                </div>
+              ))
             ) : (
               <>
-                <div className="w-2.5 h-2.5 rounded-sm bg-card border border-gray-800"></div>
-                <div className="w-2.5 h-2.5 rounded-sm bg-accent/20"></div>
-                <div className="w-2.5 h-2.5 rounded-sm bg-accent/40"></div>
-                <div className="w-2.5 h-2.5 rounded-sm bg-accent/60"></div>
-                <div className="w-2.5 h-2.5 rounded-sm bg-accent/80"></div>
-                <div className="w-2.5 h-2.5 rounded-sm bg-accent"></div>
+                {legendItems.map((item, i) => {
+                  const isHidden = hiddenLegendIndices.includes(i);
+                  const isHovered = hoveredLegendIndex === i;
+                  const isOtherHovered = hoveredLegendIndex !== null && hoveredLegendIndex !== i;
+
+                  return (
+                    <div 
+                      key={i} 
+                      className={`flex flex-col items-center gap-1 cursor-pointer transition-opacity duration-200 ${isOtherHovered ? 'opacity-40' : 'opacity-100'}`}
+                      onMouseEnter={() => setHoveredLegendIndex(i)}
+                      onMouseLeave={() => setHoveredLegendIndex(null)}
+                      onClick={() => {
+                        setHiddenLegendIndices(prev => 
+                          prev.includes(i) ? prev.filter(idx => idx !== i) : [...prev, i]
+                        );
+                      }}
+                    >
+                      <div 
+                        className={`w-8 h-2 rounded-sm transition-all duration-200 ${isHidden && !isHovered ? 'bg-card border border-gray-800' : item.colorClass} ${isHovered ? 'ring-1 ring-primary' : ''}`} 
+                        title={item.title}
+                      ></div>
+                      <span className={`text-[10px] font-sans tracking-wider transition-colors duration-200 ${isHidden ? 'text-gray-800/50' : 'text-secondary'}`}>
+                        {item.label}
+                      </span>
+                    </div>
+                  );
+                })}
               </>
             )}
           </div>
-          <span>More</span>
         </div>
       </div>
 
