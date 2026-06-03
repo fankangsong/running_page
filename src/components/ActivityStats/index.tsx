@@ -5,6 +5,7 @@ import {
   convertMovingTime2Sec,
   getAerobicZone,
   AEROBIC_ZONES,
+  locationForRun,
 } from '@/utils/utils';
 import CyclingText, { CyclingTextHandle } from '@/components/CyclingText';
 import Dropdown from '@/components/Dropdown';
@@ -155,6 +156,23 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
       avgHR: avgHR ? avgHR.toString() : '-',
       aerobicZoneText: aerobicZone ? `Z${aerobicZone.zone}` : '-',
       aerobicZoneColor: aerobicZone ? aerobicZone.color : 'inherit',
+    };
+  }, [filteredActivities]);
+
+  // 2.5 Calculate location stats (countries and cities)
+  const locationStats = useMemo(() => {
+    const countries = new Set<string>();
+    const cities = new Set<string>();
+
+    filteredActivities.forEach((a) => {
+      const location = locationForRun(a);
+      if (location.country) countries.add(location.country);
+      if (location.city) cities.add(location.city);
+    });
+
+    return {
+      countryCount: countries.size,
+      cityCount: cities.size,
     };
   }, [filteredActivities]);
 
@@ -464,6 +482,18 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
           unit="/KM"
           valueColor="#facc15"
         />
+        <MetricCard
+          title="Countries"
+          value={locationStats.countryCount.toString()}
+          unit="COUNTRIES"
+          valueColor="#38bdf8"
+        />
+        <MetricCard
+          title="Cities"
+          value={locationStats.cityCount.toString()}
+          unit="CITIES"
+          valueColor="#a78bfa"
+        />
 
         {/* Graphic Aerobic Zones */}
         <div className="flex flex-col items-start gap-1 col-span-2 md:col-span-2 w-full">
@@ -525,8 +555,8 @@ interface MetricCardProps {
   title: string;
   value: string;
   unit: string;
-  icon: React.ReactNode;
-  iconColorClass: string;
+  icon?: React.ReactNode;
+  iconColorClass?: string;
   valueColor?: string;
 }
 
