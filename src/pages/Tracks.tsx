@@ -1,187 +1,74 @@
-import { useState, useEffect, useRef } from 'react';
-import type { TransitionEventHandler } from 'react';
+import { useState } from 'react';
 import Layout from '@/components/Layout';
-import TracksStats from '@/components/TracksStats';
-import RunningCharts from '@/components/RunningCharts';
+import ActivityTypeCard from '@/components/ActivityTypeCard';
 import useActivities from '@/hooks/useActivities';
 import {
-  filterAndSortRuns,
-  filterYearRuns,
-  filterCityRuns,
   RUN_TYPE,
-  sortDateFunc,
+  HIKE_TYPE,
+  WALK_TYPE,
+  Activity,
 } from '@/utils/utils';
+import { useNavigate } from 'react-router-dom';
+import ActivityIcon from '@/components/ActivityIcon';
 
-const filterCountryRuns = (run: any, country: string) => {
-  if (run && run.location_country) {
-    return run.location_country.includes(country);
-  }
-  return false;
-};
+type ActivityType = typeof RUN_TYPE | typeof HIKE_TYPE | typeof WALK_TYPE;
 
-const filterProvinceRuns = (run: any, province: string) => {
-  if (run && run.location_country) {
-    return run.location_country.includes(province);
-  }
-  return false;
-};
+const TYPE_TABS: { type: ActivityType; label: string; gradient: string; iconColor: string }[] = [
+  { type: RUN_TYPE, label: 'RUNNING', gradient: 'from-cyan-400 to-blue-500', iconColor: 'text-cyan-400' },
+  { type: HIKE_TYPE, label: 'HIKING', gradient: 'from-violet-400 to-purple-500', iconColor: 'text-violet-400' },
+  { type: WALK_TYPE, label: 'WALKING', gradient: 'from-amber-400 to-orange-500', iconColor: 'text-amber-400' },
+];
 
 const Tracks = () => {
-  const { activities, years } = useActivities();
-  const [year, setYear] = useState('Total');
-  const [runs, setRuns] = useState(activities);
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState(RUN_TYPE);
+  const { activities } = useActivities();
+  const navigate = useNavigate();
+  const [activeType, setActiveType] = useState<ActivityType>(RUN_TYPE);
 
-  const [displayYear, setDisplayYear] = useState(year);
-  const [displayRuns, setDisplayRuns] = useState(activities);
-  const [phase, setPhase] = useState<'idle' | 'out' | 'in'>('idle');
-  const prevYearRef = useRef<string>(year);
-  const pendingRef = useRef<{ year: string; runs: typeof activities }>({
-    year,
-    runs: activities,
-  });
-
-  useEffect(() => {
-    let filtered = filterAndSortRuns(
-      activities,
-      year,
-      filterYearRuns,
-      sortDateFunc
-    );
-    if (selectedCountry && selectedCountry.length > 0) {
-      filtered = filtered.filter((r) =>
-        filterCountryRuns(r, selectedCountry as string)
-      );
-      filtered.sort(sortDateFunc);
-    }
-    if (selectedProvince && selectedProvince.length > 0) {
-      filtered = filtered.filter((r) =>
-        filterProvinceRuns(r, selectedProvince as string)
-      );
-      filtered.sort(sortDateFunc);
-    }
-    if (selectedCity && selectedCity.length > 0) {
-      filtered = filtered.filter((r) =>
-        filterCityRuns(r, selectedCity as string)
-      );
-      filtered.sort(sortDateFunc);
-    }
-    setRuns(filtered);
-  }, [year, activities, selectedCity, selectedCountry, selectedProvince]);
-
-  useEffect(() => {
-    pendingRef.current = { year, runs };
-    if (prevYearRef.current !== year) {
-      prevYearRef.current = year;
-      setPhase('out');
-    } else if (phase === 'idle' && displayYear === year) {
-      setDisplayRuns(runs);
-    }
-  }, [displayYear, phase, runs, year]);
-
-  const handleTransitionEnd: TransitionEventHandler<HTMLDivElement> = (e) => {
-    if (e.target !== e.currentTarget) return;
-    if (e.propertyName !== 'opacity' && e.propertyName !== 'transform') return;
-    if (phase === 'out') {
-      setDisplayYear(pendingRef.current.year);
-      setDisplayRuns(pendingRef.current.runs);
-      setPhase('in');
-      return;
-    }
-    if (phase === 'in') {
-      setPhase('idle');
-    }
+  const handleActivityClick = (activity: Activity) => {
+    navigate(`/run/${activity.run_id}`);
   };
-
-  const handleSelectCity = (city: string) => {
-    if (!city) {
-      setSelectedCity(null);
-      return;
-    }
-    setSelectedCity((prev) => (prev === city ? null : city));
-  };
-
-  const handleSelectCountry = (country: string) => {
-    if (!country) {
-      setSelectedCountry(null);
-      return;
-    }
-    setSelectedCountry((prev) => (prev === country ? null : country));
-  };
-
-  const handleSelectProvince = (province: string) => {
-    if (!province) {
-      setSelectedProvince(null);
-      return;
-    }
-    setSelectedProvince((prev) => (prev === province ? null : province));
-  };
-
-  const swapClassName = `transition-[opacity,transform] duration-200 ease-out will-change-[opacity,transform] ${
-    phase === 'out' ? 'opacity-0 translate-y-1' : 'opacity-100 translate-y-0'
-  }`;
 
   return (
     <Layout>
-      <div className="p-4 lg:p-6 space-y-6">
-        <div className="flex flex-wrap gap-2 justify-start">
-          <button
-            className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-200 active:scale-95 ${
-              year === 'Total'
-                ? 'bg-accent text-white shadow-md shadow-accent/20'
-                : 'bg-gray-800 text-secondary hover:bg-gray-700 hover:text-primary'
-            }`}
-            onClick={() => setYear('Total')}
-            type="button"
-          >
-            Total
-          </button>
-          {years.map((y) => (
+      <div className="p-4 lg:p-6 min-h-screen">
+        {/* Page Header - Cyberpunk Cyan Style */}
+        <div className="mb-8 text-center">
+          <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-cyan-400 leading-none"
+              >
+            TRACKS
+          </h1>
+          <div className="h-1 w-32 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 mt-3 mx-auto" />
+        </div>
+
+        {/* Activity Type Tabs - Centered, Compact */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {TYPE_TABS.map(({ type, label, iconColor }) => (
             <button
-              key={y}
-              className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-200 active:scale-95 ${
-                year === y
-                  ? 'bg-accent text-white shadow-md shadow-accent/20'
-                  : 'bg-gray-800 text-secondary hover:bg-gray-700 hover:text-primary'
+              key={type}
+              onClick={() => setActiveType(type)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 ${
+                activeType === type
+                  ? 'bg-card text-white shadow-lg'
+                  : 'text-secondary hover:text-primary hover:bg-gray-800/50'
               }`}
-              onClick={() => setYear(y)}
               type="button"
             >
-              {y}
+              <div className={activeType === type ? iconColor : 'text-gray-500'}>
+                <ActivityIcon type={type} size={16} />
+              </div>
+              <span className={`text-xs font-bold uppercase tracking-wider ${
+                activeType === type ? 'text-cyan-300' : 'text-gray-500'
+              }`}>{label}</span>
             </button>
           ))}
         </div>
 
-        <div
-          className={`grid grid-cols-1 lg:grid-cols-10 gap-6 ${swapClassName}`}
-          onTransitionEnd={handleTransitionEnd}
-        >
-          <div className="lg:col-span-3">
-            <TracksStats
-              runs={displayRuns}
-              year={displayYear}
-              selectedType={selectedType}
-              onSelectCity={handleSelectCity}
-              selectedCity={selectedCity}
-              topN={12}
-              onSelectCountry={handleSelectCountry}
-              selectedCountry={selectedCountry}
-              onSelectProvince={handleSelectProvince}
-              selectedProvince={selectedProvince}
-            />
-          </div>
-          <div className="lg:col-span-7">
-            <RunningCharts
-              year={displayYear}
-              runs={displayRuns}
-              selectedType={selectedType}
-              onSelectType={setSelectedType}
-            />
-          </div>
-        </div>
+        {/* Active Activity Type Card */}
+        <ActivityTypeCard
+          type={activeType}
+          activities={activities}
+          onActivityClick={handleActivityClick}
+        />
       </div>
     </Layout>
   );

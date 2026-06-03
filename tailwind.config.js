@@ -17,6 +17,18 @@ export default {
         sans: ['Roboto', 'system-ui', 'sans-serif'],
         condensed: ['"Roboto Condensed"', 'system-ui', 'sans-serif'],
       },
+      animation: {
+        fadeIn: 'fadeIn 0.3s ease-out forwards',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+      },
+      gridTemplateColumns: {
+        '14': 'repeat(14, minmax(0, 1fr))',
+      },
     },
   },
   plugins: [],

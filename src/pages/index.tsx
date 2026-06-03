@@ -174,26 +174,23 @@ const Index = () => {
             </div>
 
             <div className="relative min-h-[180px] md:min-h-[180px]">
-              {/* We show loading overlay to avoid screen flash/layout shift */}
-              <div 
-                className={`absolute inset-0 bg-card/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg transition-all duration-300 pointer-events-none ${
-                  isLoading ? 'opacity-100 visible' : 'opacity-0 invisible'
-                }`}
-              >
+            {/* Loading overlay - only show when no data exists yet */}
+            {heatmapData.length === 0 && isLoading && (
+              <div className="absolute inset-0 bg-card/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
                 <div className="text-secondary font-medium animate-pulse">
                   Loading {selectedYear} data...
                 </div>
               </div>
+            )}
 
-              <div className={`mt-4 transition-opacity duration-500 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
-                <AnnualHeatmap
-                  year={selectedYear}
-                  data={heatmapData}
-                  onDayClick={handleDayClick}
-                  isLoading={isLoading && heatmapData.length === 0}
-                />
-              </div>
-            </div>
+            <AnnualHeatmap
+              year={selectedYear}
+              data={heatmapData}
+              onDayClick={handleDayClick}
+              isLoading={false}
+              animationKey={`${selectedYear}-${heatmapData.length > 0 ? 'ready' : 'waiting'}`}
+            />
+          </div>
           </div>
         </div>
 

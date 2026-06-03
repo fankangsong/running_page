@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 
 export interface HeatmapData {
   date: string; // YYYY-MM-DD
@@ -10,6 +10,7 @@ interface AnnualHeatmapProps {
   data: HeatmapData[];
   onDayClick?: (date: string, value: number) => void;
   isLoading?: boolean;
+  animationKey?: string; // Used to trigger re-animation when year changes
 }
 
 const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
@@ -17,6 +18,7 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
   data,
   onDayClick,
   isLoading,
+  animationKey,
 }) => {
   const [hoveredDay, setHoveredDay] = useState<{
     date: string;
@@ -27,6 +29,26 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
 
   const [hoveredLegendIndex, setHoveredLegendIndex] = useState<number | null>(null);
   const [hiddenLegendIndices, setHiddenLegendIndices] = useState<number[]>([]);
+
+  // Track whether animation has played for the current animationKey
+  const [playedAnimationKey, setPlayedAnimationKey] = useState<string | undefined>(undefined);
+
+  // Determine if we should animate: only when animationKey changes to a new value with data
+  const shouldAnimate = animationKey !== undefined &&
+                        animationKey !== playedAnimationKey &&
+                        data.length > 0 &&
+                        !isLoading;
+
+  // Mark animation as played after it starts
+  useEffect(() => {
+    if (shouldAnimate && animationKey !== undefined) {
+      // Use a timeout to ensure animation completes before marking as played
+      const timer = setTimeout(() => {
+        setPlayedAnimationKey(animationKey);
+      }, 600); // Slightly longer than animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [shouldAnimate, animationKey]);
 
   const getLegendIndex = (value: number) => {
     if (value === 0) return -1;
@@ -152,18 +174,18 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
     <div className="relative w-full overflow-x-auto overflow-y-hidden custom-scrollbar">
       <style>{`
         @keyframes heatmapFadeIn {
-          from { 
-            opacity: 0; 
-            transform: scale(0.5); 
+          from {
+            opacity: 0;
+            transform: scale(0.5);
           }
-          to { 
-            opacity: 1; 
-            transform: scale(1); 
+          to {
+            opacity: 1;
+            transform: scale(1);
           }
         }
         .heatmap-cell-anim {
-          opacity: 0;
-          animation: heatmapFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          /* animation-fill-mode: backwards ensures the 'from' state is applied before animation starts */
+          animation: heatmapFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
         }
       `}</style>
       <div className="min-w-max inline-block">
@@ -219,8 +241,12 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
                     cellClass = 'bg-card border border-gray-800';
                   } else if (isLegendHovered) {
                     cellClass = `${baseColor} opacity-20`;
-                  } else {
+                  } else if (shouldAnimate) {
+                    // Only apply animation class when we want to animate (year change)
                     cellClass = `${baseColor} heatmap-cell-anim`;
+                  } else {
+                    // Static display for hover interactions
+                    cellClass = baseColor;
                   }
                 }
 
@@ -230,10 +256,10 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
 
                 return (
                   <div
-                    key={`${year}-${weekIdx}-${dayIdx}-${isLoading ? 'loading' : 'loaded'}`}
+                    key={`${year}-${weekIdx}-${dayIdx}`}
                     className={`w-2.5 h-2.5 rounded-sm transition-all duration-200 relative ${cellClass} ${interactionClass}`}
                     style={
-                      day.isCurrentYear && !isLoading
+                      day.isCurrentYear && !isLoading && shouldAnimate
                         ? { animationDelay: `${weekIdx * 20 + dayIdx * 5}ms` }
                         : {}
                     }
