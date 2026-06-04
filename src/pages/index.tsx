@@ -12,15 +12,21 @@ import {
   sortDateFunc,
   dateKeyForRun,
   isRun,
+  locationForRun,
 } from '@/utils/utils';
 
 const Index = () => {
-  const { activities, years: activityYears } = useActivities();
+  const { activities } = useActivities();
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [yearStats, setYearStats] = useState({ count: 0, distance: 0 });
+  const [yearStats, setYearStats] = useState({
+    count: 0,
+    distance: 0,
+    countries: new Set<string>(),
+    cities: new Set<string>(),
+  });
 
   // Filter only running activities
   const runningActivities = useMemo(() => {
@@ -54,6 +60,8 @@ const Index = () => {
 
       const dateMap = new Map<string, number>();
       let totalDistance = 0;
+      const countries = new Set<string>();
+      const cities = new Set<string>();
 
       yearRuns.forEach((run) => {
         const dateKey = dateKeyForRun(run);
@@ -61,6 +69,10 @@ const Index = () => {
         const dist = run.distance / 1000.0;
         totalDistance += dist;
         dateMap.set(dateKey, (dateMap.get(dateKey) || 0) + dist);
+
+        const location = locationForRun(run);
+        if (location.country) countries.add(location.country);
+        if (location.city) cities.add(location.city);
       });
 
       const data: HeatmapData[] = Array.from(dateMap.entries()).map(
@@ -75,6 +87,8 @@ const Index = () => {
         setYearStats({
           count: yearRuns.length,
           distance: totalDistance,
+          countries,
+          cities,
         });
         setIsLoading(false);
       }
@@ -91,13 +105,6 @@ const Index = () => {
     // Future: navigate to daily detail or open a modal
   };
 
-  const handleClickPB = (run: any) => {
-    const date = run.start_date_local;
-    const y = date.slice(0, 4);
-    setSelectedYear(parseInt(y));
-    // Since heatmap currently only focuses on year, navigating to the specific year is enough.
-    // If we want to highlight the specific date, we could add a new prop to AnnualHeatmap.
-  };
 
   return (
     <Layout>
@@ -135,7 +142,7 @@ const Index = () => {
                   </h2>
                 </div>
                 
-                <div className="flex items-baseline gap-6">
+                <div className="flex items-start gap-6 flex-wrap">
                   <div className="flex flex-col gap-1">
                     <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider">
                       TOTAL RUNS
@@ -149,7 +156,7 @@ const Index = () => {
                       />
                     </div>
                   </div>
-                  <div className="w-px h-8 bg-gray-800/50 hidden md:block"></div>
+                  <div className="w-px h-8 bg-gray-800/50 hidden md:block self-center"></div>
                   <div className="flex flex-col gap-1">
                     <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider">
                       TOTAL DISTANCE
@@ -162,6 +169,44 @@ const Index = () => {
                         interval={50}
                       />
                       <span className="text-xs font-medium text-secondary">KM</span>
+                    </div>
+                  </div>
+                  <div className="w-px h-8 bg-gray-800/50 hidden md:block self-center"></div>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider">
+                      COUNTRIES
+                    </span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {Array.from(yearStats.countries).sort().map((c, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-0.5 rounded-full text-xs font-bold text-sky-400 bg-gray-800/50 border border-gray-700/50"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                      {yearStats.countries.size === 0 && (
+                        <span className="text-secondary text-xs">--</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="w-px h-8 bg-gray-800/50 hidden md:block self-center"></div>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider">
+                      CITIES
+                    </span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {Array.from(yearStats.cities).sort().map((c, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-0.5 rounded-full text-xs font-bold text-violet-400 bg-gray-800/50 border border-gray-700/50"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                      {yearStats.cities.size === 0 && (
+                        <span className="text-secondary text-xs">--</span>
+                      )}
                     </div>
                   </div>
                 </div>
