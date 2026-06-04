@@ -1,6 +1,6 @@
 import React from 'react';
 import useActivities from '@/hooks/useActivities';
-import { formatPace, convertMovingTime2Sec, isRun, locationForRun } from '@/utils/utils';
+import { formatPace, convertMovingTime2Sec, isRun } from '@/utils/utils';
 import CyclingText from '@/components/CyclingText';
 
 import { Activity } from '@/utils/utils';
@@ -91,10 +91,6 @@ const DashboardStats = ({ runs: propRuns }: DashboardStatsProps) => {
   let maxTime = 0;
   let maxDistance = 0;
 
-  // Location stats
-  const countries = new Set<string>();
-  const cities = new Set<string>();
-
   runs.forEach((run) => {
     if (!isRun(run.type)) return;
     const dist = run.distance / 1000;
@@ -112,11 +108,6 @@ const DashboardStats = ({ runs: propRuns }: DashboardStatsProps) => {
     if (runDate < minTime) minTime = runDate;
     if (runDate > maxTime) maxTime = runDate;
     if (dist > maxDistance) maxDistance = dist;
-
-    // Collect location info
-    const location = locationForRun(run);
-    if (location.country) countries.add(location.country);
-    if (location.city) cities.add(location.city);
   });
 
   const totalKm = sumDistance.toFixed(1);
@@ -249,45 +240,6 @@ const DashboardStats = ({ runs: propRuns }: DashboardStatsProps) => {
                 valueSizeClass="text-5xl md:text-7xl"
                 className="col-span-2 md:col-span-1"
               />
-            </div>
-            {/* Inline location lists */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider">
-                  COUNTRIES
-                </span>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {Array.from(countries).sort().map((c, i) => (
-                    <span
-                      key={i}
-                      className="px-3 py-1.5 rounded-full text-sm font-bold text-sky-400 bg-gray-800/50 border border-gray-700/50"
-                    >
-                      {c}
-                    </span>
-                  ))}
-                  {countries.size === 0 && (
-                    <div className="text-secondary mt-2">No countries</div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider">
-                  CITIES
-                </span>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {Array.from(cities).sort().map((c, i) => (
-                    <span
-                      key={i}
-                      className="px-3 py-1.5 rounded-full text-sm font-bold text-violet-400 bg-gray-800/50 border border-gray-700/50"
-                    >
-                      {c}
-                    </span>
-                  ))}
-                  {cities.size === 0 && (
-                    <div className="text-secondary mt-2">No cities</div>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
         </div>
