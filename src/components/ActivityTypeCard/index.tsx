@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, CSSProperties } from 'react';
 import {
   Activity,
   Coordinate,
@@ -225,7 +225,7 @@ const ActivityTypeCard = ({
   }
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6" style={{ '--accent-color': config.accent } as CSSProperties}>
 
       {/* Year Card - For Screenshot Sharing */}
       <div className="bg-card rounded-card border border-gray-800/50 p-6 md:p-8">
@@ -245,10 +245,8 @@ const ActivityTypeCard = ({
           <div className="flex flex-col items-center">
             <span className="text-xs font-bold text-secondary uppercase tracking-widest mb-1">YEAR</span>
             <span
-              className="text-5xl md:text-6xl font-condensed font-black italic tracking-tighter"
-              style={{
-                color: config.accent,
-              }}
+              key={`${type}-${currentYear}`}
+              className="text-5xl md:text-6xl font-condensed font-black italic tracking-tighter text-[var(--accent-color)] transition-none"
             >
               {currentYear}
             </span>
@@ -286,11 +284,11 @@ const ActivityTypeCard = ({
 
         {/* Year Stats Grid */}
         {yearStats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 py-4 border-t border-b border-gray-800/30">
+          <div key={`${type}-${currentYear}-stats`} className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 py-4 border-t border-b border-gray-800/30">
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1">Total Distance</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-condensed font-black" style={{ color: config.accent }}>
+                <span className="text-2xl font-condensed font-black text-[var(--accent-color)]">
                   {yearStats.totalDistance.toFixed(1)}
                 </span>
                 <span className="text-xs text-secondary">km</span>
@@ -299,7 +297,7 @@ const ActivityTypeCard = ({
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1">Total Time</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-condensed font-black" style={{ color: config.accent }}>
+                <span className="text-2xl font-condensed font-black text-[var(--accent-color)]">
                   {(yearStats.totalTime / 3600).toFixed(1)}
                 </span>
                 <span className="text-xs text-secondary">h</span>
@@ -308,7 +306,7 @@ const ActivityTypeCard = ({
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1">Avg Pace</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-condensed font-black" style={{ color: config.accent }}>
+                <span className="text-2xl font-condensed font-black text-[var(--accent-color)]">
                   {yearStats.avgPace}
                 </span>
                 <span className="text-xs text-secondary">/km</span>
@@ -317,7 +315,7 @@ const ActivityTypeCard = ({
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1">Avg Heart Rate</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-condensed font-black" style={{ color: config.accent }}>
+                <span className="text-2xl font-condensed font-black text-[var(--accent-color)]">
                   {yearStats.avgHeartRate || '--'}
                 </span>
                 <span className="text-xs text-secondary">bpm</span>
@@ -327,7 +325,7 @@ const ActivityTypeCard = ({
         )}
 
         {/* Tracks Grid - No background color for tracks */}
-        <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-1">
+        <div key={`${type}-${currentYear}-grid`} className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-1">
           {currentYearActivities.map((activity) => (
             <TrackGridItem
               key={activity.run_id}

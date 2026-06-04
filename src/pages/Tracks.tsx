@@ -46,17 +46,17 @@ const Tracks = () => {
             <button
               key={type}
               onClick={() => setActiveType(type)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-300 ${
                 activeType === type
                   ? 'bg-card text-white shadow-lg'
                   : 'text-secondary hover:text-primary hover:bg-gray-800/50'
               }`}
               type="button"
             >
-              <div className={activeType === type ? iconColor : 'text-gray-500'}>
+              <div className={`transition-colors duration-300 ${activeType === type ? iconColor : 'text-gray-500'}`}>
                 <ActivityIcon type={type} size={16} />
               </div>
-              <span className={`text-xs font-bold uppercase tracking-wider ${
+              <span className={`text-xs font-bold uppercase tracking-wider transition-colors duration-300 ${
                 activeType === type ? 'text-cyan-300' : 'text-gray-500'
               }`}>{label}</span>
             </button>
@@ -65,6 +65,7 @@ const Tracks = () => {
 
         {/* Active Activity Type Card */}
         <ActivityTypeCard
+          key={activeType}
           type={activeType}
           activities={activities}
           onActivityClick={handleActivityClick}

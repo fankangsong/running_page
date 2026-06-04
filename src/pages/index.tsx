@@ -12,7 +12,6 @@ import {
   sortDateFunc,
   dateKeyForRun,
   isRun,
-  locationForRun,
 } from '@/utils/utils';
 
 const Index = () => {
@@ -24,8 +23,6 @@ const Index = () => {
   const [yearStats, setYearStats] = useState({
     count: 0,
     distance: 0,
-    countries: new Set<string>(),
-    cities: new Set<string>(),
   });
 
   // Filter only running activities
@@ -60,8 +57,6 @@ const Index = () => {
 
       const dateMap = new Map<string, number>();
       let totalDistance = 0;
-      const countries = new Set<string>();
-      const cities = new Set<string>();
 
       yearRuns.forEach((run) => {
         const dateKey = dateKeyForRun(run);
@@ -69,10 +64,6 @@ const Index = () => {
         const dist = run.distance / 1000.0;
         totalDistance += dist;
         dateMap.set(dateKey, (dateMap.get(dateKey) || 0) + dist);
-
-        const location = locationForRun(run);
-        if (location.country) countries.add(location.country);
-        if (location.city) cities.add(location.city);
       });
 
       const data: HeatmapData[] = Array.from(dateMap.entries()).map(
@@ -87,8 +78,6 @@ const Index = () => {
         setYearStats({
           count: yearRuns.length,
           distance: totalDistance,
-          countries,
-          cities,
         });
         setIsLoading(false);
       }
@@ -169,44 +158,6 @@ const Index = () => {
                         interval={50}
                       />
                       <span className="text-xs font-medium text-secondary">KM</span>
-                    </div>
-                  </div>
-                  <div className="w-px h-8 bg-gray-800/50 hidden md:block self-center"></div>
-                  <div className="flex flex-col gap-1">
-                    <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider">
-                      COUNTRIES
-                    </span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {Array.from(yearStats.countries).sort().map((c, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-0.5 rounded-full text-xs font-bold text-sky-400 bg-gray-800/50 border border-gray-700/50"
-                        >
-                          {c}
-                        </span>
-                      ))}
-                      {yearStats.countries.size === 0 && (
-                        <span className="text-secondary text-xs">--</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="w-px h-8 bg-gray-800/50 hidden md:block self-center"></div>
-                  <div className="flex flex-col gap-1">
-                    <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider">
-                      CITIES
-                    </span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {Array.from(yearStats.cities).sort().map((c, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-0.5 rounded-full text-xs font-bold text-violet-400 bg-gray-800/50 border border-gray-700/50"
-                        >
-                          {c}
-                        </span>
-                      ))}
-                      {yearStats.cities.size === 0 && (
-                        <span className="text-secondary text-xs">--</span>
-                      )}
                     </div>
                   </div>
                 </div>
