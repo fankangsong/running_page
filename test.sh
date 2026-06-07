@@ -2,22 +2,35 @@
 
 # Running Page 数据同步测试脚本
 # 使用方法: ./test.sh
+# 环境变量从 .env 文件自动加载
 
 set -e
 
 # 切换到项目根目录
 cd "$(dirname "$0")"
 
-# 检查环境变量
+# 从 .env 文件加载环境变量
+if [ -f ".env" ]; then
+    echo "从 .env 文件加载环境变量..."
+    export $(cat .env | grep -v '^#' | xargs)
+else
+    echo "错误: .env 文件不存在"
+    echo "请创建 .env 文件并添加以下内容:"
+    echo ""
+    echo "  VITE_MAPBOX_TOKEN='your_mapbox_token'"
+    echo "  STRAVA_CLIENT_ID='your_client_id'"
+    echo "  STRAVA_CLIENT_SECRET='your_client_secret'"
+    echo "  STRAVA_REFRESH_TOKEN='your_refresh_token'"
+    exit 1
+fi
+
+# 检查 Strava 环境变量
 if [ -z "$STRAVA_CLIENT_ID" ] || [ -z "$STRAVA_CLIENT_SECRET" ] || [ -z "$STRAVA_REFRESH_TOKEN" ]; then
-    echo "错误: 请先设置 Strava 环境变量"
-    echo ""
-    echo "示例:"
-    echo "  export STRAVA_CLIENT_ID='your_client_id'"
-    echo "  export STRAVA_CLIENT_SECRET='your_client_secret'"
-    echo "  export STRAVA_REFRESH_TOKEN='your_refresh_token'"
-    echo ""
-    echo "然后运行: ./test.sh"
+    echo "错误: .env 文件中缺少 Strava 环境变量"
+    echo "请确保包含:"
+    echo "  STRAVA_CLIENT_ID=..."
+    echo "  STRAVA_CLIENT_SECRET=..."
+    echo "  STRAVA_REFRESH_TOKEN=..."
     exit 1
 fi
 
