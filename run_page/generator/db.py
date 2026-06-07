@@ -248,12 +248,12 @@ def update_or_create_lap(session, activity_id, lap_data, lap_index):
             session.add(lap)
         else:
             lap.distance = float(lap_data.distance) if hasattr(lap_data, 'distance') and lap_data.distance else 0.0
-            lap.elapsed_time = int(lap_data.elapsed_time) if hasattr(lap_data, 'elapsed_time') else 0
-            lap.moving_time = int(lap_data.moving_time) if hasattr(lap_data, 'moving_time') else 0
+            lap.elapsed_time = int(lap_data.elapsed_time) if hasattr(lap_data, 'elapsed_time') and lap_data.elapsed_time else 0
+            lap.moving_time = int(lap_data.moving_time) if hasattr(lap_data, 'moving_time') and lap_data.moving_time else 0
             lap.average_speed = float(lap_data.average_speed) if hasattr(lap_data, 'average_speed') and lap_data.average_speed else None
             lap.average_heartrate = float(lap_data.average_heartrate) if hasattr(lap_data, 'average_heartrate') and lap_data.average_heartrate else None
-            lap.total_elevation_gain = float(lap_data.total_elevation_gain) if hasattr(lap_data, 'total_elevation_gain') else None
-            lap.start_date = str(lap_data.start_date) if hasattr(lap_data, 'start_date') else None
+            lap.total_elevation_gain = float(lap_data.total_elevation_gain) if hasattr(lap_data, 'total_elevation_gain') and lap_data.total_elevation_gain else None
+            lap.start_date = str(lap_data.start_date) if hasattr(lap_data, 'start_date') and lap_data.start_date else None
 
     except Exception as e:
         print(f"something wrong with lap {activity_id}-{lap_index}: {str(e)}")
