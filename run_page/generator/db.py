@@ -97,6 +97,49 @@ class Activity(Base):
         return out
 
 
+class ActivityLap(Base):
+    __tablename__ = "activity_laps"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    activity_id = Column(Integer, index=True)  # 关联 activities.run_id
+    lap_index = Column(Integer)
+    distance = Column(Float)
+    elapsed_time = Column(Integer)  # 秒
+    moving_time = Column(Integer)  # 秒
+    average_speed = Column(Float)
+    average_heartrate = Column(Float)
+    total_elevation_gain = Column(Float)
+    start_date = Column(String)
+
+    def to_dict(self):
+        return {
+            "lap_index": self.lap_index,
+            "distance": self.distance,
+            "elapsed_time": self.elapsed_time,
+            "moving_time": self.moving_time,
+            "average_speed": self.average_speed,
+            "average_heartrate": self.average_heartrate,
+            "total_elevation_gain": self.total_elevation_gain,
+            "start_date": self.start_date,
+        }
+
+
+class ActivityStream(Base):
+    __tablename__ = "activity_streams"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    activity_id = Column(Integer, index=True)  # 关联 activities.run_id
+    stream_type = Column(String)  # heartrate/velocity_smooth/altitude/distance/time
+    data = Column(String)  # JSON 数组
+
+    def to_dict(self):
+        import json
+        try:
+            return json.loads(self.data) if self.data else []
+        except json.JSONDecodeError:
+            return []
+
+
 def update_or_create_activity(session, run_activity):
     created = False
     try:
@@ -205,13 +248,16 @@ def init_db(db_path):
     engine = create_engine(
         f"sqlite:///{db_path}", connect_args={"check_same_thread": False}
     )
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(engine)  # 会创建所有表
 
-    # check missing columns
+    # check missing columns for Activity
     add_missing_columns(engine, Activity)
+    # check missing columns for ActivityLap
+    add_missing_columns(engine, ActivityLap)
+    # check missing columns for ActivityStream
+    add_missing_columns(engine, ActivityStream)
 
     sm = sessionmaker(bind=engine)
     session = sm()
-    # apply the changes
     session.commit()
     return session
