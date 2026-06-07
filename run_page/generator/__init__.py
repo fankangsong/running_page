@@ -2,6 +2,9 @@ import datetime
 import os
 import sys
 
+# Add run_page to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import arrow
 import stravalib
 from gpxtrackposter import track_loader
