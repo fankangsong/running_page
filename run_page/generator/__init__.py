@@ -207,7 +207,26 @@ class Generator:
             last_date = date
             if not IGNORE_BEFORE_SAVING:
                 activity.summary_polyline = filter_out(activity.summary_polyline)  # type: ignore
-            activity_list.append(activity.to_dict())
+
+            # 获取基础字典
+            activity_dict = activity.to_dict()
+
+            # 关联查询 laps
+            laps = self.session.query(ActivityLap).filter_by(
+                activity_id=activity.run_id
+            ).order_by(ActivityLap.lap_index).all()
+            activity_dict["laps"] = [lap.to_dict() for lap in laps]
+
+            # 关联查询 streams
+            streams = self.session.query(ActivityStream).filter_by(
+                activity_id=activity.run_id
+            ).all()
+            streams_dict = {}
+            for stream in streams:
+                streams_dict[stream.stream_type] = stream.to_dict()
+            activity_dict["streams"] = streams_dict
+
+            activity_list.append(activity_dict)
 
         return activity_list
 
