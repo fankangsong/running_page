@@ -10,6 +10,8 @@ import {
   ActivityStreams,
 } from '@/utils/utils';
 import CyclingText from '@/components/CyclingText';
+import ActivityCurves from '@/components/ActivityCurves';
+import KmSplitsTable from '@/components/KmSplitsTable';
 
 const AEROBIC_ZONES = [
   { zone: 1, min: 0, max: 120, color: '#64b5f6', label: '0-119' },
@@ -309,7 +311,7 @@ const RunDetailPanel = ({
                     <span className="text-[10px] font-medium text-secondary">km</span>
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col gap-0.5 shrink-0">
                   <div className="grid grid-cols-7 gap-0.5">
                     {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
@@ -344,6 +346,33 @@ const RunDetailPanel = ({
                     })}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* 曲线图 */}
+            {(run.streams?.heartrate || run.streams?.velocity_smooth || run.streams?.altitude) && (
+              <div className="flex flex-col mt-5 pt-4 border-t border-gray-800/50 gap-3">
+                <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider mb-1.5 text-center">
+                  活动曲线
+                </span>
+                <ActivityCurves
+                  streams={run.streams}
+                  totalDistance={run.distance}
+                />
+              </div>
+            )}
+
+            {/* 每公里表格 */}
+            {(run.laps && run.laps.length > 0 || run.streams) && (
+              <div className="flex flex-col mt-5 pt-4 border-t border-gray-800/50 gap-3">
+                <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider mb-1.5 text-center">
+                  每公里分解
+                </span>
+                <KmSplitsTable
+                  laps={run.laps}
+                  streams={run.streams}
+                  totalDistance={run.distance}
+                />
               </div>
             )}
           </div>
