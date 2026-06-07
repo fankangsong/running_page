@@ -80,6 +80,18 @@ python run_page/get_garmin_secret.py ${email} ${password} --is-cn  # China regio
 3. React app loads `activities.json` via `useActivities` hook
 4. Activities filtered and displayed across pages with maps/charts
 
+### Data Model Extensions
+
+Activity 现包含扩展字段：
+- `max_heartrate`, `max_speed`, `average_cadence`, `calories`, `device_name`
+- `elev_high`, `elev_low`
+- `laps[]` - 每公里分解数据（lap_index, distance, elapsed_time, average_speed, average_heartrate）
+- `streams{}` - 时序曲线数据 (heartrate, velocity_smooth, altitude, distance, time 数组)
+
+新增组件：
+- `ActivityCurves` - SVG 曲线图（心率/配速/海拔）
+- `KmSplitsTable` - 每公里分解表格
+
 ### Styling Conventions
 
 This project uses a dark-only theme with specific design patterns. Key Tailwind custom colors:
