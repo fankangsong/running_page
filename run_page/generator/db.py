@@ -35,6 +35,7 @@ ACTIVITY_KEYS = [
     "name",
     "distance",
     "moving_time",
+    "elapsed_time",
     "type",
     "subtype",
     "start_date",
@@ -42,8 +43,15 @@ ACTIVITY_KEYS = [
     "location_country",
     "summary_polyline",
     "average_heartrate",
+    "max_heartrate",
     "average_speed",
+    "max_speed",
+    "average_cadence",
+    "calories",
+    "device_name",
     "elevation_gain",
+    "elev_high",
+    "elev_low",
 ]
 
 
@@ -62,8 +70,16 @@ class Activity(Base):
     location_country = Column(String)
     summary_polyline = Column(String)
     average_heartrate = Column(Float)
+    # 新增字段
+    max_heartrate = Column(Float)
     average_speed = Column(Float)
+    max_speed = Column(Float)
+    average_cadence = Column(Float)
+    calories = Column(Float)
+    device_name = Column(String)
     elevation_gain = Column(Float)
+    elev_high = Column(Float)
+    elev_low = Column(Float)
     streak = None
 
     def to_dict(self):
