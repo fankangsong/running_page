@@ -79,8 +79,12 @@ class Generator:
             activity.subtype = activity.type
 
             try:
-                # Update base activity data with new fields
-                created = update_or_create_activity(self.session, activity)
+                # 获取活动详情以获取完整字段（calories, cadence 等）
+                # get_activities 返回的是概要数据，缺少详细字段
+                detailed_activity = self.client.get_activity(activity.id)
+
+                # Update base activity data with detailed fields
+                created = update_or_create_activity(self.session, detailed_activity)
 
                 # Sync laps and streams
                 self.sync_activity_laps(activity.id)
@@ -125,28 +129,22 @@ class Generator:
 
             if streams:
                 synced_count = 0
-                # Debug: print streams structure
-                print(f"Streams type: {type(streams)}, keys: {list(streams.keys()) if hasattr(streams, 'keys') else 'N/A'}")
+                # Debug: streams 是字典结构 { 'heartrate': Stream, ... }
+                print(f"Streams keys: {list(streams.keys())}")
 
                 for stream_type in stream_types:
-                    # stravalib streams 对象可能以属性或字典方式存储
-                    stream_obj = None
-                    if hasattr(streams, stream_type):
-                        stream_obj = getattr(streams, stream_type)
-                    elif stream_type in streams:
-                        stream_obj = streams[stream_type]
+                    # streams 是字典，用 key 访问
+                    stream_obj = streams.get(stream_type)
 
                     if stream_obj:
-                        # 获取数据，可能直接是列表或需要 .data 属性
+                        # Stream 对象有 .data 属性
                         data = None
-                        if isinstance(stream_obj, list):
+                        if hasattr(stream_obj, 'data'):
+                            data = list(stream_obj.data) if stream_obj.data else None
+                        elif isinstance(stream_obj, list):
                             data = stream_obj
-                        elif hasattr(stream_obj, 'data'):
-                            data = list(stream_obj.data)
-                        elif hasattr(stream_obj, '__iter__'):
-                            data = list(stream_obj)
 
-                        if data:
+                        if data and len(data) > 0:
                             update_or_create_stream(
                                 self.session,
                                 activity_id,
@@ -155,12 +153,16 @@ class Generator:
                             )
                             synced_count += 1
                             print(f"  Saved {stream_type}: {len(data)} points")
+                        else:
+                            print(f"  No data for {stream_type}")
 
                 print(f"Synced {synced_count} stream types for activity {activity_id}")
             else:
                 print(f"No streams returned for activity {activity_id}")
         except Exception as e:
+            import traceback
             print(f"Failed to sync streams for {activity_id}: {str(e)}")
+            traceback.print_exc()
 
     def sync_from_data_dir(self, data_dir, file_suffix="gpx", activity_title_dict={}):
         loader = track_loader.TrackLoader()
