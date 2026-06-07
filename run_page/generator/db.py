@@ -224,6 +224,72 @@ def update_or_create_activity(session, run_activity):
     return created
 
 
+def update_or_create_lap(session, activity_id, lap_data, lap_index):
+    """创建或更新活动圈数据"""
+
+    try:
+        lap = session.query(ActivityLap).filter_by(
+            activity_id=int(activity_id),
+            lap_index=lap_index
+        ).first()
+
+        if not lap:
+            lap = ActivityLap(
+                activity_id=int(activity_id),
+                lap_index=lap_index,
+                distance=float(lap_data.distance) if hasattr(lap_data, 'distance') and lap_data.distance else 0.0,
+                elapsed_time=int(lap_data.elapsed_time) if hasattr(lap_data, 'elapsed_time') and lap_data.elapsed_time else 0,
+                moving_time=int(lap_data.moving_time) if hasattr(lap_data, 'moving_time') and lap_data.moving_time else 0,
+                average_speed=float(lap_data.average_speed) if hasattr(lap_data, 'average_speed') and lap_data.average_speed else None,
+                average_heartrate=float(lap_data.average_heartrate) if hasattr(lap_data, 'average_heartrate') and lap_data.average_heartrate else None,
+                total_elevation_gain=float(lap_data.total_elevation_gain) if hasattr(lap_data, 'total_elevation_gain') and lap_data.total_elevation_gain else None,
+                start_date=str(lap_data.start_date) if hasattr(lap_data, 'start_date') else None,
+            )
+            session.add(lap)
+        else:
+            lap.distance = float(lap_data.distance) if hasattr(lap_data, 'distance') and lap_data.distance else 0.0
+            lap.elapsed_time = int(lap_data.elapsed_time) if hasattr(lap_data, 'elapsed_time') else 0
+            lap.moving_time = int(lap_data.moving_time) if hasattr(lap_data, 'moving_time') else 0
+            lap.average_speed = float(lap_data.average_speed) if hasattr(lap_data, 'average_speed') and lap_data.average_speed else None
+            lap.average_heartrate = float(lap_data.average_heartrate) if hasattr(lap_data, 'average_heartrate') and lap_data.average_heartrate else None
+            lap.total_elevation_gain = float(lap_data.total_elevation_gain) if hasattr(lap_data, 'total_elevation_gain') else None
+            lap.start_date = str(lap_data.start_date) if hasattr(lap_data, 'start_date') else None
+
+    except Exception as e:
+        print(f"something wrong with lap {activity_id}-{lap_index}: {str(e)}")
+
+    return True
+
+
+def update_or_create_stream(session, activity_id, stream_type, stream_data):
+    """创建或更新活动数据流"""
+    import json
+
+    try:
+        stream = session.query(ActivityStream).filter_by(
+            activity_id=int(activity_id),
+            stream_type=stream_type
+        ).first()
+
+        # 将数据序列化为 JSON
+        data_json = json.dumps(stream_data) if stream_data else "[]"
+
+        if not stream:
+            stream = ActivityStream(
+                activity_id=int(activity_id),
+                stream_type=stream_type,
+                data=data_json,
+            )
+            session.add(stream)
+        else:
+            stream.data = data_json
+
+    except Exception as e:
+        print(f"something wrong with stream {activity_id}-{stream_type}: {str(e)}")
+
+    return True
+
+
 def add_missing_columns(engine, model):
     inspector = inspect(engine)
     table_name = model.__tablename__
