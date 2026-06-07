@@ -39,14 +39,45 @@ export interface Activity {
   name: string;
   distance: number;
   moving_time: string;
+  elapsed_time?: string;
   type: string;
+  subtype?: string;
   start_date: string;
   start_date_local: string;
   location_country?: string | null;
   summary_polyline?: string | null;
   average_heartrate?: number | null;
+  max_heartrate?: number | null;
   average_speed: number;
+  max_speed?: number | null;
+  average_cadence?: number | null;
+  calories?: number | null;
+  device_name?: string | null;
+  elevation_gain?: number | null;
+  elev_high?: number | null;
+  elev_low?: number | null;
   streak: number;
+  laps?: Lap[];
+  streams?: ActivityStreams;
+}
+
+export interface Lap {
+  lap_index: number;
+  distance: number;
+  elapsed_time: number;
+  moving_time: number;
+  average_speed?: number;
+  average_heartrate?: number;
+  total_elevation_gain?: number;
+  start_date?: string;
+}
+
+export interface ActivityStreams {
+  heartrate?: number[];
+  velocity_smooth?: number[];
+  altitude?: number[];
+  distance?: number[];
+  time?: number[];
 }
 
 export const isRun = (type: string) => type === RUN_TYPE;
@@ -61,9 +92,7 @@ const titleForShow = (run: Activity): string => {
   if (run.name) {
     name = run.name;
   }
-  return `${name} ${date} ${distance} KM ${
-    !run.summary_polyline ? '(No map data for this run)' : ''
-  }`;
+  return `${name} ${date} ${distance} KM`;
 };
 
 const formatPace = (d: number): string => {
