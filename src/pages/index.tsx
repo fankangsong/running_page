@@ -5,6 +5,7 @@ import AnnualHeatmap, { HeatmapData } from '@/components/AnnualHeatmap';
 import ActivityStats from '@/components/ActivityStats';
 import DashboardStats from '@/components/DashboardStats';
 import CyclingText from '@/components/CyclingText';
+import FlowingLinesBackground from '@/components/DashboardStats/FlowingLinesBackground';
 import useActivities from '@/hooks/useActivities';
 import {
   filterAndSortRuns,
@@ -108,7 +109,10 @@ const Index = () => {
 
   return (
     <Layout>
-      <div className="flex flex-col gap-6 lg:p-6 w-full">
+      {/* Flowing Lines Background - covers viewport */}
+      <FlowingLinesBackground />
+
+      <div className="flex flex-col gap-6 lg:p-6 w-full relative z-10">
         {/* Dashboard Stats */}
         <div className="w-full">
           <DashboardStats runs={runningActivities} />

@@ -191,7 +191,7 @@ const DashboardStats = ({ runs: propRuns }: DashboardStatsProps) => {
     <div className="flex flex-col gap-16 md:gap-24 w-full py-8">
       {/* Summary Section */}
       <div className="relative w-full">
-        <div className="relative z-10 flex flex-col gap-8 md:gap-12">
+        <div className="relative z-10 flex flex-col gap-8 md:gap-12 px-6 md:px-8 py-6 md:py-8">
           <div className="flex flex-col gap-1">
             <h2 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200 leading-none">
               SUMMARY
