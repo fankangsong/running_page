@@ -8,13 +8,44 @@ interface KmSplitsTableProps {
 }
 
 const KmSplitsTable = ({ laps, streams, totalDistance }: KmSplitsTableProps) => {
-  // 优先使用 laps 数据，若无则从 streams 计算
+  // 判断是否使用 laps 数据：
+  // - 如果 laps 有多个条目（每公里一条），直接使用
+  // - 如果 laps 只有 1 条但距离 > 1000m（整个活动作为一圈），则从 streams 计算
   const splits = useMemo(() => {
-    if (laps && laps.length > 0) {
+    if (laps && laps.length > 1) {
+      // 多个 laps，说明设备配置为每公里记录一圈
       return laps;
     }
+    if (laps && laps.length === 1 && laps[0].distance <= 1100) {
+      // 单个 lap 且距离约 1km，可能是真实的每公里数据
+      return laps;
+    }
+    // 其他情况（单个 lap 覆盖长距离）：从 streams 计算
     if (streams) {
-      return computeKmSplitsFromStreams(streams, totalDistance);
+      const computed = computeKmSplitsFromStreams(streams, totalDistance);
+      if (computed.length > 0) {
+        return computed;
+      }
+    }
+    // 如果没有 streams 数据但有单个 lap，尝试根据 lap 平均配速估算
+    if (laps && laps.length === 1 && laps[0].average_speed) {
+      const kmCount = Math.ceil(totalDistance / 1000);
+      const avgSpeed = laps[0].average_speed;
+      const avgHr = laps[0].average_heartrate;
+      const estimatedSplits: Lap[] = [];
+      const timePerKm = 1000 / avgSpeed; // 秒/公里
+
+      for (let km = 1; km <= kmCount; km++) {
+        estimatedSplits.push({
+          lap_index: km,
+          distance: 1000,
+          elapsed_time: Math.round(timePerKm),
+          moving_time: Math.round(timePerKm),
+          average_speed: avgSpeed,
+          average_heartrate: avgHr,
+        });
+      }
+      return estimatedSplits;
     }
     return [];
   }, [laps, streams, totalDistance]);
