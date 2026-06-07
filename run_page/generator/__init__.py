@@ -124,17 +124,35 @@ class Generator:
             )
 
             if streams:
+                synced_count = 0
                 for stream_type in stream_types:
+                    # stravalib streams 对象可能以属性或字典方式存储
+                    stream_obj = None
                     if hasattr(streams, stream_type):
                         stream_obj = getattr(streams, stream_type)
-                        if stream_obj and hasattr(stream_obj, 'data'):
+                    elif stream_type in streams:
+                        stream_obj = streams[stream_type]
+
+                    if stream_obj:
+                        # 获取数据，可能直接是列表或需要 .data 属性
+                        data = None
+                        if isinstance(stream_obj, list):
+                            data = stream_obj
+                        elif hasattr(stream_obj, 'data'):
+                            data = list(stream_obj.data)
+                        elif hasattr(stream_obj, '__iter__'):
+                            data = list(stream_obj)
+
+                        if data:
                             update_or_create_stream(
                                 self.session,
                                 activity_id,
                                 stream_type,
-                                list(stream_obj.data)
+                                data
                             )
-                print(f"Synced streams for activity {activity_id}")
+                            synced_count += 1
+
+                print(f"Synced {synced_count} stream types for activity {activity_id}")
         except Exception as e:
             print(f"Failed to sync streams for {activity_id}: {str(e)}")
 
