@@ -243,7 +243,7 @@ def update_or_create_lap(session, activity_id, lap_data, lap_index):
                 average_speed=float(lap_data.average_speed) if hasattr(lap_data, 'average_speed') and lap_data.average_speed else None,
                 average_heartrate=float(lap_data.average_heartrate) if hasattr(lap_data, 'average_heartrate') and lap_data.average_heartrate else None,
                 total_elevation_gain=float(lap_data.total_elevation_gain) if hasattr(lap_data, 'total_elevation_gain') and lap_data.total_elevation_gain else None,
-                start_date=str(lap_data.start_date) if hasattr(lap_data, 'start_date') else None,
+                start_date=str(lap_data.start_date) if hasattr(lap_data, 'start_date') and lap_data.start_date else None,
             )
             session.add(lap)
         else:
