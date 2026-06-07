@@ -69,7 +69,7 @@ export interface Lap {
   average_speed?: number;
   average_heartrate?: number;
   total_elevation_gain?: number;
-  start_date?: string;
+  start_date?: string | null;
 }
 
 export interface ActivityStreams {
