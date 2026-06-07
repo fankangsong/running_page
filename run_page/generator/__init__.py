@@ -125,6 +125,9 @@ class Generator:
 
             if streams:
                 synced_count = 0
+                # Debug: print streams structure
+                print(f"Streams type: {type(streams)}, keys: {list(streams.keys()) if hasattr(streams, 'keys') else 'N/A'}")
+
                 for stream_type in stream_types:
                     # stravalib streams 对象可能以属性或字典方式存储
                     stream_obj = None
@@ -151,8 +154,11 @@ class Generator:
                                 data
                             )
                             synced_count += 1
+                            print(f"  Saved {stream_type}: {len(data)} points")
 
                 print(f"Synced {synced_count} stream types for activity {activity_id}")
+            else:
+                print(f"No streams returned for activity {activity_id}")
         except Exception as e:
             print(f"Failed to sync streams for {activity_id}: {str(e)}")
 
