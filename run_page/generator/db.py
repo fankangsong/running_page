@@ -195,12 +195,19 @@ def update_or_create_activity(session, run_activity):
                 start_date=run_activity.start_date,
                 start_date_local=run_activity.start_date_local,
                 location_country=location_country,
-                average_heartrate=run_activity.average_heartrate,
-                average_speed=float(run_activity.average_speed),
-                elevation_gain=current_elevation_gain,
                 summary_polyline=(
                     run_activity.map and run_activity.map.summary_polyline or ""
                 ),
+                average_heartrate=run_activity.average_heartrate,
+                max_heartrate=getattr(run_activity, 'max_heartrate', None),
+                average_speed=float(run_activity.average_speed),
+                max_speed=getattr(run_activity, 'max_speed', None) if hasattr(run_activity, 'max_speed') and run_activity.max_speed else None,
+                average_cadence=getattr(run_activity, 'average_cadence', None),
+                calories=getattr(run_activity, 'calories', None),
+                device_name=getattr(run_activity, 'device_name', None),
+                elevation_gain=current_elevation_gain,
+                elev_high=getattr(run_activity, 'elev_high', None),
+                elev_low=getattr(run_activity, 'elev_low', None),
             )
             session.add(activity)
             created = True
@@ -211,12 +218,19 @@ def update_or_create_activity(session, run_activity):
             activity.elapsed_time = run_activity.elapsed_time
             activity.type = run_activity.type
             activity.subtype = run_activity.subtype
-            activity.average_heartrate = run_activity.average_heartrate
-            activity.average_speed = float(run_activity.average_speed)
-            activity.elevation_gain = current_elevation_gain
             activity.summary_polyline = (
                 run_activity.map and run_activity.map.summary_polyline or ""
             )
+            activity.average_heartrate = run_activity.average_heartrate
+            activity.max_heartrate = getattr(run_activity, 'max_heartrate', None)
+            activity.average_speed = float(run_activity.average_speed)
+            activity.max_speed = getattr(run_activity, 'max_speed', None) if hasattr(run_activity, 'max_speed') and run_activity.max_speed else None
+            activity.average_cadence = getattr(run_activity, 'average_cadence', None)
+            activity.calories = getattr(run_activity, 'calories', None)
+            activity.device_name = getattr(run_activity, 'device_name', None)
+            activity.elevation_gain = current_elevation_gain
+            activity.elev_high = getattr(run_activity, 'elev_high', None)
+            activity.elev_low = getattr(run_activity, 'elev_low', None)
     except Exception as e:
         print(f"something wrong with {run_activity.id}")
         print(str(e))

@@ -9,7 +9,7 @@ from sqlalchemy import func
 
 from polyline_processor import filter_out
 
-from .db import Activity, init_db, update_or_create_activity
+from .db import Activity, ActivityLap, ActivityStream, init_db, update_or_create_activity, update_or_create_lap, update_or_create_stream
 
 from synced_data_file_logger import save_synced_data_file_list
 
@@ -74,13 +74,64 @@ class Generator:
             #  strava use total_elevation_gain as elevation_gain
             activity.elevation_gain = activity.total_elevation_gain
             activity.subtype = activity.type
+
+            # Update base activity data with new fields
             created = update_or_create_activity(self.session, activity)
+
+            # Sync laps and streams
+            try:
+                self.sync_activity_laps(activity.id)
+            except Exception as e:
+                print(f"Laps sync error for {activity.id}: {e}")
+
+            try:
+                self.sync_activity_streams(activity.id)
+            except Exception as e:
+                print(f"Streams sync error for {activity.id}: {e}")
+
             if created:
                 sys.stdout.write("+")
             else:
                 sys.stdout.write(".")
             sys.stdout.flush()
         self.session.commit()
+
+    def sync_activity_laps(self, activity_id):
+        """同步单个活动的圈数数据"""
+        try:
+            laps = self.client.get_activity_laps(activity_id)
+            lap_count = 0
+            for idx, lap in enumerate(laps, start=1):
+                update_or_create_lap(self.session, activity_id, lap, idx)
+                lap_count += 1
+            print(f"Synced {lap_count} laps for activity {activity_id}")
+        except Exception as e:
+            print(f"Failed to sync laps for {activity_id}: {str(e)}")
+
+    def sync_activity_streams(self, activity_id):
+        """同步单个活动的数据流"""
+        try:
+            stream_types = ['heartrate', 'velocity_smooth', 'altitude', 'distance', 'time']
+            streams = self.client.get_activity_streams(
+                activity_id,
+                types=stream_types,
+                resolution='low'
+            )
+
+            if streams:
+                for stream_type in stream_types:
+                    if hasattr(streams, stream_type):
+                        stream_obj = getattr(streams, stream_type)
+                        if stream_obj and hasattr(stream_obj, 'data'):
+                            update_or_create_stream(
+                                self.session,
+                                activity_id,
+                                stream_type,
+                                list(stream_obj.data)
+                            )
+                print(f"Synced streams for activity {activity_id}")
+        except Exception as e:
+            print(f"Failed to sync streams for {activity_id}: {str(e)}")
 
     def sync_from_data_dir(self, data_dir, file_suffix="gpx", activity_title_dict={}):
         loader = track_loader.TrackLoader()
