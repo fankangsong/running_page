@@ -78,25 +78,27 @@ class Generator:
             activity.elevation_gain = activity.total_elevation_gain
             activity.subtype = activity.type
 
-            # Update base activity data with new fields
-            created = update_or_create_activity(self.session, activity)
-
-            # Sync laps and streams
             try:
+                # Update base activity data with new fields
+                created = update_or_create_activity(self.session, activity)
+
+                # Sync laps and streams
                 self.sync_activity_laps(activity.id)
-            except Exception as e:
-                print(f"Laps sync error for {activity.id}: {e}")
-
-            try:
                 self.sync_activity_streams(activity.id)
-            except Exception as e:
-                print(f"Streams sync error for {activity.id}: {e}")
 
-            if created:
-                sys.stdout.write("+")
-            else:
-                sys.stdout.write(".")
-            sys.stdout.flush()
+                if created:
+                    sys.stdout.write("+")
+                else:
+                    sys.stdout.write(".")
+                sys.stdout.flush()
+            except Exception as e:
+                # Rollback on error and continue with next activity
+                print(f"Error syncing activity {activity.id}: {e}")
+                self.session.rollback()
+                sys.stdout.write("!")
+                sys.stdout.flush()
+                continue
+
         self.session.commit()
 
     def sync_activity_laps(self, activity_id):

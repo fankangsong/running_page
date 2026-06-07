@@ -198,16 +198,16 @@ def update_or_create_activity(session, run_activity):
                 summary_polyline=(
                     run_activity.map and run_activity.map.summary_polyline or ""
                 ),
-                average_heartrate=run_activity.average_heartrate,
-                max_heartrate=getattr(run_activity, 'max_heartrate', None),
-                average_speed=float(run_activity.average_speed),
-                max_speed=getattr(run_activity, 'max_speed', None) if hasattr(run_activity, 'max_speed') and run_activity.max_speed else None,
-                average_cadence=getattr(run_activity, 'average_cadence', None),
-                calories=getattr(run_activity, 'calories', None),
+                average_heartrate=_safe_float(run_activity.average_heartrate),
+                max_heartrate=_safe_float(getattr(run_activity, 'max_heartrate', None)),
+                average_speed=_safe_float(run_activity.average_speed) or 0.0,
+                max_speed=_safe_float(getattr(run_activity, 'max_speed', None)),
+                average_cadence=_safe_float(getattr(run_activity, 'average_cadence', None)),
+                calories=_safe_float(getattr(run_activity, 'calories', None)),
                 device_name=getattr(run_activity, 'device_name', None),
                 elevation_gain=current_elevation_gain,
-                elev_high=getattr(run_activity, 'elev_high', None),
-                elev_low=getattr(run_activity, 'elev_low', None),
+                elev_high=_safe_float(getattr(run_activity, 'elev_high', None)),
+                elev_low=_safe_float(getattr(run_activity, 'elev_low', None)),
             )
             session.add(activity)
             created = True
@@ -221,21 +221,60 @@ def update_or_create_activity(session, run_activity):
             activity.summary_polyline = (
                 run_activity.map and run_activity.map.summary_polyline or ""
             )
-            activity.average_heartrate = run_activity.average_heartrate
-            activity.max_heartrate = getattr(run_activity, 'max_heartrate', None)
-            activity.average_speed = float(run_activity.average_speed)
-            activity.max_speed = getattr(run_activity, 'max_speed', None) if hasattr(run_activity, 'max_speed') and run_activity.max_speed else None
-            activity.average_cadence = getattr(run_activity, 'average_cadence', None)
-            activity.calories = getattr(run_activity, 'calories', None)
+            activity.average_heartrate = _safe_float(run_activity.average_heartrate)
+            activity.max_heartrate = _safe_float(getattr(run_activity, 'max_heartrate', None))
+            activity.average_speed = _safe_float(run_activity.average_speed) or 0.0
+            activity.max_speed = _safe_float(getattr(run_activity, 'max_speed', None))
+            activity.average_cadence = _safe_float(getattr(run_activity, 'average_cadence', None))
+            activity.calories = _safe_float(getattr(run_activity, 'calories', None))
             activity.device_name = getattr(run_activity, 'device_name', None)
             activity.elevation_gain = current_elevation_gain
-            activity.elev_high = getattr(run_activity, 'elev_high', None)
-            activity.elev_low = getattr(run_activity, 'elev_low', None)
+            activity.elev_high = _safe_float(getattr(run_activity, 'elev_high', None))
+            activity.elev_low = _safe_float(getattr(run_activity, 'elev_low', None))
     except Exception as e:
         print(f"something wrong with {run_activity.id}")
         print(str(e))
 
     return created
+
+
+def _convert_timedelta_to_seconds(value):
+    """将 timedelta 对象转换为秒数"""
+    import datetime
+    if value is None:
+        return 0
+    if isinstance(value, datetime.timedelta):
+        return int(value.total_seconds())
+    if isinstance(value, (int, float)):
+        return int(value)
+    # stravalib 可能返回带有 unit 属性的对象
+    if hasattr(value, 'unit'):
+        # 尝试获取数值部分
+        try:
+            return int(float(str(value).split()[0]))
+        except:
+            pass
+    return 0
+
+
+def _safe_float(value):
+    """安全转换为 float，处理 None 和带有 unit 属性的对象"""
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    # stravalib 可能返回带有 unit 属性的对象
+    if hasattr(value, 'unit'):
+        try:
+            # 尝试获取数值部分
+            val_str = str(value).split()[0]
+            return float(val_str)
+        except:
+            pass
+    try:
+        return float(value)
+    except:
+        return None
 
 
 def update_or_create_lap(session, activity_id, lap_data, lap_index):
@@ -251,22 +290,22 @@ def update_or_create_lap(session, activity_id, lap_data, lap_index):
             lap = ActivityLap(
                 activity_id=int(activity_id),
                 lap_index=lap_index,
-                distance=float(lap_data.distance) if hasattr(lap_data, 'distance') and lap_data.distance else 0.0,
-                elapsed_time=int(lap_data.elapsed_time) if hasattr(lap_data, 'elapsed_time') and lap_data.elapsed_time else 0,
-                moving_time=int(lap_data.moving_time) if hasattr(lap_data, 'moving_time') and lap_data.moving_time else 0,
-                average_speed=float(lap_data.average_speed) if hasattr(lap_data, 'average_speed') and lap_data.average_speed else None,
-                average_heartrate=float(lap_data.average_heartrate) if hasattr(lap_data, 'average_heartrate') and lap_data.average_heartrate else None,
-                total_elevation_gain=float(lap_data.total_elevation_gain) if hasattr(lap_data, 'total_elevation_gain') and lap_data.total_elevation_gain else None,
+                distance=_safe_float(lap_data.distance) or 0.0,
+                elapsed_time=_convert_timedelta_to_seconds(lap_data.elapsed_time) if hasattr(lap_data, 'elapsed_time') else 0,
+                moving_time=_convert_timedelta_to_seconds(lap_data.moving_time) if hasattr(lap_data, 'moving_time') else 0,
+                average_speed=_safe_float(lap_data.average_speed),
+                average_heartrate=_safe_float(lap_data.average_heartrate),
+                total_elevation_gain=_safe_float(lap_data.total_elevation_gain),
                 start_date=str(lap_data.start_date) if hasattr(lap_data, 'start_date') and lap_data.start_date else None,
             )
             session.add(lap)
         else:
-            lap.distance = float(lap_data.distance) if hasattr(lap_data, 'distance') and lap_data.distance else 0.0
-            lap.elapsed_time = int(lap_data.elapsed_time) if hasattr(lap_data, 'elapsed_time') and lap_data.elapsed_time else 0
-            lap.moving_time = int(lap_data.moving_time) if hasattr(lap_data, 'moving_time') and lap_data.moving_time else 0
-            lap.average_speed = float(lap_data.average_speed) if hasattr(lap_data, 'average_speed') and lap_data.average_speed else None
-            lap.average_heartrate = float(lap_data.average_heartrate) if hasattr(lap_data, 'average_heartrate') and lap_data.average_heartrate else None
-            lap.total_elevation_gain = float(lap_data.total_elevation_gain) if hasattr(lap_data, 'total_elevation_gain') and lap_data.total_elevation_gain else None
+            lap.distance = _safe_float(lap_data.distance) or 0.0
+            lap.elapsed_time = _convert_timedelta_to_seconds(lap_data.elapsed_time) if hasattr(lap_data, 'elapsed_time') else 0
+            lap.moving_time = _convert_timedelta_to_seconds(lap_data.moving_time) if hasattr(lap_data, 'moving_time') else 0
+            lap.average_speed = _safe_float(lap_data.average_speed)
+            lap.average_heartrate = _safe_float(lap_data.average_heartrate)
+            lap.total_elevation_gain = _safe_float(lap_data.total_elevation_gain)
             lap.start_date = str(lap_data.start_date) if hasattr(lap_data, 'start_date') and lap_data.start_date else None
 
     except Exception as e:
