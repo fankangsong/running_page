@@ -48,15 +48,7 @@ const RunPolyline = ({ run, className }: IRunPolylineProps) => {
   }, [run]);
 
   if (points.length === 0) {
-    return (
-      <div
-        className={`w-full h-full flex items-center justify-center text-secondary text-sm ${
-          className ?? ''
-        }`}
-      >
-        No map data
-      </div>
-    );
+    return null;
   }
 
   const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(' ');

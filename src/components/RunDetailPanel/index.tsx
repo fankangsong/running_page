@@ -6,8 +6,6 @@ import {
   formatCadence,
   formatCalories,
   formatElevation,
-  Lap,
-  ActivityStreams,
 } from '@/utils/utils';
 import CyclingText from '@/components/CyclingText';
 import ActivityCurves from '@/components/ActivityCurves';
@@ -46,8 +44,6 @@ const RunDetailPanel = ({
   const elevHigh = run.elev_high;
   const elevLow = run.elev_low;
   const elevGain = run.elevation_gain ?? (elevHigh && elevLow ? elevHigh - elevLow : null);
-  const laps = run.laps;
-  const streams = run.streams;
 
   const heartRate = currentHeartRate !== null ? `${currentHeartRate} bpm` : '~';
   const highlightedZone =
