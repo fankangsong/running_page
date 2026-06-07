@@ -409,6 +409,94 @@ export const getAerobicZone = (heartRate: number | null | undefined) => {
   );
 };
 
+export const formatCadence = (cadence: number | null | undefined): string => {
+  if (!cadence || !Number.isFinite(cadence)) return '--';
+  return `${Math.round(cadence)} spm`;
+};
+
+export const formatCalories = (calories: number | null | undefined): string => {
+  if (!calories || !Number.isFinite(calories)) return '--';
+  return `${Math.round(calories)} kcal`;
+};
+
+export const formatElevation = (meters: number | null | undefined): string => {
+  if (!meters || !Number.isFinite(meters)) return '--';
+  return `${Math.round(meters)} m`;
+};
+
+export const formatLapTime = (seconds: number): string => {
+  if (!seconds || !Number.isFinite(seconds)) return '--';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+export const computeKmSplitsFromStreams = (
+  streams: ActivityStreams | undefined,
+  totalDistance: number
+): Lap[] => {
+  if (!streams?.distance || !streams?.velocity_smooth) return [];
+  if (streams.distance.length === 0) return [];
+
+  const kmCount = Math.ceil(totalDistance / 1000);
+  const splits: Lap[] = [];
+
+  for (let km = 1; km <= kmCount; km++) {
+    const targetDist = km * 1000;
+    const prevTargetDist = (km - 1) * 1000;
+
+    // 找到当前公里结束点索引
+    const endIdx = streams.distance.findIndex(d => d >= targetDist);
+    if (endIdx < 0) continue;
+
+    // 找到当前公里开始点索引
+    const startIdx = km === 1 ? 0 : streams.distance.findIndex(d => d >= prevTargetDist);
+    if (startIdx < 0) continue;
+
+    // 计算该公里段数据
+    const segmentSpeed = streams.velocity_smooth.slice(startIdx, endIdx + 1);
+    const avgSpeed = segmentSpeed.length > 0
+      ? segmentSpeed.reduce((a, b) => a + b, 0) / segmentSpeed.length
+      : 0;
+
+    // 计算时间
+    const elapsed_time = streams.time
+      ? (streams.time[endIdx] - streams.time[startIdx])
+      : 0;
+
+    // 计算平均心率
+    let avgHr: number | undefined = undefined;
+    if (streams.heartrate && streams.heartrate.length > 0) {
+      const segmentHr = streams.heartrate.slice(startIdx, endIdx + 1);
+      if (segmentHr.length > 0) {
+        avgHr = segmentHr.reduce((a, b) => a + b, 0) / segmentHr.length;
+      }
+    }
+
+    // 计算海拔变化
+    let elevGain: number | null = null;
+    if (streams.altitude && streams.altitude.length > 0) {
+      const startElev = streams.altitude[startIdx];
+      const endElev = streams.altitude[endIdx];
+      if (Number.isFinite(startElev) && Number.isFinite(endElev)) {
+        elevGain = endElev - startElev;
+      }
+    }
+
+    splits.push({
+      lap_index: km,
+      distance: targetDist - prevTargetDist,
+      elapsed_time: elapsed_time,
+      moving_time: elapsed_time,
+      average_speed: avgSpeed,
+      average_heartrate: avgHr,
+      total_elevation_gain: elevGain,
+    });
+  }
+
+  return splits;
+};
+
 export {
   titleForShow,
   formatPace,
@@ -431,4 +519,9 @@ export {
   convertMovingTime2Sec,
   dateKeyForRun,
   groupRunsByDate,
+  formatCadence,
+  formatCalories,
+  formatElevation,
+  formatLapTime,
+  computeKmSplitsFromStreams,
 };
