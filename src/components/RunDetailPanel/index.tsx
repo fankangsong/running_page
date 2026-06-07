@@ -1,4 +1,14 @@
-import { Activity, formatPace, formatRunTime, isRun } from '@/utils/utils';
+import {
+  Activity,
+  formatPace,
+  formatRunTime,
+  isRun,
+  formatCadence,
+  formatCalories,
+  formatElevation,
+  Lap,
+  ActivityStreams,
+} from '@/utils/utils';
 import CyclingText from '@/components/CyclingText';
 
 const AEROBIC_ZONES = [
@@ -24,6 +34,19 @@ const RunDetailPanel = ({
   const currentHeartRate = Number.isFinite(run.average_heartrate)
     ? Math.round(run.average_heartrate as number)
     : null;
+
+  // New metrics
+  const maxHr = Number.isFinite(run.max_heartrate)
+    ? Math.round(run.max_heartrate as number)
+    : null;
+  const cadence = run.average_cadence;
+  const calories = run.calories;
+  const elevHigh = run.elev_high;
+  const elevLow = run.elev_low;
+  const elevGain = run.elevation_gain ?? (elevHigh && elevLow ? elevHigh - elevLow : null);
+  const laps = run.laps;
+  const streams = run.streams;
+
   const heartRate = currentHeartRate !== null ? `${currentHeartRate} bpm` : '~';
   const highlightedZone =
     currentHeartRate === null
@@ -162,6 +185,74 @@ const RunDetailPanel = ({
               </div>
               {currentHeartRate !== null && (
                 <span className="text-xs font-bold text-secondary uppercase tracking-widest">BPM</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Extended metrics row */}
+        <div className="grid grid-cols-2 gap-y-8 gap-x-4 border-t border-gray-800/50 py-6">
+          <div className="flex flex-col items-start text-left gap-1">
+            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+              Max HR
+            </span>
+            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
+              <div className="text-3xl md:text-4xl font-condensed font-black text-red-400 tracking-tighter leading-none">
+                {maxHr !== null ? maxHr : '--'}
+              </div>
+              {maxHr !== null && (
+                <span className="text-xs font-bold text-secondary uppercase tracking-widest">BPM</span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col items-start text-left gap-1">
+            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+              Cadence
+            </span>
+            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
+              <div className="text-3xl md:text-4xl font-condensed font-black text-yellow-400 tracking-tighter leading-none">
+                {formatCadence(cadence)}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-start text-left gap-1">
+            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+              </svg>
+              Calories
+            </span>
+            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
+              <div className="text-3xl md:text-4xl font-condensed font-black text-pink-400 tracking-tighter leading-none">
+                {formatCalories(calories)}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-start text-left gap-1">
+            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 19V5M5 12l7-7 7 7" />
+              </svg>
+              Elevation
+            </span>
+            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
+              <div className="text-3xl md:text-4xl font-condensed font-black text-teal-400 tracking-tighter leading-none">
+                {formatElevation(elevGain)}
+              </div>
+              {elevHigh && elevLow && (
+                <div className="text-[10px] text-gray-500 font-medium ml-1">
+                  ({formatElevation(elevLow)} - {formatElevation(elevHigh)})
+                </div>
               )}
             </div>
           </div>

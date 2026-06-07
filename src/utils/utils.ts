@@ -519,9 +519,4 @@ export {
   convertMovingTime2Sec,
   dateKeyForRun,
   groupRunsByDate,
-  formatCadence,
-  formatCalories,
-  formatElevation,
-  formatLapTime,
-  computeKmSplitsFromStreams,
 };
