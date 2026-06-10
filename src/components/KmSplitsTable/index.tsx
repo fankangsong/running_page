@@ -51,11 +51,7 @@ const KmSplitsTable = ({ laps, streams, totalDistance }: KmSplitsTableProps) => 
   }, [laps, streams, totalDistance]);
 
   if (splits.length === 0) {
-    return (
-      <div className="text-center py-4">
-        <span className="text-secondary text-sm">暂无每公里数据</span>
-      </div>
-    );
+    return null;
   }
 
   // 计算累计时间
@@ -109,15 +105,11 @@ const KmSplitsTable = ({ laps, streams, totalDistance }: KmSplitsTableProps) => 
         return (
           <div
             key={idx}
-            className={`grid grid-cols-5 px-3 py-2 transition-colors ${
-              isFastest
-                ? 'bg-accent/20 ring-1 ring-accent/50'
-                : 'hover:bg-gray-800/30'
-            }`}
+            className={`grid grid-cols-5 px-3 py-2 transition-colors`}
           >
-            <div className="font-condensed font-black text-primary">
+            <div className="font-condensed font-black text-primary flex items-center gap-1">
               {split.lap_index}
-              {isFastest && <span className="text-accent ml-1">*</span>}
+              {isFastest && <span className="text-[10px]">⭐</span>}
             </div>
             <div className={`font-condensed font-black ${isFastest ? 'text-accent' : 'text-primary'}`}>
               {pace}

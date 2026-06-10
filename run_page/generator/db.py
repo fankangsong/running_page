@@ -191,7 +191,7 @@ def update_or_create_activity(session, run_activity):
                 moving_time=run_activity.moving_time,
                 elapsed_time=run_activity.elapsed_time,
                 type=run_activity.type,
-                subtype=run_activity.subtype,
+                subtype=getattr(run_activity, 'subtype', None) or getattr(run_activity, 'type', ''),
                 start_date=run_activity.start_date,
                 start_date_local=run_activity.start_date_local,
                 location_country=location_country,
@@ -217,7 +217,7 @@ def update_or_create_activity(session, run_activity):
             activity.moving_time = run_activity.moving_time
             activity.elapsed_time = run_activity.elapsed_time
             activity.type = run_activity.type
-            activity.subtype = run_activity.subtype
+            activity.subtype = getattr(run_activity, 'subtype', None) or getattr(run_activity, 'type', '')
             activity.summary_polyline = (
                 run_activity.map and run_activity.map.summary_polyline or ""
             )

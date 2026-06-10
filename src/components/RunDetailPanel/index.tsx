@@ -3,13 +3,9 @@ import {
   formatPace,
   formatRunTime,
   isRun,
-  formatCadence,
-  formatCalories,
   formatElevation,
 } from '@/utils/utils';
 import CyclingText from '@/components/CyclingText';
-import ActivityCurves from '@/components/ActivityCurves';
-import KmSplitsTable from '@/components/KmSplitsTable';
 
 const AEROBIC_ZONES = [
   { zone: 1, min: 0, max: 120, color: '#64b5f6', label: '0-119' },
@@ -86,12 +82,12 @@ const RunDetailPanel = ({
           </div>
         </div>
 
-        <div className={`grid grid-cols-2 gap-y-8 gap-x-4 ${showRunStats ? 'border-y border-gray-800/50 py-6' : 'border-t border-gray-800/50 pt-6'} `}>
+        <div className={`grid grid-cols-2 gap-y-2 gap-x-4 ${showRunStats ? 'border-y border-gray-800/50 py-4' : 'border-t border-gray-800/50 pt-4'} `}>
           <div className="flex flex-col items-start text-left gap-1">
-            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
+            <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
               <svg
                 viewBox="0 0 24 24"
-                className="w-3.5 h-3.5"
+                className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2.5"
@@ -103,19 +99,19 @@ const RunDetailPanel = ({
               </svg>
               Distance
             </span>
-            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
-              <div className="text-4xl md:text-5xl font-condensed font-black text-emerald-400 tracking-tighter leading-none">
+            <div className="flex items-baseline justify-start gap-1 mt-0.5 whitespace-nowrap">
+              <div className="text-[29px] md:text-[36px] font-condensed font-black text-emerald-400 tracking-tighter leading-none">
                 <CyclingText text={distanceKm} hoverPlay={true} interval={50} className="text-emerald-400" />
               </div>
-              <span className="text-xs font-bold text-secondary uppercase tracking-widest">KM</span>
+              <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">KM</span>
             </div>
           </div>
 
           <div className="flex flex-col items-start text-left gap-1">
-            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
+            <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
               <svg
                 viewBox="0 0 24 24"
-                className="w-3.5 h-3.5"
+                className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2.5"
@@ -127,22 +123,22 @@ const RunDetailPanel = ({
               </svg>
               Pace
             </span>
-            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
-              <div className="text-4xl md:text-5xl font-condensed font-black text-blue-400 tracking-tighter leading-none">
+            <div className="flex items-baseline justify-start gap-1 mt-0.5 whitespace-nowrap">
+              <div className="text-[29px] md:text-[36px] font-condensed font-black text-blue-400 tracking-tighter leading-none">
                 <CyclingText text={pace} hoverPlay={true} interval={50} className="text-blue-400" />
               </div>
-              <span className="text-xs font-bold text-secondary uppercase tracking-widest">/KM</span>
+              <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">/KM</span>
             </div>
-            <div className="text-[10px] text-gray-500 font-medium whitespace-nowrap mt-0.5">
+            <div className="text-[9px] text-gray-500 font-medium whitespace-nowrap mt-0">
               {run.average_speed ? `${run.average_speed.toFixed(2)} m/s` : '~'}
             </div>
           </div>
 
           <div className="flex flex-col items-start text-left gap-1">
-            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
+            <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
               <svg
                 viewBox="0 0 24 24"
-                className="w-3.5 h-3.5"
+                className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2.5"
@@ -154,18 +150,18 @@ const RunDetailPanel = ({
               </svg>
               Time
             </span>
-            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
-              <div className="text-4xl md:text-5xl font-condensed font-black text-purple-400 tracking-tighter leading-none">
+            <div className="flex items-baseline justify-start gap-1 mt-0.5 whitespace-nowrap">
+              <div className="text-[29px] md:text-[36px] font-condensed font-black text-purple-400 tracking-tighter leading-none">
                 <CyclingText text={runTime} hoverPlay={true} interval={50} className="text-purple-400" />
               </div>
             </div>
           </div>
 
           <div className="flex flex-col items-start text-left gap-1">
-            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
+            <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
               <svg
                 viewBox="0 0 24 24"
-                className="w-3.5 h-3.5"
+                className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2.5"
@@ -177,78 +173,49 @@ const RunDetailPanel = ({
               </svg>
               BPM
             </span>
-            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
-              <div className="text-4xl md:text-5xl font-condensed font-black text-orange-400 tracking-tighter leading-none">
+            <div className="flex items-baseline justify-start gap-1 mt-0.5 whitespace-nowrap">
+              <div className="text-[29px] md:text-[36px] font-condensed font-black text-orange-400 tracking-tighter leading-none">
                 <CyclingText text={currentHeartRate !== null ? String(currentHeartRate) : '~'} hoverPlay={true} interval={50} className="text-orange-400" />
               </div>
               {currentHeartRate !== null && (
-                <span className="text-xs font-bold text-secondary uppercase tracking-widest">BPM</span>
+                <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">BPM</span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Extended metrics row */}
-        <div className="grid grid-cols-2 gap-y-8 gap-x-4 border-t border-gray-800/50 py-6">
+        {/* Extended metrics row - Max HR and Elevation only */}
+        <div className="grid grid-cols-2 gap-y-2 gap-x-4 pt-4">
           <div className="flex flex-col items-start text-left gap-1">
-            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
-              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
+              <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
               Max HR
             </span>
-            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
-              <div className="text-3xl md:text-4xl font-condensed font-black text-red-400 tracking-tighter leading-none">
-                {maxHr !== null ? maxHr : '--'}
+            <div className="flex items-baseline justify-start gap-1 mt-0.5 whitespace-nowrap">
+              <div className="text-[29px] md:text-[36px] font-condensed font-black text-red-400 tracking-tighter leading-none">
+                <CyclingText text={maxHr !== null ? String(maxHr) : '--'} hoverPlay={true} interval={50} className="text-red-400" />
               </div>
               {maxHr !== null && (
-                <span className="text-xs font-bold text-secondary uppercase tracking-widest">BPM</span>
+                <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">BPM</span>
               )}
             </div>
           </div>
 
           <div className="flex flex-col items-start text-left gap-1">
-            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
-              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 6v6l4 2" />
-              </svg>
-              Cadence
-            </span>
-            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
-              <div className="text-3xl md:text-4xl font-condensed font-black text-yellow-400 tracking-tighter leading-none">
-                {formatCadence(cadence)}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-start text-left gap-1">
-            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
-              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-              </svg>
-              Calories
-            </span>
-            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
-              <div className="text-3xl md:text-4xl font-condensed font-black text-pink-400 tracking-tighter leading-none">
-                {formatCalories(calories)}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-start text-left gap-1">
-            <span className="font-sans text-[10px] md:text-xs font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
-              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider truncate flex items-center gap-1">
+              <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M12 19V5M5 12l7-7 7 7" />
               </svg>
               Elevation
             </span>
-            <div className="flex items-baseline justify-start gap-1 mt-1 whitespace-nowrap">
-              <div className="text-3xl md:text-4xl font-condensed font-black text-teal-400 tracking-tighter leading-none">
-                {formatElevation(elevGain)}
+            <div className="flex items-baseline justify-start gap-1 mt-0.5 whitespace-nowrap">
+              <div className="text-[29px] md:text-[36px] font-condensed font-black text-teal-400 tracking-tighter leading-none">
+                <CyclingText text={String(elevGain ?? '--')} hoverPlay={true} interval={50} className="text-teal-400" />
               </div>
               {elevHigh && elevLow && (
-                <div className="text-[10px] text-gray-500 font-medium ml-1">
+                <div className="text-[9px] text-gray-500 font-medium ml-1">
                   ({formatElevation(elevLow)} - {formatElevation(elevHigh)})
                 </div>
               )}
@@ -257,9 +224,9 @@ const RunDetailPanel = ({
         </div>
 
         {showRunStats && (
-          <div className="flex flex-col mt-5 pt-4 border-t border-gray-800/50 gap-4">
+          <div className="flex flex-col mt-3 pt-3 border-t border-gray-800/50 gap-2">
             <div className="flex flex-col items-center w-full max-w-[200px] mx-auto">
-              <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider mb-1.5">
+              <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider mb-1">
                 Aerobic Zones
               </span>
               <div className="flex flex-col gap-1.5 w-full">
@@ -342,33 +309,6 @@ const RunDetailPanel = ({
                     })}
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* 曲线图 */}
-            {(run.streams?.heartrate || run.streams?.velocity_smooth || run.streams?.altitude) && (
-              <div className="flex flex-col mt-5 pt-4 border-t border-gray-800/50 gap-3">
-                <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider mb-1.5 text-center">
-                  活动曲线
-                </span>
-                <ActivityCurves
-                  streams={run.streams}
-                  totalDistance={run.distance}
-                />
-              </div>
-            )}
-
-            {/* 每公里表格 */}
-            {(run.laps && run.laps.length > 0 || run.streams) && (
-              <div className="flex flex-col mt-5 pt-4 border-t border-gray-800/50 gap-3">
-                <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider mb-1.5 text-center">
-                  每公里分解
-                </span>
-                <KmSplitsTable
-                  laps={run.laps}
-                  streams={run.streams}
-                  totalDistance={run.distance}
-                />
               </div>
             )}
           </div>
