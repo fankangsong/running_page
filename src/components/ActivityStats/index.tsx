@@ -281,6 +281,30 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
 
   const maxValue = Math.max(...chartData.map((d) => d.value), 1); // Avoid div by 0
 
+  // Detect mobile screen size
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Determine which labels to show on mobile for month view
+  const shouldShowLabel = (index: number, dataLength: number) => {
+    if (!isMobile || timeSpan !== 'month') return true;
+
+    // Show label for: 1st (index 0), 15th (index 14), last day
+    const firstDay = index === 0;
+    const midMonth = index === 14; // 15th day
+    const lastDay = index === dataLength - 1;
+
+    return firstDay || midMonth || lastDay;
+  };
+
   // Title formatting
   let title = '';
   if (timeSpan === 'week') {
@@ -405,7 +429,7 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
       </div>
 
       {/* Chart Area */}
-      <div className="h-32 md:h-44 mb-6 flex items-end gap-2 border-b border-gray-800/50 pb-2">
+      <div className="h-32 md:h-44 mb-6 flex items-end gap-2 border-b border-gray-800/50">
         {chartData.map((d, i) => (
           <div
             key={i}
@@ -414,7 +438,7 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
             {/* Tooltip */}
             <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 bg-gray-900/95 backdrop-blur-sm border border-white/10 rounded-lg px-2.5 py-1.5 shadow-xl flex flex-col items-center pointer-events-none transition-all duration-200 ease-out z-10 -translate-y-1 group-hover:translate-y-0 min-w-[max-content]">
               <span className="text-[10px] text-gray-400 font-medium mb-0.5">
-                {d.label}
+                {timeSpan === 'month' ? `Day ${d.label}` : d.label}
               </span>
               <span className="text-xs font-mono text-white font-bold">
                 {dimension === 'time'
@@ -427,7 +451,7 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
               <div className="absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-gray-900/95" />
             </div>
 
-            <div className="flex-1 w-full flex items-end justify-center">
+            <div className="flex-1 w-full flex items-end justify-center pb-3">
               <div
                 className="w-full max-w-[32px] rounded-t origin-bottom transition-[height,transform,filter] duration-500 ease-out group-hover:scale-y-[1.04] bg-gradient-to-t from-[#4fc3f7] to-[#81d4fa] opacity-80 group-hover:opacity-100 group-hover:brightness-110"
                 style={{
@@ -437,8 +461,10 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
               ></div>
             </div>
 
-            <div className="text-[10px] text-gray-500 mt-2 truncate w-full text-center transition-colors group-hover:text-primary">
-              {d.label}
+            <div className={`text-[10px] w-full text-center transition-colors group-hover:text-primary ${
+              shouldShowLabel(i, chartData.length) ? 'text-gray-500' : 'text-transparent'
+            }`}>
+              {shouldShowLabel(i, chartData.length) ? d.label : '·'}
             </div>
           </div>
         ))}

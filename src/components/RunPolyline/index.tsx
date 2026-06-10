@@ -11,10 +11,13 @@ interface IRunPolylineProps {
 }
 
 const RunPolyline = ({ run, className }: IRunPolylineProps) => {
-  const { points } = useMemo(() => {
+  const svgWidth = 210;
+  const svgHeight = 210;
+
+  const { points, offsetX, offsetY } = useMemo(() => {
     const coords = pathForRun(run);
     if (coords.length === 0) {
-      return { points: [], bounds: null };
+      return { points: [], bounds: null, offsetX: 0, offsetY: 0 };
     }
 
     const lons = coords.map((c) => c[0]);
@@ -28,13 +31,15 @@ const RunPolyline = ({ run, className }: IRunPolylineProps) => {
     const latRange = maxLat - minLat || 1;
 
     const padding = 10;
-    const svgWidth = 260;
-    const svgHeight = 260;
+
+    // Calculate the actual content size after scaling
+    const contentWidth = svgWidth - 2 * padding;
+    const contentHeight = svgHeight - 2 * padding;
 
     const scaleX = (lon: number) =>
-      padding + ((lon - minLon) / lonRange) * (svgWidth - 2 * padding);
+      padding + ((lon - minLon) / lonRange) * contentWidth;
     const scaleY = (lat: number) =>
-      padding + ((lat - minLat) / latRange) * (svgHeight - 2 * padding);
+      padding + ((lat - minLat) / latRange) * contentHeight;
 
     const points = coords.map((coord) => {
       const x = scaleX(coord[0]);
@@ -42,21 +47,29 @@ const RunPolyline = ({ run, className }: IRunPolylineProps) => {
       return { x, y };
     });
 
+    // Calculate bounding box of the drawn path
+    const xs = points.map((p) => p.x);
+    const ys = points.map((p) => p.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+
+    // Center the path within the SVG by calculating offset
+    const contentActualWidth = maxX - minX;
+    const contentActualHeight = maxY - minY;
+    const offsetX = (svgWidth - contentActualWidth) / 2 - minX;
+    const offsetY = (svgHeight - contentActualHeight) / 2 - minY;
+
     return {
       points,
+      offsetX,
+      offsetY,
     };
   }, [run]);
 
   if (points.length === 0) {
-    return (
-      <div
-        className={`w-full h-full flex items-center justify-center text-secondary text-sm ${
-          className ?? ''
-        }`}
-      >
-        No map data
-      </div>
-    );
+    return null;
   }
 
   const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(' ');
@@ -65,7 +78,7 @@ const RunPolyline = ({ run, className }: IRunPolylineProps) => {
 
   return (
     <svg
-      viewBox="0 0 260 260"
+      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
       className={className ?? 'w-full h-full'}
       preserveAspectRatio="xMidYMid meet"
     >
@@ -77,22 +90,24 @@ const RunPolyline = ({ run, className }: IRunPolylineProps) => {
         </linearGradient>
       </defs>
 
-      <polyline
-        points={polylinePoints}
-        fill="none"
-        stroke={MAIN_COLOR}
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity="0.9"
-      />
+      <g transform={`translate(${offsetX}, ${offsetY})`}>
+        <polyline
+          points={polylinePoints}
+          fill="none"
+          stroke={MAIN_COLOR}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.9"
+        />
 
-      <g transform={`translate(${startPoint.x - 12}, ${startPoint.y - 24})`}>
-        <StartIcon width="24" height="24" />
-      </g>
+        <g transform={`translate(${startPoint.x - 12}, ${startPoint.y - 24})`}>
+          <StartIcon width="24" height="24" />
+        </g>
 
-      <g transform={`translate(${endPoint.x - 12}, ${endPoint.y - 24})`}>
-        <EndIcon width="24" height="24" />
+        <g transform={`translate(${endPoint.x - 12}, ${endPoint.y - 24})`}>
+          <EndIcon width="24" height="24" />
+        </g>
       </g>
     </svg>
   );
