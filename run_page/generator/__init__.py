@@ -29,6 +29,73 @@ RETRY_DELAY = 15  # initial delay in seconds before retry (exponential backoff)
 RATE_LIMIT_RETRY_DELAY = 120  # seconds to wait when hitting rate limit (429 error, increased from 90)
 REQUEST_COUNTER = 0  # global request counter for tracking
 
+# Dynamic rate limits (will be updated from API response headers)
+# Default to conservative limits; will auto-adjust if higher limits detected
+STRAVA_RATE_LIMITS = {
+    "per_15_minutes": 200,  # default overall limit
+    "per_day": 2000,        # default overall limit
+}
+STRAVA_READ_RATE_LIMITS = {
+    "per_15_minutes": 100,  # default read (non-upload) limit
+    "per_day": 1000,        # default read (non-upload) limit
+}
+
+
+def update_rate_limits_from_headers(response_headers: dict):
+    """Update rate limits based on API response headers"""
+    global STRAVA_RATE_LIMITS, STRAVA_READ_RATE_LIMITS
+
+    # Parse X-RateLimit-Limit: "15min_limit,daily_limit"
+    if 'X-Ratelimit-Limit' in response_headers:
+        try:
+            limit_str = response_headers['X-Ratelimit-Limit']
+            parts = [int(x.strip()) for x in limit_str.split(',')]
+            if len(parts) == 2:
+                STRAVA_RATE_LIMITS["per_15_minutes"] = parts[0]
+                STRAVA_RATE_LIMITS["per_day"] = parts[1]
+        except (ValueError, IndexError):
+            pass
+
+    # Parse X-ReadRateLimit-Limit: "15min_limit,daily_limit"
+    if 'X-Readratelimit-Limit' in response_headers:
+        try:
+            limit_str = response_headers['X-Readratelimit-Limit']
+            parts = [int(x.strip()) for x in limit_str.split(',')]
+            if len(parts) == 2:
+                STRAVA_READ_RATE_LIMITS["per_15_minutes"] = parts[0]
+                STRAVA_READ_RATE_LIMITS["per_day"] = parts[1]
+        except (ValueError, IndexError):
+            pass
+
+
+def get_api_usage_from_headers(response_headers: dict) -> dict:
+    """Extract API usage from response headers"""
+    usage = {}
+
+    # Parse X-RateLimit-Usage: "15min_usage,daily_usage"
+    if 'X-Ratelimit-Usage' in response_headers:
+        try:
+            usage_str = response_headers['X-Ratelimit-Usage']
+            parts = [int(x.strip()) for x in usage_str.split(',')]
+            if len(parts) == 2:
+                usage['overall_15min'] = parts[0]
+                usage['overall_daily'] = parts[1]
+        except (ValueError, IndexError):
+            pass
+
+    # Parse X-ReadRateLimit-Usage: "15min_usage,daily_usage"
+    if 'X-Readratelimit-Usage' in response_headers:
+        try:
+            usage_str = response_headers['X-Readratelimit-Usage']
+            parts = [int(x.strip()) for x in usage_str.split(',')]
+            if len(parts) == 2:
+                usage['read_15min'] = parts[0]
+                usage['read_daily'] = parts[1]
+        except (ValueError, IndexError):
+            pass
+
+    return usage
+
 
 class Generator:
     def __init__(self, db_path):
@@ -39,6 +106,40 @@ class Generator:
         self.client_secret = ""
         self.refresh_token = ""
         self.only_run = False
+
+        # Track API usage from response headers
+        self.api_usage = {
+            'overall_15min': 0,
+            'overall_daily': 0,
+            'read_15min': 0,
+            'read_daily': 0,
+        }
+
+        # Install response hook to capture rate limit headers
+        self._install_response_hook()
+
+    def _install_response_hook(self):
+        """Install a hook on the requests session to capture API response headers"""
+        def capture_rate_limit_headers(response, *args, **kwargs):
+            """Hook callback to extract and store rate limit info from response headers"""
+            try:
+                # Update rate limits from headers
+                update_rate_limits_from_headers(response.headers)
+
+                # Update API usage tracking
+                usage = get_api_usage_from_headers(response.headers)
+                if usage:
+                    self.api_usage.update(usage)
+            except Exception as e:
+                # Don't let hook errors break the main flow
+                pass
+            return response
+
+        # Register the hook on the protocol's requests session
+        try:
+            self.client.protocol.rsession.hooks['response'].append(capture_rate_limit_headers)
+        except Exception:
+            pass  # If hook installation fails, continue without it
 
     def set_strava_config(self, client_id, client_secret, refresh_token):
         self.client_id = client_id
@@ -57,6 +158,10 @@ class Generator:
 
         self.client.access_token = response["access_token"]
         print("Access ok")
+
+        # After token refresh, we should have updated rate limits from any previous API calls
+        print(f"Rate limits: {STRAVA_RATE_LIMITS['per_15_minutes']}/15min, {STRAVA_RATE_LIMITS['per_day']}/day")
+        print(f"Read limits: {STRAVA_READ_RATE_LIMITS['per_15_minutes']}/15min, {STRAVA_READ_RATE_LIMITS['per_day']}/day")
 
     def sync(self, force, sync_historical=False):
         """

@@ -52,6 +52,8 @@ def monitor(progress_file: str = "strava_sync_progress.json", interval: int = 30
                 failed = p.get('failed', 0)
                 skipped = p.get('skipped', 0)
                 api_calls = p.get('api_calls_made', 0)
+                current_batch = p.get('current_batch', 0)
+                total_batches = p.get('total_batches', 0)
 
                 # Progress bar
                 if total > 0:
@@ -80,7 +82,8 @@ def monitor(progress_file: str = "strava_sync_progress.json", interval: int = 30
                 print(f"  Failed: {failed} | Skipped: {skipped} | Remaining: {remaining}")
                 print(f"  API calls made: {api_calls:,}")
                 print(f"  Speed: {speed:.1f} activities/min | ETA: {eta_str}")
-                print(f"  Current batch: {p.get('current_batch', 0)}/{p.get('total_batches', 0)}")
+                if total_batches > 0:
+                    print(f"  Current batch: {current_batch}/{total_batches}")
 
                 # Check if complete
                 if remaining == 0 and total > 0:

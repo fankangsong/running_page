@@ -25,23 +25,23 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import generator modules after paths are set
 from generator.db import update_or_create_activity
+from generator import STRAVA_RATE_LIMITS, STRAVA_READ_RATE_LIMITS
 
-# Strava API limits
-STRAVA_RATE_LIMITS = {
-    "per_15_minutes": 600,
-    "per_day": 30000,
-}
+# Strava API limits (imported from generator, will be dynamically updated)
+# Default to conservative values; will auto-adjust from API response headers
 
 # API call costs per activity
 API_CALL_COSTS = {
-    "base_activity": 1,      # get_activities()
     "detailed_activity": 1,  # get_activity(id)
     "laps": 1,               # get_activity_laps(id)
     "streams": 1,            # get_activity_streams(id)
 }
 
-# Total cost per activity (full sync)
-TOTAL_COST_PER_ACTIVITY = sum(API_CALL_COSTS.values())  # 4 calls per activity
+# Cost for fetching activity list (one-time cost, not per-activity)
+ACTIVITY_LIST_COST = 1
+
+# Total cost per activity (excluding the one-time activity list fetch)
+TOTAL_COST_PER_ACTIVITY = sum(API_CALL_COSTS.values())  # 3 calls per activity
 
 
 @dataclass
@@ -87,12 +87,16 @@ class StravaSyncScheduler:
         refresh_token: str,
         progress_file: str = "strava_sync_progress.json",
         only_run: bool = True,
+        after_date: Optional[str] = None,
+        before_date: Optional[str] = None,
     ):
         self.client_id = client_id
         self.client_secret = client_secret
         self.refresh_token = refresh_token
         self.progress_file = progress_file
         self.only_run = only_run
+        self.after_date = after_date
+        self.before_date = before_date
 
         # Import generator after paths are set
         from generator import Generator
@@ -122,13 +126,19 @@ class StravaSyncScheduler:
             json.dump(self.progress.to_dict(), f, indent=2)
 
     def estimate_api_calls(self, num_activities: int) -> dict:
-        """Estimate API calls needed for sync"""
+        """Estimate API calls needed for sync
+
+        Note: get_activities() is a one-time call to fetch the activity list,
+        not per-activity. Each activity then requires 3 API calls:
+        get_activity(id) + get_activity_laps(id) + get_activity_streams(id)
+        """
         return {
             "total_activities": num_activities,
             "calls_per_activity": TOTAL_COST_PER_ACTIVITY,
-            "total_calls": num_activities * TOTAL_COST_PER_ACTIVITY,
+            "activity_list_call": ACTIVITY_LIST_COST,
+            "total_calls": ACTIVITY_LIST_COST + num_activities * TOTAL_COST_PER_ACTIVITY,
             "breakdown": {
-                "base_activity": num_activities * API_CALL_COSTS["base_activity"],
+                "activity_list": ACTIVITY_LIST_COST,
                 "detailed_activity": num_activities * API_CALL_COSTS["detailed_activity"],
                 "laps": num_activities * API_CALL_COSTS["laps"],
                 "streams": num_activities * API_CALL_COSTS["streams"],
@@ -213,6 +223,26 @@ class StravaSyncScheduler:
 
         return None
 
+    def _parse_date(self, date_str: Optional[str], default: datetime = None) -> Optional[datetime]:
+        """Parse date string in YYYY-MM-DD or ISO 8601 format"""
+        if not date_str:
+            return default
+        try:
+            # Try parsing YYYY-MM-DD
+            dt = datetime.strptime(date_str, "%Y-%m-%d")
+            return dt.replace(tzinfo=timezone.utc)
+        except ValueError:
+            try:
+                # Try parsing ISO 8601
+                from dateutil.parser import parse as parse_iso
+                dt = parse_iso(date_str)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return dt
+            except Exception:
+                print(f"[WARN] Could not parse date '{date_str}', using default")
+                return default
+
     def preview_sync_plan(self):
         """Preview the sync plan without executing"""
         print("="*70)
@@ -227,14 +257,35 @@ class StravaSyncScheduler:
             print(f"[ERROR] Authentication failed: {e}\n")
             return
 
+        # Build API filters based on --after/--before
+        after_dt = self._parse_date(self.after_date)
+        before_dt = self._parse_date(self.before_date, datetime.now(timezone.utc))
+
         # Get activity count with rate limit handling
         print("Fetching activity list...")
-        activities = self._fetch_with_retry(
-            lambda: list(self.generator.client.get_activities(
-                before=datetime.now(timezone.utc)
-            )),
-            "activity list"
-        )
+        if after_dt and before_dt:
+            print(f"📅 Date range: {after_dt.strftime('%Y-%m-%d')} to {before_dt.strftime('%Y-%m-%d')}")
+            activities = self._fetch_with_retry(
+                lambda: list(self.generator.client.get_activities(after=after_dt, before=before_dt)),
+                "activity list"
+            )
+        elif after_dt:
+            print(f"📅 After: {after_dt.strftime('%Y-%m-%d')}")
+            activities = self._fetch_with_retry(
+                lambda: list(self.generator.client.get_activities(after=after_dt)),
+                "activity list"
+            )
+        elif before_dt:
+            print(f"📅 Before: {before_dt.strftime('%Y-%m-%d')}")
+            activities = self._fetch_with_retry(
+                lambda: list(self.generator.client.get_activities(before=before_dt)),
+                "activity list"
+            )
+        else:
+            activities = self._fetch_with_retry(
+                lambda: list(self.generator.client.get_activities(before=datetime.now(timezone.utc))),
+                "activity list"
+            )
 
         if activities is None:
             print("[ERROR] Failed to fetch activity list after retries.")
@@ -251,8 +302,13 @@ class StravaSyncScheduler:
         estimates = self.estimate_api_calls(total)
         print("API Call Estimates:")
         print(f"  Total activities: {estimates['total_activities']}")
-        print(f"  Calls per activity: {estimates['calls_per_activity']}")
+        print(f"  Activity list call (one-time): {estimates['activity_list_call']}")
+        print(f"  Calls per activity: {estimates['calls_per_activity']} (detailed + laps + streams)")
         print(f"  Total API calls needed: {estimates['total_calls']:,}")
+        print(f"  Breakdown:")
+        for key, value in estimates['breakdown'].items():
+            label = key.replace('_', ' ').title()
+            print(f"    - {label}: {value:,}")
         print()
 
         # Batch plan
@@ -266,7 +322,8 @@ class StravaSyncScheduler:
 
         # Rate limit info
         print("Rate Limits:")
-        print(f"  Strava limit: {STRAVA_RATE_LIMITS['per_15_minutes']} calls/15min, {STRAVA_RATE_LIMITS['per_day']} calls/day")
+        print(f"  Overall: {STRAVA_RATE_LIMITS['per_15_minutes']} calls/15min, {STRAVA_RATE_LIMITS['per_day']} calls/day")
+        print(f"  Read (non-upload): {STRAVA_READ_RATE_LIMITS['per_15_minutes']} calls/15min, {STRAVA_READ_RATE_LIMITS['per_day']} calls/day")
         print(f"  Current usage: {self.progress.api_calls_made} calls made")
         print(f"  Remaining today: {self.progress.api_calls_remaining_today}")
         print()
@@ -299,20 +356,48 @@ class StravaSyncScheduler:
         # Check access
         self.generator.check_access()
 
+        # Build API filters based on --after/--before
+        after_dt = self._parse_date(self.after_date)
+        before_dt = self._parse_date(self.before_date, datetime.now(timezone.utc))
+
         # Get all activities with rate limit handling
         print("\nFetching activity list...")
-        activities = self._fetch_with_retry(
-            lambda: list(self.generator.client.get_activities(
-                before=datetime.now(timezone.utc)
-            )),
-            "activity list",
-            max_retries=5
-        )
+        if after_dt and before_dt:
+            print(f"📅 Date range: {after_dt.strftime('%Y-%m-%d')} to {before_dt.strftime('%Y-%m-%d')}")
+            activities = self._fetch_with_retry(
+                lambda: list(self.generator.client.get_activities(after=after_dt, before=before_dt)),
+                "activity list",
+                max_retries=5
+            )
+        elif after_dt:
+            print(f"📅 After: {after_dt.strftime('%Y-%m-%d')}")
+            activities = self._fetch_with_retry(
+                lambda: list(self.generator.client.get_activities(after=after_dt)),
+                "activity list",
+                max_retries=5
+            )
+        elif before_dt:
+            print(f"📅 Before: {before_dt.strftime('%Y-%m-%d')}")
+            activities = self._fetch_with_retry(
+                lambda: list(self.generator.client.get_activities(before=before_dt)),
+                "activity list",
+                max_retries=5
+            )
+        else:
+            activities = self._fetch_with_retry(
+                lambda: list(self.generator.client.get_activities(before=datetime.now(timezone.utc))),
+                "activity list",
+                max_retries=5
+            )
 
         if activities is None:
             print("[ERROR] Failed to fetch activity list after retries.")
             print("Please wait 15-30 minutes and try again.")
             return False
+
+        # Track the one-time activity list API call
+        self.progress.api_calls_made += ACTIVITY_LIST_COST
+        self.progress.api_calls_remaining_today -= ACTIVITY_LIST_COST
 
         if self.only_run:
             activities = [a for a in activities if a.type == "Run"]
@@ -370,13 +455,32 @@ class StravaSyncScheduler:
                 print(f"\n[WAIT] Waiting {delay_between_batches}s before next batch...")
                 countdown(delay_between_batches, interval=60)
 
+        # Final sync of API usage from server-reported values
+        self._sync_api_usage_from_generator()
+
         print(f"\n{'='*70}")
         print(f"[SUCCESS] Sync completed!")
         print(f"   Completed: {self.progress.completed}")
         print(f"   Failed: {self.progress.failed}")
         print(f"   Skipped: {self.progress.skipped}")
-        print(f"   Total API calls: {self.progress.api_calls_made}")
+        print(f"   Total API calls (server-reported): {self.progress.api_calls_made}")
+        print(f"   Generator tracked usage: {self.generator.api_usage}")
         print(f"{'='*70}")
+
+    def _sync_api_usage_from_generator(self):
+        """Sync API usage tracking from generator's response header data"""
+        # The generator tracks API usage from response headers
+        # We use this to calibrate our local counter
+        gen_usage = self.generator.api_usage
+        if gen_usage:
+            # Use the read_daily usage as our primary metric (since we mostly do reads)
+            server_usage = gen_usage.get('read_daily', 0)
+            if server_usage > 0:
+                # Sync our local counter with server-reported usage
+                self.progress.api_calls_made = server_usage
+                self.progress.api_calls_remaining_today = max(
+                    0, STRAVA_RATE_LIMITS["per_day"] - server_usage
+                )
 
     def _process_batch(self, activities: List, batch_num: int):
         """Process a batch of activities"""
@@ -388,10 +492,6 @@ class StravaSyncScheduler:
             print(f"\n[{activity_num}/{self.progress.total_activities}] Processing activity {activity.id}")
 
             try:
-                # Track API calls
-                self.progress.api_calls_made += TOTAL_COST_PER_ACTIVITY
-                self.progress.api_calls_remaining_today -= TOTAL_COST_PER_ACTIVITY
-
                 # Sync activity with detailed data
                 detailed_activity = self.generator._get_with_retry(
                     lambda: self.generator.client.get_activity(activity.id),
@@ -412,13 +512,28 @@ class StravaSyncScheduler:
                     detailed_activity
                 )
 
-                # Sync laps
+                # Sync laps and streams (these call session.add() but don't commit)
                 time.sleep(1)  # Small delay between API calls
                 self.generator.sync_activity_laps(activity.id)
 
-                # Sync streams
                 time.sleep(1)  # Small delay between API calls
                 self.generator.sync_activity_streams(activity.id)
+
+                # Commit all changes (activity + laps + streams) to database
+                try:
+                    self.generator.session.commit()
+                except Exception as e:
+                    print(f"  [WARN] Failed to commit: {e}")
+                    self.generator.session.rollback()
+
+                # After syncing, update API call tracking
+                # Each activity costs 3 API calls (detailed + laps + streams)
+                self.progress.api_calls_made += TOTAL_COST_PER_ACTIVITY
+                self.progress.api_calls_remaining_today -= TOTAL_COST_PER_ACTIVITY
+
+                # Periodically sync with server-reported usage
+                if idx % 5 == 0:
+                    self._sync_api_usage_from_generator()
 
                 if created:
                     print(f"  [NEW] Activity synced")
@@ -557,6 +672,18 @@ Examples:
         action="store_true",
         help="Test mode: only sync the first activity to verify script works"
     )
+    parser.add_argument(
+        "--after",
+        type=str,
+        default=None,
+        help="Sync activities after this date (YYYY-MM-DD or ISO 8601 format)"
+    )
+    parser.add_argument(
+        "--before",
+        type=str,
+        default=None,
+        help="Sync activities before this date (YYYY-MM-DD or ISO 8601 format)"
+    )
 
     args = parser.parse_args()
 
@@ -587,6 +714,8 @@ Examples:
         refresh_token=refresh_token,
         progress_file=args.progress_file,
         only_run=args.only_run and not args.all_types,
+        after_date=args.after,
+        before_date=args.before,
     )
 
     # Execute command

@@ -15,12 +15,13 @@ with open(JSON_FILE, 'w', encoding='utf-8') as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
 
 print(f'Written {len(data)} activities to {JSON_FILE}')
-
-# Check specific activity
-activity = next((a for a in data if a['run_id'] == 18661504630), None)
-if activity:
-    print(f'Activity 18661504630:')
-    print(f'  Laps: {len(activity.get("laps", []))}')
-    print(f'  Streams: {list(activity.get("streams", {}).keys())}')
-else:
-    print('Activity 18661504630 not found')
+print()
+print(f'{"ID":<14} {"Name":<30} {"Type":<10} {"Date":<12} {"Dist(km)":<10} {"Laps":<6} {"Streams"}')
+print('-' * 110)
+for a in data:
+    dist_km = round(a.get('distance', 0) / 1000, 2)
+    laps_count = len(a.get('laps', []))
+    streams_types = list(a.get('streams', {}).keys())
+    date_str = a.get('start_date_local', '')[:10] if a.get('start_date_local') else ''
+    name = (a.get('name') or '')[:28]
+    print(f'{a["run_id"]:<14} {name:<30} {a.get("type",""):<10} {date_str:<12} {dist_km:<10} {laps_count:<6} {streams_types}')
