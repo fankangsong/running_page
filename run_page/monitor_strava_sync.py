@@ -28,7 +28,7 @@ def format_time(seconds: float) -> str:
 def monitor(progress_file: str = "strava_sync_progress.json", interval: int = 30):
     """Monitor sync progress"""
     print("="*70)
-    print("📊 Strava Sync Progress Monitor")
+    print("Strava Sync Progress Monitor")
     print("="*70)
     print(f"Monitoring: {progress_file}")
     print(f"Update interval: {interval}s")
@@ -58,10 +58,10 @@ def monitor(progress_file: str = "strava_sync_progress.json", interval: int = 30
                     percentage = (completed + failed + skipped) / total * 100
                     bar_length = 40
                     filled = int(bar_length * percentage / 100)
-                    bar = '█' * filled + '░' * (bar_length - filled)
+                    bar = '#' * filled + '-' * (bar_length - filled)
                 else:
                     percentage = 0
-                    bar = '░' * 40
+                    bar = '-' * 40
 
                 # Calculate speed
                 elapsed = time.time() - start_time
@@ -85,7 +85,7 @@ def monitor(progress_file: str = "strava_sync_progress.json", interval: int = 30
                 # Check if complete
                 if remaining == 0 and total > 0:
                     print(f"\n{'='*70}")
-                    print(f"✅ Sync completed in {format_time(elapsed)}!")
+                    print(f"[SUCCESS] Sync completed in {format_time(elapsed)}!")
                     print(f"   Total activities: {total}")
                     print(f"   Successfully synced: {completed}")
                     print(f"   Failed: {failed}")
@@ -96,17 +96,17 @@ def monitor(progress_file: str = "strava_sync_progress.json", interval: int = 30
                 last_completed = completed
 
             except FileNotFoundError:
-                print(f"\r⏳ Waiting for sync to start... ({progress_file} not found)")
+                print(f"\r[WAIT] Waiting for sync to start... ({progress_file} not found)", end='', flush=True)
             except json.JSONDecodeError:
-                print(f"\r⚠️  Reading progress file... (file may be updating)")
+                print(f"\r[WARN] Reading progress file... (file may be updating)")
             except Exception as e:
-                print(f"\r❌ Error: {e}")
+                print(f"\r[ERROR] Error: {e}")
 
             time.sleep(interval)
 
     except KeyboardInterrupt:
         print(f"\n\n{'='*70}")
-        print("🛑 Monitoring stopped by user")
+        print("[STOP] Monitoring stopped by user")
         print(f"{'='*70}")
 
 

@@ -718,15 +718,52 @@ curl -X POST https://www.strava.com/oauth/token \
 ![get_refresh_token](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/get_refresh_token.png)
 
 7. 同步数据至 Strava
-   在项目根目录执行：
 
-> 第一次同步 Strava 数据时需要更改在 strava_sync.py 中的第 12 行代码 False 改为 True，运行完成后，再改为 False。
+   **方式一：使用调度器（推荐，支持完整历史同步和断点续传）**
+   
+   详细文档请参考：[STRAVA_SYNC_GUIDE.md](STRAVA_SYNC_GUIDE.md)
+   
+   ```bash
+   # 预览同步计划
+   python run_page/strava_sync_scheduler.py --preview
+   
+   # 执行全量历史同步（包含 laps 分段数据和 streams 时序数据）
+   python run_page/strava_sync_scheduler.py --execute
+   
+   # 监控同步进度
+   python run_page/monitor_strava_sync.py
+   ```
+   
+   **方式二：使用简单同步脚本（仅同步最近 7 天）**
+   
+   > 第一次同步 Strava 数据时需要更改在 strava_sync.py 中的第 12 行代码 False 改为 True，运行完成后，再改为 False。
 
-仅同步跑步数据，添加参数 --only-run
+   仅同步跑步数据，添加参数 --only-run
 
-```bash
-python3(python) run_page/strava_sync.py ${client_id} ${client_secret} ${refresh_token}
-```
+   ```bash
+   python run_page/strava_sync.py ${client_id} ${client_secret} ${refresh_token}
+   
+   # 或使用 .env 文件中的凭证
+   python run_page/run_strava_sync.py
+   
+   # 同步所有历史数据
+   python run_page/run_strava_sync.py --historical
+   ```
+   
+   **每个活动获取的数据：**
+   - 基础信息（距离、时间、配速等）
+   - 详细数据（卡路里、设备、心率等）
+   - **Laps（每公里分解数据）**
+   - **Streams（心率/配速/海拔时序曲线）**
+   
+   **故障排查：**
+   ```bash
+   # 检查 Strava 连接状态
+   python run_page/check_strava_connection.py
+   
+   # 测试单个活动同步
+   python run_page/sync_single_activity.py <activity_id>
+   ```
 
 其他资料参见
 <https://developers.strava.com/docs/getting-started>

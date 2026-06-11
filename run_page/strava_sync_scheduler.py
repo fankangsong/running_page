@@ -23,6 +23,9 @@ from dataclasses import dataclass, asdict
 # Add run_page to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Import generator modules after paths are set
+from generator.db import update_or_create_activity
+
 # Strava API limits
 STRAVA_RATE_LIMITS = {
     "per_15_minutes": 600,
@@ -155,6 +158,61 @@ class StravaSyncScheduler:
             "estimated_hours": (total_batches * 15) / 60,
         }
 
+    def _fetch_with_retry(self, api_call, description, max_retries=3):
+        """Fetch data with retry and rate limit handling"""
+        import urllib3
+        from requests.exceptions import SSLError, ProxyError, ConnectionError
+
+        for attempt in range(max_retries):
+            try:
+                result = api_call()
+                return result
+            except Exception as e:
+                error_str = str(e).lower()
+
+                # Check for rate limit error (429)
+                if "429" in error_str or "rate limit" in error_str:
+                    print(f"  [WARN] Rate limit hit for {description} (attempt {attempt + 1}/{max_retries})")
+
+                    # Try to extract wait time from error, otherwise use default
+                    wait_time = 900  # Default 15 minutes
+                    if attempt < max_retries - 1:
+                        print(f"  Waiting {wait_time}s ({wait_time/60:.0f} min) before retry...")
+                        countdown(wait_time, interval=60)
+                        continue
+                    else:
+                        print(f"  [ERROR] {description} failed after {max_retries} attempts due to rate limiting")
+                        return None
+
+                # Check for SSL/Network errors
+                is_ssl_error = isinstance(e, (SSLError, urllib3.exceptions.SSLError)) or 'ssl' in error_str
+                is_proxy_error = isinstance(e, (ProxyError, urllib3.exceptions.ProxyError)) or 'proxy' in error_str
+                is_connection_error = isinstance(e, (ConnectionError, urllib3.exceptions.ConnectionError)) or 'connection' in error_str
+
+                if is_ssl_error or is_proxy_error or is_connection_error:
+                    error_type = "SSL" if is_ssl_error else ("Proxy" if is_proxy_error else "Connection")
+                    print(f"  [NETWORK] {error_type} error for {description} (attempt {attempt + 1}/{max_retries})")
+
+                    if attempt < max_retries - 1:
+                        wait_time = 30 * (2 ** attempt)
+                        print(f"  Waiting {wait_time}s before retry...")
+                        countdown(wait_time, interval=30)
+                        continue
+                    else:
+                        print(f"  [ERROR] {description} failed after {max_retries} attempts due to network issues")
+                        return None
+
+                # Other errors
+                print(f"  [ERROR] {description} failed: {e}")
+                if attempt < max_retries - 1:
+                    wait_time = 15 * (2 ** attempt)
+                    print(f"  Retrying in {wait_time}s...")
+                    countdown(wait_time, interval=15)
+                else:
+                    return None
+
+        return None
+
     def preview_sync_plan(self):
         """Preview the sync plan without executing"""
         print("="*70)
@@ -171,17 +229,17 @@ class StravaSyncScheduler:
 
         # Get activity count with rate limit handling
         print("Fetching activity list...")
-        try:
-            activities = list(self.generator.client.get_activities(
+        activities = self._fetch_with_retry(
+            lambda: list(self.generator.client.get_activities(
                 before=datetime.now(timezone.utc)
-            ))
-        except Exception as e:
-            if "429" in str(e) or "rate limit" in str(e).lower():
-                print("[WARN] Rate limit exceeded. Please wait 15 minutes and try again.")
-                print(f"Error details: {e}")
-                return
-            else:
-                raise
+            )),
+            "activity list"
+        )
+
+        if activities is None:
+            print("[ERROR] Failed to fetch activity list after retries.")
+            print("Please wait 15-30 minutes and try again.")
+            return
 
         if self.only_run:
             activities = [a for a in activities if a.type == "Run"]
@@ -223,28 +281,46 @@ class StravaSyncScheduler:
         print("To start sync, run with --execute flag")
         print("="*70)
 
-    def execute_sync(self, batch_size: Optional[int] = None, delay_between_batches: int = 900):
+    def execute_sync(self, batch_size: Optional[int] = None, delay_between_batches: int = 900, test_mode: bool = False):
         """Execute sync with rate limiting
 
         Args:
             batch_size: Number of activities per batch (auto-calculated if None)
             delay_between_batches: Seconds between batches (default 15 min = 900s)
+            test_mode: If True, only sync the first activity for testing
         """
         print("="*70)
-        print("[START] Strava Sync with Rate Limiting")
+        if test_mode:
+            print("[TEST MODE] Strava Sync - Single Activity Test")
+        else:
+            print("[START] Strava Sync with Rate Limiting")
         print("="*70)
 
         # Check access
         self.generator.check_access()
 
-        # Get all activities
+        # Get all activities with rate limit handling
         print("\nFetching activity list...")
-        activities = list(self.generator.client.get_activities(
-            before=datetime.now(timezone.utc)
-        ))
+        activities = self._fetch_with_retry(
+            lambda: list(self.generator.client.get_activities(
+                before=datetime.now(timezone.utc)
+            )),
+            "activity list",
+            max_retries=5
+        )
+
+        if activities is None:
+            print("[ERROR] Failed to fetch activity list after retries.")
+            print("Please wait 15-30 minutes and try again.")
+            return False
 
         if self.only_run:
             activities = [a for a in activities if a.type == "Run"]
+
+        # In test mode, only process the first activity
+        if test_mode:
+            activities = activities[:1]
+            print(f"[TEST] Limited to 1 activity for testing\n")
 
         # Initialize progress
         if not self.progress.started_at:
@@ -309,7 +385,7 @@ class StravaSyncScheduler:
         for idx, activity in enumerate(activities, 1):
             activity_num = (batch_num - 1) * len(activities) + idx
 
-            print(f"\n[{activity_num}/{self.progress.total_activities}] Processing: {activity.name}")
+            print(f"\n[{activity_num}/{self.progress.total_activities}] Processing activity {activity.id}")
 
             try:
                 # Track API calls
@@ -331,7 +407,7 @@ class StravaSyncScheduler:
                 detailed_activity.elevation_gain = detailed_activity.total_elevation_gain
                 detailed_activity.subtype = detailed_activity.type
 
-                created = self.generator.update_or_create_activity(
+                created = update_or_create_activity(
                     self.generator.session,
                     detailed_activity
                 )
@@ -422,6 +498,9 @@ Examples:
   # Execute sync with default settings
   python strava_sync_scheduler.py --execute
 
+  # Test mode: sync only first activity to verify script
+  python strava_sync_scheduler.py --execute --test
+
   # Execute with custom batch size and delay
   python strava_sync_scheduler.py --execute --batch-size 5 --delay 1800
 
@@ -473,6 +552,11 @@ Examples:
         action="store_true",
         help="Sync all activity types (not just running)"
     )
+    parser.add_argument(
+        "--test",
+        action="store_true",
+        help="Test mode: only sync the first activity to verify script works"
+    )
 
     args = parser.parse_args()
 
@@ -511,7 +595,8 @@ Examples:
     elif args.execute:
         scheduler.execute_sync(
             batch_size=args.batch_size,
-            delay_between_batches=args.delay
+            delay_between_batches=args.delay,
+            test_mode=args.test
         )
     elif args.reset:
         scheduler.reset_progress()
