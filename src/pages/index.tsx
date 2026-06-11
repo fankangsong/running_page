@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import YearSelector from '@/components/YearSelector';
 import AnnualHeatmap, { HeatmapData } from '@/components/AnnualHeatmap';
@@ -17,6 +18,7 @@ import {
 } from '@/utils/utils';
 
 const Index = () => {
+  const navigate = useNavigate();
   const { activities } = useActivities();
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -102,8 +104,20 @@ const Index = () => {
   }, [selectedYear, runningActivities]);
 
   const handleDayClick = (date: string, value: number) => {
-    console.log(`Clicked on ${date} with value ${value}`);
-    // Future: navigate to daily detail or open a modal
+    if (value === 0) return; // No activity on this day
+
+    // Find the first activity on this date
+    const clickedActivity = runningActivities.find((a) => {
+      const activityDate = a.start_date_local.split(' ')[0]; // Extract YYYY-MM-DD
+      return activityDate === date && isRun(a.type);
+    });
+
+    if (clickedActivity && clickedActivity.run_id) {
+      // Navigate to the run detail page
+      navigate(`/run/${clickedActivity.run_id}`);
+    } else {
+      console.log(`No activity found for date ${date}`);
+    }
   };
 
 

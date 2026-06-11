@@ -35,6 +35,7 @@ ACTIVITY_KEYS = [
     "name",
     "distance",
     "moving_time",
+    "elapsed_time",
     "type",
     "subtype",
     "start_date",
@@ -42,8 +43,15 @@ ACTIVITY_KEYS = [
     "location_country",
     "summary_polyline",
     "average_heartrate",
+    "max_heartrate",
     "average_speed",
+    "max_speed",
+    "average_cadence",
+    "calories",
+    "device_name",
     "elevation_gain",
+    "elev_high",
+    "elev_low",
 ]
 
 
@@ -62,8 +70,16 @@ class Activity(Base):
     location_country = Column(String)
     summary_polyline = Column(String)
     average_heartrate = Column(Float)
+    # 新增字段
+    max_heartrate = Column(Float)
     average_speed = Column(Float)
+    max_speed = Column(Float)
+    average_cadence = Column(Float)
+    calories = Column(Float)
+    device_name = Column(String)
     elevation_gain = Column(Float)
+    elev_high = Column(Float)
+    elev_low = Column(Float)
     streak = None
 
     def to_dict(self):
@@ -79,6 +95,49 @@ class Activity(Base):
             out["streak"] = self.streak
 
         return out
+
+
+class ActivityLap(Base):
+    __tablename__ = "activity_laps"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    activity_id = Column(Integer, index=True)  # 关联 activities.run_id
+    lap_index = Column(Integer)
+    distance = Column(Float)
+    elapsed_time = Column(Integer)  # 秒
+    moving_time = Column(Integer)  # 秒
+    average_speed = Column(Float)
+    average_heartrate = Column(Float)
+    total_elevation_gain = Column(Float)
+    start_date = Column(String)
+
+    def to_dict(self):
+        return {
+            "lap_index": self.lap_index,
+            "distance": self.distance,
+            "elapsed_time": self.elapsed_time,
+            "moving_time": self.moving_time,
+            "average_speed": self.average_speed,
+            "average_heartrate": self.average_heartrate,
+            "total_elevation_gain": self.total_elevation_gain,
+            "start_date": self.start_date,
+        }
+
+
+class ActivityStream(Base):
+    __tablename__ = "activity_streams"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    activity_id = Column(Integer, index=True)  # 关联 activities.run_id
+    stream_type = Column(String)  # heartrate/velocity_smooth/altitude/distance/time
+    data = Column(String)  # JSON 数组
+
+    def to_dict(self):
+        import json
+        try:
+            return json.loads(self.data) if self.data else []
+        except json.JSONDecodeError:
+            return []
 
 
 def update_or_create_activity(session, run_activity):
@@ -132,16 +191,23 @@ def update_or_create_activity(session, run_activity):
                 moving_time=run_activity.moving_time,
                 elapsed_time=run_activity.elapsed_time,
                 type=run_activity.type,
-                subtype=run_activity.subtype,
+                subtype=getattr(run_activity, 'subtype', None) or getattr(run_activity, 'type', ''),
                 start_date=run_activity.start_date,
                 start_date_local=run_activity.start_date_local,
                 location_country=location_country,
-                average_heartrate=run_activity.average_heartrate,
-                average_speed=float(run_activity.average_speed),
-                elevation_gain=current_elevation_gain,
                 summary_polyline=(
                     run_activity.map and run_activity.map.summary_polyline or ""
                 ),
+                average_heartrate=_safe_float(run_activity.average_heartrate),
+                max_heartrate=_safe_float(getattr(run_activity, 'max_heartrate', None)),
+                average_speed=_safe_float(run_activity.average_speed) or 0.0,
+                max_speed=_safe_float(getattr(run_activity, 'max_speed', None)),
+                average_cadence=_safe_float(getattr(run_activity, 'average_cadence', None)),
+                calories=_safe_float(getattr(run_activity, 'calories', None)),
+                device_name=getattr(run_activity, 'device_name', None),
+                elevation_gain=current_elevation_gain,
+                elev_high=_safe_float(getattr(run_activity, 'elev_high', None)),
+                elev_low=_safe_float(getattr(run_activity, 'elev_low', None)),
             )
             session.add(activity)
             created = True
@@ -151,18 +217,130 @@ def update_or_create_activity(session, run_activity):
             activity.moving_time = run_activity.moving_time
             activity.elapsed_time = run_activity.elapsed_time
             activity.type = run_activity.type
-            activity.subtype = run_activity.subtype
-            activity.average_heartrate = run_activity.average_heartrate
-            activity.average_speed = float(run_activity.average_speed)
-            activity.elevation_gain = current_elevation_gain
+            activity.subtype = getattr(run_activity, 'subtype', None) or getattr(run_activity, 'type', '')
             activity.summary_polyline = (
                 run_activity.map and run_activity.map.summary_polyline or ""
             )
+            activity.average_heartrate = _safe_float(run_activity.average_heartrate)
+            activity.max_heartrate = _safe_float(getattr(run_activity, 'max_heartrate', None))
+            activity.average_speed = _safe_float(run_activity.average_speed) or 0.0
+            activity.max_speed = _safe_float(getattr(run_activity, 'max_speed', None))
+            activity.average_cadence = _safe_float(getattr(run_activity, 'average_cadence', None))
+            activity.calories = _safe_float(getattr(run_activity, 'calories', None))
+            activity.device_name = getattr(run_activity, 'device_name', None)
+            activity.elevation_gain = current_elevation_gain
+            activity.elev_high = _safe_float(getattr(run_activity, 'elev_high', None))
+            activity.elev_low = _safe_float(getattr(run_activity, 'elev_low', None))
     except Exception as e:
         print(f"something wrong with {run_activity.id}")
         print(str(e))
 
     return created
+
+
+def _convert_timedelta_to_seconds(value):
+    """将 timedelta 对象转换为秒数"""
+    import datetime
+    if value is None:
+        return 0
+    if isinstance(value, datetime.timedelta):
+        return int(value.total_seconds())
+    if isinstance(value, (int, float)):
+        return int(value)
+    # stravalib 可能返回带有 unit 属性的对象
+    if hasattr(value, 'unit'):
+        # 尝试获取数值部分
+        try:
+            return int(float(str(value).split()[0]))
+        except:
+            pass
+    return 0
+
+
+def _safe_float(value):
+    """安全转换为 float，处理 None 和带有 unit 属性的对象"""
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    # stravalib 可能返回带有 unit 属性的对象
+    if hasattr(value, 'unit'):
+        try:
+            # 尝试获取数值部分
+            val_str = str(value).split()[0]
+            return float(val_str)
+        except:
+            pass
+    try:
+        return float(value)
+    except:
+        return None
+
+
+def update_or_create_lap(session, activity_id, lap_data, lap_index):
+    """创建或更新活动圈数据"""
+
+    try:
+        lap = session.query(ActivityLap).filter_by(
+            activity_id=int(activity_id),
+            lap_index=lap_index
+        ).first()
+
+        if not lap:
+            lap = ActivityLap(
+                activity_id=int(activity_id),
+                lap_index=lap_index,
+                distance=_safe_float(lap_data.distance) or 0.0,
+                elapsed_time=_convert_timedelta_to_seconds(lap_data.elapsed_time) if hasattr(lap_data, 'elapsed_time') else 0,
+                moving_time=_convert_timedelta_to_seconds(lap_data.moving_time) if hasattr(lap_data, 'moving_time') else 0,
+                average_speed=_safe_float(lap_data.average_speed),
+                average_heartrate=_safe_float(lap_data.average_heartrate),
+                total_elevation_gain=_safe_float(lap_data.total_elevation_gain),
+                start_date=str(lap_data.start_date) if hasattr(lap_data, 'start_date') and lap_data.start_date else None,
+            )
+            session.add(lap)
+        else:
+            lap.distance = _safe_float(lap_data.distance) or 0.0
+            lap.elapsed_time = _convert_timedelta_to_seconds(lap_data.elapsed_time) if hasattr(lap_data, 'elapsed_time') else 0
+            lap.moving_time = _convert_timedelta_to_seconds(lap_data.moving_time) if hasattr(lap_data, 'moving_time') else 0
+            lap.average_speed = _safe_float(lap_data.average_speed)
+            lap.average_heartrate = _safe_float(lap_data.average_heartrate)
+            lap.total_elevation_gain = _safe_float(lap_data.total_elevation_gain)
+            lap.start_date = str(lap_data.start_date) if hasattr(lap_data, 'start_date') and lap_data.start_date else None
+
+    except Exception as e:
+        print(f"something wrong with lap {activity_id}-{lap_index}: {str(e)}")
+
+    return True
+
+
+def update_or_create_stream(session, activity_id, stream_type, stream_data):
+    """创建或更新活动数据流"""
+    import json
+
+    try:
+        stream = session.query(ActivityStream).filter_by(
+            activity_id=int(activity_id),
+            stream_type=stream_type
+        ).first()
+
+        # 将数据序列化为 JSON
+        data_json = json.dumps(stream_data) if stream_data else "[]"
+
+        if not stream:
+            stream = ActivityStream(
+                activity_id=int(activity_id),
+                stream_type=stream_type,
+                data=data_json,
+            )
+            session.add(stream)
+        else:
+            stream.data = data_json
+
+    except Exception as e:
+        print(f"something wrong with stream {activity_id}-{stream_type}: {str(e)}")
+
+    return True
 
 
 def add_missing_columns(engine, model):
@@ -189,13 +367,16 @@ def init_db(db_path):
     engine = create_engine(
         f"sqlite:///{db_path}", connect_args={"check_same_thread": False}
     )
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(engine)  # 会创建所有表
 
-    # check missing columns
+    # check missing columns for Activity
     add_missing_columns(engine, Activity)
+    # check missing columns for ActivityLap
+    add_missing_columns(engine, ActivityLap)
+    # check missing columns for ActivityStream
+    add_missing_columns(engine, ActivityStream)
 
     sm = sessionmaker(bind=engine)
     session = sm()
-    # apply the changes
     session.commit()
     return session
