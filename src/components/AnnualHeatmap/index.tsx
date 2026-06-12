@@ -206,14 +206,20 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
 
         <div className="flex gap-1">
           {/* Day of week labels */}
-          <div className="flex flex-col gap-1 w-8 justify-between text-[10px] text-secondary font-medium py-1">
-            <span>Sun</span>
-            <span></span>
-            <span>Tue</span>
-            <span></span>
-            <span>Thu</span>
-            <span></span>
-            <span>Sat</span>
+          <div className="flex flex-col gap-1 text-[10px] font-medium text-right mr-1">
+            {[
+              { day: 'Sun', color: 'text-accent' },
+              { day: 'Mon', color: 'text-orange-400' },
+              { day: 'Tue', color: 'text-yellow-400' },
+              { day: 'Wed', color: 'text-emerald-400' },
+              { day: 'Thu', color: 'text-blue-400' },
+              { day: 'Fri', color: 'text-indigo-400' },
+              { day: 'Sat', color: 'text-purple-400' },
+            ].map(({ day, color }) => (
+              <span key={day} className={`h-2.5 flex items-center justify-end ${color}`}>
+                {day}
+              </span>
+            ))}
           </div>
 
           {/* Grid */}
