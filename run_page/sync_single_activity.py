@@ -102,12 +102,13 @@ def sync_activity(activity_id: int):
 
     print(f"  Stream types: {len(streams)}")
     for stream in streams:
-        print(f"    {stream.stream_type}: {len(stream.stream_data or [])} points")
+        points = json.loads(stream.data) if stream.data else []
+        print(f"    {stream.stream_type}: {len(points)} points")
 
     # Regenerate activities.json
     print(f"\n[JSON] Regenerating activities.json...")
     activities_list = generator.load()
-    with open(JSON_FILE, "w") as f:
+    with open(JSON_FILE, "w", encoding="utf-8") as f:
         json.dump(activities_list, f, ensure_ascii=False, indent=2)
 
     # Find this activity in JSON

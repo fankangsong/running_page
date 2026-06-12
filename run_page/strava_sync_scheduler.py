@@ -24,6 +24,7 @@ from dataclasses import dataclass, asdict
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import generator modules after paths are set
+from config import JSON_FILE
 from generator.db import update_or_create_activity
 from generator import STRAVA_RATE_LIMITS, STRAVA_READ_RATE_LIMITS
 
@@ -466,6 +467,15 @@ class StravaSyncScheduler:
         print(f"   Total API calls (server-reported): {self.progress.api_calls_made}")
         print(f"   Generator tracked usage: {self.generator.api_usage}")
         print(f"{'='*70}")
+
+        # Regenerate activities.json
+        print(f"\n[JSON] Regenerating activities.json...")
+        activities_list = self.generator.load()
+        with open(JSON_FILE, "w", encoding="utf-8") as f:
+            json.dump(activities_list, f, ensure_ascii=False, indent=2)
+        print(f"   Written {len(activities_list)} activities to {JSON_FILE}")
+
+        return True
 
     def _sync_api_usage_from_generator(self):
         """Sync API usage tracking from generator's response header data"""
