@@ -23,7 +23,11 @@ export default defineConfig(({ mode }) => {
       __MAPBOX_TOKEN__: JSON.stringify(obfuscatedToken),
     },
     plugins: [
-      react(),
+      react({
+        // Enable React Fast Refresh and DevTools in development mode
+        fastRefresh: true,
+        jsxRuntime: 'automatic',
+      }),
       viteTsconfigPaths(),
       svgr({
         include: ['**/*.svg'],

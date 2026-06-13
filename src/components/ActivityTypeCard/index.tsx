@@ -12,6 +12,18 @@ import {
 } from '@/utils/utils';
 import ActivityIcon from '@/components/ActivityIcon';
 
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const formatTooltipDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return {
+    date: `${date.getFullYear()}-${month}-${day}`,
+    weekday: WEEKDAYS[date.getDay()],
+  };
+};
+
 interface ActivityTypeCardProps {
   type: typeof RUN_TYPE | typeof HIKE_TYPE | typeof WALK_TYPE;
   activities: Activity[];
@@ -83,21 +95,43 @@ const getDistanceColor = (distanceKm: number): string => {
 interface TrackGridItemProps {
   activity: Activity;
   onClick?: () => void;
+  accent: string;
 }
 
-const TrackGridItem = ({ activity, onClick }: TrackGridItemProps) => {
+const TrackGridItem = ({ activity, onClick, accent }: TrackGridItemProps) => {
   const coordinates = pathForRun(activity);
   const points = coordinates.length >= 2 ? computePolylinePoints(coordinates) : '';
   const hasPolyline = points.length > 0;
   const distanceKm = activity.distance / 1000;
   const strokeColor = getDistanceColor(distanceKm);
+  const { date, weekday } = formatTooltipDate(activity.start_date_local);
 
   return (
     <div
       onClick={onClick}
-      className="group relative aspect-square cursor-pointer overflow-hidden bg-transparent"
-      title={`${activity.name || 'Activity'} - ${distanceKm.toFixed(1)}km`}
+      className="group relative aspect-square cursor-pointer"
     >
+      {/* Hover Tooltip */}
+      <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-card bg-card/95 px-3 py-2 text-center opacity-0 translate-y-1 shadow-xl border border-gray-800/50 backdrop-blur-sm transition-all duration-300 ease-out group-hover:opacity-100 group-hover:translate-y-0">
+        <div className="flex flex-col items-center gap-1">
+          {/* Title */}
+          <p className="text-xs font-bold text-primary leading-none">{activity.name || 'Activity'}</p>
+          {/* Date + Weekday */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-medium text-secondary">{date}</span>
+            <span className="text-[10px] font-medium" style={{ color: accent }}>{weekday}</span>
+          </div>
+          {/* Distance */}
+          <p className="text-xs font-condensed font-black leading-none" style={{ color: strokeColor }}>
+            {distanceKm.toFixed(1)} <span className="text-[10px] font-medium text-secondary">km</span>
+          </p>
+        </div>
+        {/* Arrow */}
+        <div className="absolute left-1/2 top-full -translate-x-1/2">
+          <div className="h-0 w-0 border-l-[5px] border-r-[5px] border-t-[5px] border-l-transparent border-r-transparent border-t-card/95" />
+        </div>
+      </div>
+
       {/* Track content - no background */}
       <div className="w-full h-full flex items-center justify-center p-1">
         {hasPolyline ? (
@@ -331,6 +365,7 @@ const ActivityTypeCard = ({
               key={activity.run_id}
               activity={activity}
               onClick={() => onActivityClick?.(activity)}
+              accent={config.accent}
             />
           ))}
         </div>
