@@ -87,7 +87,7 @@ class StravaSyncScheduler:
         client_secret: str,
         refresh_token: str,
         progress_file: str = "strava_sync_progress.json",
-        only_run: bool = True,
+        only_run: bool = False,
         after_date: Optional[str] = None,
         before_date: Optional[str] = None,
     ):
@@ -669,13 +669,7 @@ Examples:
     parser.add_argument(
         "--only-run",
         action="store_true",
-        default=True,
-        help="Only sync running activities (default: True)"
-    )
-    parser.add_argument(
-        "--all-types",
-        action="store_true",
-        help="Sync all activity types (not just running)"
+        help="Only sync running activities (default: sync all types)"
     )
     parser.add_argument(
         "--test",
@@ -723,7 +717,7 @@ Examples:
         client_secret=client_secret,
         refresh_token=refresh_token,
         progress_file=args.progress_file,
-        only_run=args.only_run and not args.all_types,
+        only_run=args.only_run,
         after_date=args.after,
         before_date=args.before,
     )
