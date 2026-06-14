@@ -1,10 +1,24 @@
-import { useMemo, useState, useRef } from 'react';
-import { ActivityStreams, formatPace } from '@/utils/utils';
+import React, { useMemo, useState, useRef } from 'react';
+import { ActivityStreams } from '@/utils/utils';
 
 interface HoverRange {
   startKm: number;
   endKm: number;
 }
+
+// 循环主题色
+const KM_THEME_COLORS = [
+  '#22d3ee', // cyan-400
+  '#3b82f6', // blue-500
+  '#a855f7', // purple-500
+  '#f97316', // orange-500
+  '#10b981', // emerald-500
+  '#fb7185', // rose-400
+  '#f59e0b', // amber-500
+  '#6366f1', // indigo-500
+];
+
+const getKmColor = (km: number): string => KM_THEME_COLORS[(km - 1) % KM_THEME_COLORS.length];
 
 interface ActivityCurvesProps {
   streams?: ActivityStreams;
@@ -19,6 +33,17 @@ const ActivityCurves = ({ streams, totalDistance, className, highlightRange }: A
   const hasVelocity = streams?.velocity_smooth && streams.velocity_smooth.length > 0;
   const hasAltitude = streams?.altitude && streams.altitude.length > 0;
 
+  // 公里数 hover 状态
+  const [hoveredKm, setHoveredKm] = useState<number | null>(null);
+  const totalKm = totalDistance / 1000;
+  const kmCount = Math.ceil(totalKm);
+
+  // 计算高亮范围（优先使用外部传入的，否则使用内部 hover 的）
+  const activeHighlightRange = highlightRange ?? (hoveredKm !== null ? {
+    startKm: hoveredKm - 1,
+    endKm: Math.min(hoveredKm, totalKm),
+  } : null);
+
   if (!hasHeartrate && !hasVelocity && !hasAltitude) {
     return (
       <div className={`${className || ''} text-center py-4`}>
@@ -29,6 +54,65 @@ const ActivityCurves = ({ streams, totalDistance, className, highlightRange }: A
 
   return (
     <div className={`${className || ''} flex flex-col gap-4`}>
+      {/* 公里数分段条形图 - 仿照有氧区间设计 */}
+      {kmCount > 1 && (
+        <div className="flex flex-col items-center w-full">
+          <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider mb-2">
+            KM Split
+          </span>
+          <div className="flex flex-col gap-1.5 w-full max-w-[320px]">
+            {/* 条形图 */}
+            <div className="flex h-3.5 rounded-lg overflow-hidden bg-gray-800/50">
+              {Array.from({ length: kmCount }, (_, i) => i + 1).map((km) => {
+                const isHighlighted = hoveredKm === km;
+                // 最后一公里的宽度可能不是整数
+                const isLastKm = km === kmCount;
+                const widthPercent = isLastKm && totalKm < kmCount
+                  ? `${((totalKm - (km - 1)) / kmCount) * 100}%`
+                  : `${100 / kmCount}%`;
+
+                const baseColor = getKmColor(km);
+
+                return (
+                  <div
+                    key={km}
+                    className="h-full transition-all duration-300 cursor-pointer"
+                    style={{
+                      backgroundColor: baseColor,
+                      width: widthPercent,
+                      opacity: isHighlighted ? 1 : 0.35,
+                      boxShadow: isHighlighted ? `0 0 12px ${baseColor}50` : 'none',
+                    }}
+                    onMouseEnter={() => setHoveredKm(km)}
+                    onMouseLeave={() => setHoveredKm(null)}
+                  />
+                );
+              })}
+            </div>
+            {/* 底部公里标签 */}
+            <div className="flex justify-between text-[9px] font-bold px-0.5">
+              {Array.from({ length: kmCount }, (_, i) => i + 1).map((km) => {
+                const isHighlighted = hoveredKm === km;
+                const labelColor = getKmColor(km);
+
+                return (
+                  <span
+                    key={km}
+                    className={`transition-all duration-300 ${
+                      isHighlighted ? 'font-black scale-110' : 'font-bold'
+                    }`}
+                    style={{
+                      color: isHighlighted ? labelColor : '#8E8E93',
+                    }}
+                  >
+                    {km}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
       {/* 心率曲线 */}
       {hasHeartrate && (
         <div className="flex flex-col gap-2">
@@ -40,7 +124,9 @@ const ActivityCurves = ({ streams, totalDistance, className, highlightRange }: A
               streams={streams}
               curveType="heartrate"
               totalDistance={totalDistance}
-              highlightRange={highlightRange}
+              highlightRange={activeHighlightRange}
+              isHighlighted={hoveredKm !== null}
+              highlightColor={hoveredKm ? getKmColor(hoveredKm) : undefined}
             />
           </div>
         </div>
@@ -57,7 +143,9 @@ const ActivityCurves = ({ streams, totalDistance, className, highlightRange }: A
               streams={streams}
               curveType="pace"
               totalDistance={totalDistance}
-              highlightRange={highlightRange}
+              highlightRange={activeHighlightRange}
+              isHighlighted={hoveredKm !== null}
+              highlightColor={hoveredKm ? getKmColor(hoveredKm) : undefined}
             />
           </div>
         </div>
@@ -74,7 +162,9 @@ const ActivityCurves = ({ streams, totalDistance, className, highlightRange }: A
               streams={streams}
               curveType="altitude"
               totalDistance={totalDistance}
-              highlightRange={highlightRange}
+              highlightRange={activeHighlightRange}
+              isHighlighted={hoveredKm !== null}
+              highlightColor={hoveredKm ? getKmColor(hoveredKm) : undefined}
             />
           </div>
         </div>
@@ -97,11 +187,15 @@ const CurveSVG = ({
   curveType,
   totalDistance,
   highlightRange,
+  isHighlighted,
+  highlightColor,
 }: {
   streams?: ActivityStreams;
   curveType: 'heartrate' | 'pace' | 'altitude';
   totalDistance: number;
   highlightRange?: HoverRange | null;
+  isHighlighted?: boolean;
+  highlightColor?: string;
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoverData, setHoverData] = useState<{
@@ -176,7 +270,7 @@ const CurveSVG = ({
 
   if (!chartData) return null;
 
-  const { data, minVal, maxVal, range, yLabel, unit, color } = chartData;
+  const { data, minVal, maxVal, range, unit, color } = chartData;
   const chartWidth = svgWidth - padding.left - padding.right;
   const chartHeight = svgHeight - padding.top - padding.bottom;
 
@@ -397,25 +491,114 @@ const CurveSVG = ({
 
       {/* Highlight range from lap hover */}
       {highlightRange && (() => {
-        const totalKm = totalDistance / 1000;
-        const startX = padding.left + (highlightRange.startKm / totalKm) * chartWidth;
-        const endX = padding.left + (highlightRange.endKm / totalKm) * chartWidth;
+        const kmTotal = totalDistance / 1000;
+        const startX = padding.left + (highlightRange.startKm / kmTotal) * chartWidth;
+        const endX = padding.left + (highlightRange.endKm / kmTotal) * chartWidth;
+        const hlColor = highlightColor || color;
 
         return (
-          <rect
-            x={startX}
-            y={padding.top}
-            width={endX - startX}
-            height={chartHeight}
-            fill={color}
-            opacity="0.15"
-            rx="2"
-          />
+          <>
+            {/* 背景遮罩 - 非高亮区域变暗 */}
+            {isHighlighted && (
+              <>
+                <rect
+                  x={padding.left}
+                  y={padding.top}
+                  width={startX - padding.left}
+                  height={chartHeight}
+                  fill="#000"
+                  opacity="0.4"
+                />
+                <rect
+                  x={endX}
+                  y={padding.top}
+                  width={chartWidth - (endX - padding.left)}
+                  height={chartHeight}
+                  fill="#000"
+                  opacity="0.4"
+                />
+              </>
+            )}
+            {/* 高亮区域背景 */}
+            <rect
+              x={startX}
+              y={padding.top}
+              width={endX - startX}
+              height={chartHeight}
+              fill={hlColor}
+              opacity="0.25"
+              rx="2"
+            />
+            {/* 高亮区域边框 */}
+            <line
+              x1={startX}
+              y1={padding.top}
+              x2={startX}
+              y2={svgHeight - padding.bottom}
+              stroke={hlColor}
+              strokeWidth="2"
+              opacity="0.6"
+            />
+            <line
+              x1={endX}
+              y1={padding.top}
+              x2={endX}
+              y2={svgHeight - padding.bottom}
+              stroke={hlColor}
+              strokeWidth="2"
+              opacity="0.6"
+            />
+          </>
         );
       })()}
 
-      {/* Curve */}
-      <path d={pathD} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" />
+      {/* Curve - 当有高亮时，曲线整体变暗，但高亮部分通过叠加路径显示 */}
+      <path
+        d={pathD}
+        fill="none"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={isHighlighted ? "0.35" : "0.95"}
+      />
+
+      {/* 高亮部分的曲线 - 更亮更粗 */}
+      {highlightRange && (() => {
+        const kmTotal = totalDistance / 1000;
+        const startRatio = highlightRange.startKm / kmTotal;
+        const endRatio = highlightRange.endKm / kmTotal;
+
+        // 计算高亮部分的起止索引
+        const startIdx = Math.floor(startRatio * (data.length - 1));
+        const endIdx = Math.ceil(endRatio * (data.length - 1));
+
+        // 生成高亮部分的路径点
+        const highlightPoints = data.slice(startIdx, endIdx + 1).map((val, idx) => {
+          const actualIdx = startIdx + idx;
+          const x = padding.left + (actualIdx / (data.length - 1 || 1)) * chartWidth;
+          const y = padding.top + chartHeight - ((val - minVal) / range) * chartHeight;
+          return `${x},${Number.isFinite(y) ? y : chartHeight}`;
+        });
+
+        if (highlightPoints.length < 2) return null;
+
+        const highlightPathD = `M ${highlightPoints.join(' L ')}`;
+        const hlColor = highlightColor || color;
+
+        return (
+          <path
+            d={highlightPathD}
+            fill="none"
+            stroke={hlColor}
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="1"
+            filter={`drop-shadow(0 0 4px ${hlColor}80)`}
+          />
+        );
+      })()}
 
       {/* Hover indicator */}
       {hoverData && (() => {
