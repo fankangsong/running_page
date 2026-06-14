@@ -1,13 +1,13 @@
 {
   "total_activities": 1,
-  "completed": 259,
+  "completed": 304,
   "failed": 1,
   "skipped": 0,
   "current_batch": 1,
   "total_batches": 1,
   "started_at": "2026-06-11T15:19:35.247809",
-  "last_updated": "2026-06-14T11:47:20.989229",
+  "last_updated": "2026-06-14T13:51:12.893830",
   "estimated_completion": null,
-  "api_calls_made": 99,
-  "api_calls_remaining_today": 1901
+  "api_calls_made": 187,
+  "api_calls_remaining_today": 1813
 }
