@@ -1,39 +1,40 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Lap, ActivityStreams, formatPace, formatLapTime, computeKmSplitsFromStreams } from '@/utils/utils';
+
+interface HoverRange {
+  startKm: number;
+  endKm: number;
+}
 
 interface KmSplitsTableProps {
   laps?: Lap[];
   streams?: ActivityStreams;
   totalDistance: number;
+  onSelectLap?: (_range: HoverRange | null) => void;
 }
 
-const KmSplitsTable = ({ laps, streams, totalDistance }: KmSplitsTableProps) => {
-  // 判断是否使用 laps 数据：
-  // - 如果 laps 有多个条目（每公里一条），直接使用
-  // - 如果 laps 只有 1 条但距离 > 1000m（整个活动作为一圈），则从 streams 计算
+const KmSplitsTable = ({ laps, streams, totalDistance, onSelectLap }: KmSplitsTableProps) => {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  // 判断是否使用 laps 数据
   const splits = useMemo(() => {
     if (laps && laps.length > 1) {
-      // 多个 laps，说明设备配置为每公里记录一圈
       return laps;
     }
     if (laps && laps.length === 1 && laps[0].distance <= 1100) {
-      // 单个 lap 且距离约 1km，可能是真实的每公里数据
       return laps;
     }
-    // 其他情况（单个 lap 覆盖长距离）：从 streams 计算
     if (streams) {
       const computed = computeKmSplitsFromStreams(streams, totalDistance);
       if (computed.length > 0) {
         return computed;
       }
     }
-    // 如果没有 streams 数据但有单个 lap，尝试根据 lap 平均配速估算
     if (laps && laps.length === 1 && laps[0].average_speed) {
       const kmCount = Math.ceil(totalDistance / 1000);
       const avgSpeed = laps[0].average_speed;
       const avgHr = laps[0].average_heartrate;
       const estimatedSplits: Lap[] = [];
-      const timePerKm = 1000 / avgSpeed; // 秒/公里
+      const timePerKm = 1000 / avgSpeed;
 
       for (let km = 1; km <= kmCount; km++) {
         estimatedSplits.push({
@@ -82,19 +83,20 @@ const KmSplitsTable = ({ laps, streams, totalDistance }: KmSplitsTableProps) => 
   }, [splits]);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-800/50">
-      {/* 表头 */}
-      <div className="grid grid-cols-5 bg-gray-900/50 px-3 py-2">
+    <div className="overflow-hidden rounded-card border border-gray-800/50">
+      {/* 表头 - 渐变色标题风格 */}
+      <div className="grid grid-cols-5 bg-gradient-to-r from-gray-900/80 to-gray-800/50 px-4 py-3 border-b border-gray-800/30">
         <div className="text-[10px] font-bold text-secondary uppercase tracking-wider">KM</div>
-        <div className="text-[10px] font-bold text-secondary uppercase tracking-wider">配速</div>
+        <div className="text-[10px] font-bold uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">配速</div>
         <div className="text-[10px] font-bold text-secondary uppercase tracking-wider">累计</div>
-        <div className="text-[10px] font-bold text-secondary uppercase tracking-wider">心率</div>
-        <div className="text-[10px] font-bold text-secondary uppercase tracking-wider">海拔</div>
+        <div className="text-[10px] font-bold uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400">心率</div>
+        <div className="text-[10px] font-bold uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">海拔</div>
       </div>
 
       {/* 数据行 */}
       {splits.map((split, idx) => {
         const isFastest = idx === fastestIdx;
+        const isSelected = idx === selectedIndex;
         const pace = split.average_speed ? formatPace(split.average_speed) : '--';
         const cumulative = formatLapTime(cumulativeTime[idx]);
         const hr = split.average_heartrate ? Math.round(split.average_heartrate) : '--';
@@ -102,26 +104,98 @@ const KmSplitsTable = ({ laps, streams, totalDistance }: KmSplitsTableProps) => 
           ? `${split.total_elevation_gain > 0 ? '+' : ''}${Math.round(split.total_elevation_gain)}m`
           : '--';
 
+        // 计算该分段的距离范围
+        const startKm = split.lap_index - 1;
+        const endKm = split.lap_index;
+
+        // 点击选中/取消选中
+        const handleClick = () => {
+          if (isSelected) {
+            setSelectedIndex(null);
+            onSelectLap?.(null);
+          } else {
+            setSelectedIndex(idx);
+            onSelectLap?.({ startKm, endKm });
+          }
+        };
+
         return (
           <div
             key={idx}
-            className={`grid grid-cols-5 px-3 py-2 transition-colors`}
+            onClick={handleClick}
+            className={`grid grid-cols-5 px-4 py-2.5 transition-all duration-200 border-b border-gray-800/20 last:border-b-0 cursor-pointer ${
+              isSelected
+                ? 'bg-cyan-500/20 border-l-2 border-l-cyan-400'
+                : isFastest
+                  ? 'bg-gradient-to-r from-amber-500/10 to-orange-500/5 hover:from-amber-500/15 hover:to-orange-500/10'
+                  : 'hover:bg-gray-800/30'
+            }`}
           >
-            <div className="font-condensed font-black text-primary flex items-center gap-1">
-              {split.lap_index}
-              {isFastest && <span className="text-[10px]">⭐</span>}
+            {/* KM - 大号醒目数字 */}
+            <div className="flex items-center gap-1.5">
+              <span className={`font-condensed font-black text-lg leading-none ${
+                isSelected ? 'text-cyan-400' : isFastest ? 'text-amber-400' : 'text-primary'
+              }`}>
+                {split.lap_index}
+              </span>
+              {isFastest && !isSelected && (
+                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">PB</span>
+              )}
+              {isSelected && (
+                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">✓</span>
+              )}
             </div>
-            <div className={`font-condensed font-black ${isFastest ? 'text-accent' : 'text-primary'}`}>
-              {pace}
+
+            {/* 配速 - 醒目数字 + 单位 */}
+            <div className="flex items-baseline gap-1">
+              <span className={`font-condensed font-black text-lg leading-none ${
+                isSelected
+                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400'
+                  : isFastest
+                    ? 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400'
+                    : 'text-cyan-400'
+              }`}>
+                {pace}
+              </span>
             </div>
-            <div className="font-condensed font-medium text-secondary">
-              {cumulative}
+
+            {/* 累计时间 */}
+            <div className="flex items-baseline gap-1">
+              <span className={`font-condensed font-medium text-base leading-none ${
+                isSelected ? 'text-primary' : 'text-secondary'
+              }`}>
+                {cumulative}
+              </span>
             </div>
-            <div className="font-condensed font-medium text-secondary">
-              {hr !== '--' ? `${hr} bpm` : '--'}
+
+            {/* 心率 - 醒目数字 + 单位 */}
+            <div className="flex items-baseline gap-1">
+              <span className={`font-condensed font-black text-lg leading-none ${
+                isSelected ? 'text-orange-400' : hr !== '--' ? 'text-orange-400' : 'text-secondary'
+              }`}>
+                {hr}
+              </span>
+              {hr !== '--' && (
+                <span className="text-[10px] font-medium text-secondary">bpm</span>
+              )}
             </div>
-            <div className="font-condensed font-medium text-secondary">
-              {elev}
+
+            {/* 海拔 */}
+            <div className="flex items-baseline gap-1">
+              <span className={`font-condensed font-black text-lg leading-none ${
+                isSelected
+                  ? elev !== '--' && elev.startsWith('+') ? 'text-emerald-400' : 'text-red-400'
+                  : elev !== '--'
+                    ? elev.startsWith('+')
+                      ? 'text-emerald-400'
+                      : 'text-red-400'
+                    : 'text-secondary'
+              }`}>
+                {elev !== '--' ? elev.replace('m', '') : '--'}
+              </span>
+              {elev !== '--' && (
+                <span className="text-[10px] font-medium text-secondary">m</span>
+              )}
             </div>
           </div>
         );

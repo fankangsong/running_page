@@ -1,13 +1,19 @@
-import { useMemo } from 'react';
-import { ActivityStreams, formatPace, computeKmSplitsFromStreams } from '@/utils/utils';
+import { useMemo, useState, useRef } from 'react';
+import { ActivityStreams, formatPace } from '@/utils/utils';
+
+interface HoverRange {
+  startKm: number;
+  endKm: number;
+}
 
 interface ActivityCurvesProps {
   streams?: ActivityStreams;
   totalDistance: number;
   className?: string;
+  highlightRange?: HoverRange | null;
 }
 
-const ActivityCurves = ({ streams, totalDistance, className }: ActivityCurvesProps) => {
+const ActivityCurves = ({ streams, totalDistance, className, highlightRange }: ActivityCurvesProps) => {
   // 检查数据可用性
   const hasHeartrate = streams?.heartrate && streams.heartrate.length > 0;
   const hasVelocity = streams?.velocity_smooth && streams.velocity_smooth.length > 0;
@@ -34,6 +40,7 @@ const ActivityCurves = ({ streams, totalDistance, className }: ActivityCurvesPro
               streams={streams}
               curveType="heartrate"
               totalDistance={totalDistance}
+              highlightRange={highlightRange}
             />
           </div>
         </div>
@@ -50,6 +57,7 @@ const ActivityCurves = ({ streams, totalDistance, className }: ActivityCurvesPro
               streams={streams}
               curveType="pace"
               totalDistance={totalDistance}
+              highlightRange={highlightRange}
             />
           </div>
         </div>
@@ -66,6 +74,7 @@ const ActivityCurves = ({ streams, totalDistance, className }: ActivityCurvesPro
               streams={streams}
               curveType="altitude"
               totalDistance={totalDistance}
+              highlightRange={highlightRange}
             />
           </div>
         </div>
@@ -74,17 +83,36 @@ const ActivityCurves = ({ streams, totalDistance, className }: ActivityCurvesPro
   );
 };
 
+// 格式化配速值（分钟/公里）
+const formatPaceValue = (paceMinPerKm: number): string => {
+  if (!Number.isFinite(paceMinPerKm) || paceMinPerKm <= 0) return '--';
+  const mins = Math.floor(paceMinPerKm);
+  const secs = Math.round((paceMinPerKm - mins) * 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
 // 内部 SVG 组件
 const CurveSVG = ({
   streams,
   curveType,
   totalDistance,
+  highlightRange,
 }: {
   streams?: ActivityStreams;
   curveType: 'heartrate' | 'pace' | 'altitude';
   totalDistance: number;
+  highlightRange?: HoverRange | null;
 }) => {
-  const svgWidth = 500; // 增加基础宽度，通过 viewBox 缩放适配
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [hoverData, setHoverData] = useState<{
+    x: number;
+    y: number;
+    value: number;
+    distance: number;
+    index: number;
+  } | null>(null);
+
+  const svgWidth = 500;
   const svgHeight = 140;
   const padding = { top: 15, bottom: 30, left: 10, right: 10 };
 
@@ -94,23 +122,27 @@ const CurveSVG = ({
     let data: number[] = [];
     let yLabel = '';
     let color = '';
+    let unit = '';
 
     switch (curveType) {
       case 'heartrate':
         data = streams.heartrate || [];
-        yLabel = 'BPM';
+        yLabel = '心率';
+        unit = 'BPM';
         color = '#fb923c'; // orange-400
         break;
       case 'pace':
         data = (streams.velocity_smooth || []).map((v) =>
           v > 0 ? (1000 / v) / 60 : 0
         );
-        yLabel = '/KM';
+        yLabel = '配速';
+        unit = '/km';
         color = '#60a5fa'; // blue-400
         break;
       case 'altitude':
         data = streams.altitude || [];
-        yLabel = 'm';
+        yLabel = '海拔';
+        unit = 'm';
         color = '#34d399'; // emerald-400
         break;
     }
@@ -119,8 +151,9 @@ const CurveSVG = ({
 
     // 采样数据以避免渲染过多点
     const maxPoints = 100;
+    const step = data.length > maxPoints ? Math.ceil(data.length / maxPoints) : 1;
     const sampledData = data.length > maxPoints
-      ? data.filter((_, i) => i % Math.ceil(data.length / maxPoints) === 0)
+      ? data.filter((_, i) => i % step === 0)
       : data;
 
     const minVal = Math.min(...sampledData.filter(v => Number.isFinite(v)));
@@ -129,17 +162,21 @@ const CurveSVG = ({
 
     return {
       data: sampledData,
+      originalData: data,
+      originalLength: data.length,
+      sampleStep: step,
       minVal,
       maxVal,
       range,
       yLabel,
+      unit,
       color,
     };
   }, [streams, curveType]);
 
   if (!chartData) return null;
 
-  const { data, minVal, maxVal, range, yLabel, color } = chartData;
+  const { data, minVal, maxVal, range, yLabel, unit, color } = chartData;
   const chartWidth = svgWidth - padding.left - padding.right;
   const chartHeight = svgHeight - padding.top - padding.bottom;
 
@@ -148,7 +185,6 @@ const CurveSVG = ({
     const rawRange = max - min;
     if (rawRange === 0) return [min];
 
-    // Find a nice round step size
     const roughStep = rawRange / (targetCount - 1);
     const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
 
@@ -158,31 +194,27 @@ const CurveSVG = ({
     else if (roughStep <= 5 * magnitude) niceStep = 5 * magnitude;
     else niceStep = 10 * magnitude;
 
-    // Calculate start and end values
     let start = Math.floor(min / niceStep) * niceStep;
     let end = Math.ceil(max / niceStep) * niceStep;
 
-    // Ensure we have reasonable bounds
     const ticks: number[] = [];
     for (let val = start; val <= end; val += niceStep) {
       ticks.push(val);
-      if (ticks.length > 6) break; // Safety limit
+      if (ticks.length > 6) break;
     }
 
-    // Filter to keep within original range
     return ticks.filter(t => t >= min && t <= max);
   };
 
   const yTicks = generateNiceTicks(minVal, maxVal, 4);
 
-  // Generate X-axis distance ticks based on total distance
+  // Generate X-axis distance ticks
   const generateDistanceTicks = (totalKm: number): number[] => {
     if (totalKm <= 0) return [0];
 
     const targetCount = totalKm < 5 ? 3 : totalKm < 10 ? 4 : 5;
     const roughStep = totalKm / (targetCount - 1);
 
-    // Round to nice numbers
     let step: number;
     if (roughStep < 1) step = 0.5;
     else if (roughStep < 2) step = 1;
@@ -196,7 +228,6 @@ const CurveSVG = ({
       if (ticks.length > 7) break;
     }
 
-    // Always include the last point
     if (ticks[ticks.length - 1] !== totalKm) {
       ticks.push(totalKm);
     }
@@ -216,8 +247,78 @@ const CurveSVG = ({
 
   const pathD = `M ${points.join(' L ')}`;
 
+  // Handle mouse move
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current || !chartData) return;
+
+    const rect = svgRef.current.getBoundingClientRect();
+    const scaleX = svgWidth / rect.width;
+    const mouseX = (e.clientX - rect.left) * scaleX;
+
+    // Calculate position within chart area
+    const chartX = mouseX - padding.left;
+    if (chartX < 0 || chartX > chartWidth) {
+      setHoverData(null);
+      return;
+    }
+
+    // Calculate index in sampled data
+    const ratio = chartX / chartWidth;
+    const sampledIndex = Math.round(ratio * (data.length - 1));
+
+    // Calculate original index for distance
+    const originalIndex = chartData.sampleStep > 1
+      ? sampledIndex * chartData.sampleStep
+      : sampledIndex;
+
+    // Get value from sampled data
+    const value = data[sampledIndex];
+
+    // Calculate distance at this point
+    const distance = (originalIndex / (chartData.originalLength - 1 || 1)) * totalKm;
+
+    // Calculate Y position for the point
+    const pointY = padding.top + chartHeight - ((value - minVal) / range) * chartHeight;
+
+    setHoverData({
+      x: padding.left + sampledIndex / (data.length - 1 || 1) * chartWidth,
+      y: Number.isFinite(pointY) ? pointY : chartHeight + padding.top,
+      value,
+      distance,
+      index: sampledIndex,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setHoverData(null);
+  };
+
+  // Format value for display
+  const formatValue = (val: number): string => {
+    if (!Number.isFinite(val)) return '--';
+    switch (curveType) {
+      case 'heartrate':
+        return `${Math.round(val)} ${unit}`;
+      case 'pace':
+        return `${formatPaceValue(val)} ${unit}`;
+      case 'altitude':
+        return `${val.toFixed(1)} ${unit}`;
+      default:
+        return `${val.toFixed(1)} ${unit}`;
+    }
+  };
+
   return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${svgWidth} ${svgHeight}`} preserveAspectRatio="xMidYMid meet">
+    <svg
+      ref={svgRef}
+      width="100%"
+      height="100%"
+      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+      preserveAspectRatio="xMidYMid meet"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="cursor-crosshair"
+    >
       {/* Horizontal grid lines */}
       {yTicks.map((tick, i) => {
         const y = padding.top + chartHeight - ((tick - minVal) / range) * chartHeight;
@@ -271,7 +372,7 @@ const CurveSVG = ({
             fontWeight="600"
             textAnchor="end"
           >
-            {tick.toFixed(0)} {yLabel}
+            {tick.toFixed(0)} {unit}
           </text>
         );
       })}
@@ -294,8 +395,109 @@ const CurveSVG = ({
         );
       })}
 
+      {/* Highlight range from lap hover */}
+      {highlightRange && (() => {
+        const totalKm = totalDistance / 1000;
+        const startX = padding.left + (highlightRange.startKm / totalKm) * chartWidth;
+        const endX = padding.left + (highlightRange.endKm / totalKm) * chartWidth;
+
+        return (
+          <rect
+            x={startX}
+            y={padding.top}
+            width={endX - startX}
+            height={chartHeight}
+            fill={color}
+            opacity="0.15"
+            rx="2"
+          />
+        );
+      })()}
+
       {/* Curve */}
       <path d={pathD} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" />
+
+      {/* Hover indicator */}
+      {hoverData && (() => {
+        const tooltipWidth = 85;
+        const tooltipHeight = 40;
+        const tooltipGap = 8;
+        const rightBoundary = svgWidth - padding.right;
+
+        // Determine if tooltip should be on left side
+        const showOnLeft = hoverData.x + tooltipGap + tooltipWidth > rightBoundary;
+
+        // Calculate tooltip position
+        const tooltipX = showOnLeft
+          ? hoverData.x - tooltipGap - tooltipWidth
+          : hoverData.x + tooltipGap;
+
+        // Text anchor position (center of tooltip)
+        const textCenterX = tooltipX + tooltipWidth / 2;
+
+        return (
+          <>
+            {/* Vertical line at hover position */}
+            <line
+              x1={hoverData.x}
+              y1={padding.top}
+              x2={hoverData.x}
+              y2={svgHeight - padding.bottom}
+              stroke={color}
+              strokeWidth="1"
+              opacity="0.5"
+            />
+
+            {/* Point marker */}
+            <circle
+              cx={hoverData.x}
+              cy={hoverData.y}
+              r="5"
+              fill={color}
+              stroke="#fff"
+              strokeWidth="2"
+              opacity="0.9"
+            />
+
+            {/* Tooltip background */}
+            <rect
+              x={tooltipX}
+              y={hoverData.y - 25}
+              width={tooltipWidth}
+              height={tooltipHeight}
+              rx="6"
+              fill="#1C1C1E"
+              stroke={color}
+              strokeWidth="1"
+              opacity="0.95"
+            />
+
+            {/* Tooltip text - value */}
+            <text
+              x={textCenterX}
+              y={hoverData.y - 10}
+              fill="#fff"
+              fontSize="12"
+              fontWeight="700"
+              textAnchor="middle"
+            >
+              {formatValue(hoverData.value)}
+            </text>
+
+            {/* Tooltip text - distance */}
+            <text
+              x={textCenterX}
+              y={hoverData.y + 8}
+              fill="#8E8E93"
+              fontSize="10"
+              fontWeight="500"
+              textAnchor="middle"
+            >
+              {hoverData.distance.toFixed(2)} km
+            </text>
+          </>
+        );
+      })()}
     </svg>
   );
 };

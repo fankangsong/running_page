@@ -1,4 +1,4 @@
-import { useState, useMemo, CSSProperties } from 'react';
+import { useMemo, CSSProperties } from 'react';
 import {
   Activity,
   Coordinate,
@@ -28,6 +28,8 @@ interface ActivityTypeCardProps {
   type: typeof RUN_TYPE | typeof HIKE_TYPE | typeof WALK_TYPE;
   activities: Activity[];
   onActivityClick?: (_activity: Activity) => void;
+  year?: string;
+  onYearChange?: (_year: string) => void;
 }
 
 const TYPE_CONFIG = {
@@ -171,9 +173,10 @@ const ActivityTypeCard = ({
   type,
   activities,
   onActivityClick,
+  year,
+  onYearChange,
 }: ActivityTypeCardProps) => {
   const config = TYPE_CONFIG[type];
-  const [currentYearIndex, setCurrentYearIndex] = useState(0);
 
   // Filter activities by type and sort by date
   const filteredActivities = useMemo(() => {
@@ -186,13 +189,21 @@ const ActivityTypeCard = ({
   const activitiesByYear = useMemo(() => {
     const groups: Record<string, Activity[]> = {};
     filteredActivities.forEach((activity) => {
-      const year = activity.start_date_local.slice(0, 4);
-      if (!groups[year]) groups[year] = [];
-      groups[year].push(activity);
+      const yearStr = activity.start_date_local.slice(0, 4);
+      if (!groups[yearStr]) groups[yearStr] = [];
+      groups[yearStr].push(activity);
     });
     return Object.entries(groups).sort((a, b) => Number(b[0]) - Number(a[0]));
   }, [filteredActivities]);
 
+  // Find current year index from prop or default to first year
+  const currentYearIndex = useMemo(() => {
+    if (year) {
+      const index = activitiesByYear.findIndex(([y]) => y === year);
+      if (index >= 0) return index;
+    }
+    return 0;
+  }, [year, activitiesByYear]);
 
   const currentYear = activitiesByYear[currentYearIndex]?.[0] || '';
   const currentYearActivities = activitiesByYear[currentYearIndex]?.[1] || [];
@@ -235,11 +246,19 @@ const ActivityTypeCard = ({
   }, [currentYearActivities]);
 
   const handlePrevYear = () => {
-    setCurrentYearIndex((prev) => (prev > 0 ? prev - 1 : activitiesByYear.length - 1));
+    const newIndex = currentYearIndex > 0 ? currentYearIndex - 1 : activitiesByYear.length - 1;
+    const newYear = activitiesByYear[newIndex]?.[0];
+    if (newYear && onYearChange) {
+      onYearChange(newYear);
+    }
   };
 
   const handleNextYear = () => {
-    setCurrentYearIndex((prev) => (prev < activitiesByYear.length - 1 ? prev + 1 : 0));
+    const newIndex = currentYearIndex < activitiesByYear.length - 1 ? currentYearIndex + 1 : 0;
+    const newYear = activitiesByYear[newIndex]?.[0];
+    if (newYear && onYearChange) {
+      onYearChange(newYear);
+    }
   };
 
   if (filteredActivities.length === 0) {
@@ -303,15 +322,15 @@ const ActivityTypeCard = ({
 
         {/* Year Timeline Dots */}
         <div className="flex items-center justify-center gap-2 mb-6">
-          {activitiesByYear.map(([year], index) => (
+          {activitiesByYear.map(([yearStr], index) => (
             <button
-              key={year}
-              onClick={() => setCurrentYearIndex(index)}
+              key={yearStr}
+              onClick={() => onYearChange?.(yearStr)}
               className={`w-2 h-2 rounded-full transition-all duration-200 ${
                 index === currentYearIndex ? 'bg-primary w-6' : 'bg-gray-700 hover:bg-gray-600'
               }`}
               type="button"
-              title={year}
+              title={yearStr}
             />
           ))}
         </div>

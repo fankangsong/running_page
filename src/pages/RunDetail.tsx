@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import RunPolyline from '@/components/RunPolyline';
@@ -7,12 +7,18 @@ import ActivityCurves from '@/components/ActivityCurves';
 import KmSplitsTable from '@/components/KmSplitsTable';
 import useActivities from '@/hooks/useActivities';
 import NotFound from '@/pages/404';
-import { isRun } from '@/utils/utils';
+import { isRun, Activity, Lap } from '@/utils/utils';
+
+interface HoverRange {
+  startKm: number;
+  endKm: number;
+}
 
 const RunDetail = () => {
   const { runId } = useParams();
   const runIdNumber = Number(runId);
   const { activities } = useActivities();
+  const [hoverRange, setHoverRange] = useState<HoverRange | null>(null);
 
   const run = useMemo(() => {
     if (!runId || Number.isNaN(runIdNumber)) return null;
@@ -32,7 +38,7 @@ const RunDetail = () => {
         runDates.add(activity.start_date_local.slice(0, 10));
       }
     });
-    
+
     return {
       monthlyDistanceKm: monthDistance / 1000,
       monthRunDates: Array.from(runDates),
@@ -52,10 +58,10 @@ const RunDetail = () => {
       <div className="max-w-[480px] mx-auto">
         {/* First screen - Core metrics */}
         <div className="flex justify-center items-center ">
-          <RunPolyline run={run} className="w-[210px] h-[210px]" />
+          <RunPolyline run={run as Activity} className="w-[210px] h-[210px]" />
         </div>
         <RunDetailPanel
-          run={run}
+          run={run as Activity}
           monthlyDistanceKm={monthlyDistanceKm}
           monthRunDates={monthRunDates}
         />
@@ -66,6 +72,7 @@ const RunDetail = () => {
             <ActivityCurves
               streams={run.streams}
               totalDistance={run.distance}
+              highlightRange={hoverRange}
             />
           </div>
         )}
@@ -77,9 +84,10 @@ const RunDetail = () => {
               分段数据
             </span>
             <KmSplitsTable
-              laps={run.laps}
+              laps={run.laps as Lap[]}
               streams={run.streams}
               totalDistance={run.distance}
+              onSelectLap={setHoverRange}
             />
           </div>
         )}
