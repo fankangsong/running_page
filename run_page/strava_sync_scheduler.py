@@ -411,6 +411,9 @@ class StravaSyncScheduler:
         # Initialize progress
         if not self.progress.started_at:
             self.progress.total_activities = len(activities)
+            self.progress.completed = 0
+            self.progress.failed = 0
+            self.progress.skipped = 0
             self.progress.started_at = datetime.now().isoformat()
 
             estimates = self.estimate_api_calls(len(activities))
@@ -446,7 +449,7 @@ class StravaSyncScheduler:
                 self._wait_for_daily_reset()
 
             # Process batch
-            self._process_batch(batch, batch_num)
+            self._process_batch(batch, batch_num, batch_start)
 
             self.progress.current_batch = batch_num
             self._save_progress()
@@ -492,12 +495,18 @@ class StravaSyncScheduler:
                     0, STRAVA_RATE_LIMITS["per_day"] - server_usage
                 )
 
-    def _process_batch(self, activities: List, batch_num: int):
-        """Process a batch of activities"""
+    def _process_batch(self, activities: List, batch_num: int, batch_start: int):
+        """Process a batch of activities
+
+        Args:
+            activities: List of activities in this batch
+            batch_num: Batch number (1-indexed, for display)
+            batch_start: Global index of the first activity in this batch (0-indexed)
+        """
         from stravalib.exc import RateLimitExceeded
 
         for idx, activity in enumerate(activities, 1):
-            activity_num = (batch_num - 1) * len(activities) + idx
+            activity_num = batch_start + idx  # 1-indexed global activity number
 
             print(f"\n[{activity_num}/{self.progress.total_activities}] Processing activity {activity.id}")
 
