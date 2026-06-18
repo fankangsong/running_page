@@ -365,7 +365,7 @@ class Generator:
             streams = self.client.get_activity_streams(
                 activity_id,
                 types=stream_types,
-                resolution='low'
+                resolution='high'
             )
 
             if streams:
