@@ -49,6 +49,7 @@ git add .
 git commit -m 'sync and update data'
 git push
 
-coscli cp -r dist cos://hk//running
+# coscli cp -r dist cos://hk//running
+coscli sync -r dist/ cos://hk/running/
 notify 'running page 发布完成 ✅'
 
