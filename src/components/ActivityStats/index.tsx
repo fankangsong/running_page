@@ -66,10 +66,28 @@ const dimensions: { label: string; value: Dimension }[] = [
   { label: 'Runs', value: 'count' },
 ];
 
+// Color palette for grouped bar chart (index 0 = main year, 1..3 = compare years)
+const YEAR_COLORS: string[] = [
+  'from-[#4fc3f7] to-[#81d4fa]', // main year - blue (existing)
+  'from-emerald-400 to-emerald-300', // compare - green
+  'from-orange-400 to-amber-300', // compare - orange
+  'from-violet-400 to-purple-300', // compare - violet
+];
+
+const MONTH_LABELS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+const MAX_COMPARE_YEARS = 3;
+
 const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
   const [timeSpan, setTimeSpan] = useState<TimeSpan>('month');
   const [dimension, setDimension] = useState<Dimension>('distance');
   const [referenceDate, setReferenceDate] = useState(new Date());
+  const [compareYears, setCompareYears] = useState<number[]>([]);
+  const [compareDropdownOpen, setCompareDropdownOpen] = useState(false);
+  const compareDropdownRef = useRef<HTMLDivElement>(null);
 
   const handlePrev = () => {
     const d = new Date(referenceDate);
@@ -85,6 +103,52 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
     else if (timeSpan === 'month') d.setMonth(d.getMonth() + 1);
     else if (timeSpan === 'year') d.setFullYear(d.getFullYear() + 1);
     setReferenceDate(d);
+  };
+
+  // Available years for comparison: all years from activities, excluding the main year
+  const mainYear = referenceDate.getFullYear();
+  const availableYears = useMemo(() => {
+    const yrsSet = new Set<number>();
+    activities.forEach((a) => {
+      const y = new Date(a.start_date_local.replace(' ', 'T')).getFullYear();
+      if (!isNaN(y)) yrsSet.add(y);
+    });
+    return Array.from(yrsSet)
+      .filter((y) => y !== mainYear)
+      .sort((a, b) => b - a);
+  }, [activities, mainYear]);
+
+  // Auto-remove compare years that equal the main year (when navigating)
+  useEffect(() => {
+    setCompareYears((prev) => {
+      const filtered = prev.filter((y) => y !== mainYear);
+      return filtered.length !== prev.length ? filtered : prev;
+    });
+  }, [mainYear]);
+
+  // Close compare dropdown on outside click
+  useEffect(() => {
+    if (!compareDropdownOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        compareDropdownRef.current &&
+        !compareDropdownRef.current.contains(event.target as Node)
+      ) {
+        setCompareDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [compareDropdownOpen]);
+
+  const toggleCompareYear = (year: number) => {
+    setCompareYears((prev) => {
+      if (prev.includes(year)) {
+        return prev.filter((y) => y !== year);
+      }
+      if (prev.length >= MAX_COMPARE_YEARS) return prev;
+      return [...prev, year].sort((a, b) => b - a);
+    });
   };
 
   // 1. Filter activities based on timeSpan and referenceDate
@@ -281,6 +345,48 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
 
   const maxValue = Math.max(...chartData.map((d) => d.value), 1); // Avoid div by 0
 
+  // 3.5 Multi-series chart data for year comparison (grouped bar chart)
+  // Returns null unless in Year view with at least one compare year selected.
+  const comparisonChartData = useMemo(() => {
+    if (timeSpan !== 'year' || compareYears.length === 0) return null;
+
+    const years = [mainYear, ...compareYears].sort((a, b) => b - a);
+    const yearIndex = new Map<number, number>();
+    years.forEach((y, i) => yearIndex.set(y, i));
+
+    // bars[monthIndex] = number[] indexed by year position
+    const bars: number[][] = Array.from({ length: 12 }, () =>
+      new Array(years.length).fill(0)
+    );
+
+    activities.forEach((a) => {
+      const d = new Date(a.start_date_local.replace(' ', 'T'));
+      const y = d.getFullYear();
+      const idx = yearIndex.get(y);
+      if (idx === undefined) return;
+      const m = d.getMonth();
+      let val = 0;
+      if (dimension === 'distance') val = a.distance / 1000;
+      else if (dimension === 'time')
+        val = convertMovingTime2Sec(a.moving_time) / 60;
+      else val = 1;
+      bars[m][idx] += val;
+    });
+
+    const data = MONTH_LABELS.map((label, m) => ({
+      label,
+      bars: bars[m],
+    }));
+
+    return { data, years };
+  }, [activities, timeSpan, dimension, compareYears, mainYear]);
+
+  const comparisonMaxValue = useMemo(() => {
+    if (!comparisonChartData) return 1;
+    const all = comparisonChartData.data.flatMap((d) => d.bars);
+    return Math.max(...all, 1);
+  }, [comparisonChartData]);
+
   // Detect mobile screen size
   const [isMobile, setIsMobile] = useState(false);
 
@@ -372,8 +478,8 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
           ))}
         </div>
 
-        {/* Navigation & Title */}
-        <div className="flex items-center gap-3">
+        {/* Navigation & Title - centered on mobile, left-aligned on desktop */}
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
           {timeSpan !== 'all' && (
             <button
               onClick={handlePrev}
@@ -417,6 +523,97 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
               </svg>
             </button>
           )}
+
+          {/* Compare Years Select - only in Year view, merged with title group.
+              On mobile it wraps to a new line below the navigation. */}
+          {timeSpan === 'year' && (
+            <div className="relative w-full sm:w-40" ref={compareDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setCompareDropdownOpen((o) => !o)}
+                className="flex items-center justify-between w-full px-4 py-2 text-xs font-medium text-primary bg-card border border-gray-800 rounded-md shadow-sm hover:bg-gray-800 focus:outline-none transition-colors"
+              >
+                <span className="truncate">
+                  {compareYears.length === 0
+                    ? 'Compare Years'
+                    : `Compare: ${compareYears.join(', ')}`}
+                </span>
+                <svg
+                  className={`w-4 h-4 ml-2 text-secondary shrink-0 transition-transform duration-200 ${
+                    compareDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+
+              {compareDropdownOpen && (
+                <div className="absolute right-0 z-20 w-full mt-2 origin-top-right bg-card rounded-md shadow-lg ring-1 ring-gray-800 focus:outline-none max-h-60 overflow-y-auto custom-scrollbar">
+                  <div className="py-1" role="menu" aria-orientation="vertical">
+                    {availableYears.length === 0 && (
+                      <span className="block px-4 py-2 text-xs text-secondary">
+                        No other years
+                      </span>
+                    )}
+                    {availableYears.map((y) => {
+                      const selected = compareYears.includes(y);
+                      const disabled =
+                        !selected && compareYears.length >= MAX_COMPARE_YEARS;
+                      return (
+                        <button
+                          key={y}
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => toggleCompareYear(y)}
+                          className={`flex items-center gap-2 block w-full px-4 py-2 text-sm text-left transition-colors ${
+                            disabled
+                              ? 'text-gray-600 cursor-not-allowed'
+                              : selected
+                                ? 'bg-gray-800 text-primary font-bold'
+                                : 'text-secondary hover:bg-gray-800 hover:text-primary'
+                          }`}
+                          role="menuitem"
+                        >
+                          <span
+                            className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0 ${
+                              selected
+                                ? 'bg-accent border-accent'
+                                : 'border-gray-600'
+                            }`}
+                          >
+                            {selected && (
+                              <svg
+                                className="w-2.5 h-2.5 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={3}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                          </span>
+                          {y}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Dimension Select */}
@@ -428,47 +625,147 @@ const ActivityStats: React.FC<ActivityStatsProps> = ({ activities }) => {
         />
       </div>
 
-      {/* Chart Area */}
-      <div className="h-32 md:h-44 mb-6 flex items-end gap-2 border-b border-gray-800/50">
-        {chartData.map((d, i) => (
-          <div
-            key={i}
-            className="flex-1 flex flex-col items-center justify-end h-full group relative min-w-0"
-          >
-            {/* Tooltip */}
-            <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 bg-gray-900/95 backdrop-blur-sm border border-white/10 rounded-lg px-2.5 py-1.5 shadow-xl flex flex-col items-center pointer-events-none transition-all duration-200 ease-out z-10 -translate-y-1 group-hover:translate-y-0 min-w-[max-content]">
-              <span className="text-[10px] text-gray-400 font-medium mb-0.5">
-                {timeSpan === 'month' ? `Day ${d.label}` : d.label}
-              </span>
-              <span className="text-xs font-mono text-white font-bold">
-                {dimension === 'time'
-                  ? formatDuration(d.value * 60)
-                  : d.value.toFixed(1)}
-                {dimension === 'distance' && (
-                  <span className="text-[8px] text-gray-500 ml-0.5">KM</span>
+      {/* Legend - only for grouped bar chart */}
+      {comparisonChartData && (
+        <div className="flex items-center justify-center gap-4 flex-wrap mb-3">
+          {comparisonChartData.years.map((y, i) => (
+            <div key={y} className="flex items-center gap-1.5">
+              <span
+                className={`w-3 h-3 rounded-sm bg-gradient-to-t ${YEAR_COLORS[i % YEAR_COLORS.length]}`}
+              />
+              <span
+                className={`text-xs ${
+                  y === mainYear
+                    ? 'text-primary font-bold'
+                    : 'text-secondary'
+                }`}
+              >
+                {y}
+                {y === mainYear && (
+                  <span className="text-[9px] text-gray-500 ml-0.5">
+                    (current)
+                  </span>
                 )}
               </span>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-gray-900/95" />
             </div>
+          ))}
+        </div>
+      )}
 
-            <div className="flex-1 w-full flex items-end justify-center pb-3">
+      {/* Chart Area */}
+      {comparisonChartData ? (
+        // Grouped bar chart (Year view with compare years)
+        <div className="h-32 md:h-44 mb-6 flex items-end gap-2 border-b border-gray-800/50">
+          {comparisonChartData.data.map((d, i) => {
+            const hasAnyValue = d.bars.some((v) => v > 0);
+            return (
               <div
-                className="w-full max-w-[32px] rounded-t origin-bottom transition-[height,transform,filter] duration-500 ease-out group-hover:scale-y-[1.04] bg-gradient-to-t from-[#4fc3f7] to-[#81d4fa] opacity-80 group-hover:opacity-100 group-hover:brightness-110"
-                style={{
-                  height: `${(d.value / maxValue) * 100}%`,
-                  minHeight: d.value > 0 ? '4px' : '0',
-                }}
-              ></div>
-            </div>
+                key={i}
+                className="flex-1 flex flex-col items-center justify-end h-full group relative min-w-0"
+              >
+                {/* Tooltip - lists all years for this month */}
+                <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 bg-gray-900/95 backdrop-blur-sm border border-white/10 rounded-lg px-2.5 py-1.5 shadow-xl flex flex-col items-start pointer-events-none transition-all duration-200 ease-out z-10 -translate-y-1 group-hover:translate-y-0 min-w-[max-content]">
+                  <span className="text-[10px] text-gray-400 font-medium mb-1">
+                    {d.label}
+                  </span>
+                  {comparisonChartData.years.map((y, yi) => {
+                    const val = d.bars[yi];
+                    return (
+                      <div
+                        key={y}
+                        className="flex items-center gap-1.5 text-xs font-mono"
+                      >
+                        <span
+                          className={`w-2 h-2 rounded-sm bg-gradient-to-t ${YEAR_COLORS[yi % YEAR_COLORS.length]}`}
+                        />
+                        <span className="text-gray-400">{y}:</span>
+                        <span className="text-white font-bold">
+                          {dimension === 'time'
+                            ? formatDuration(val * 60)
+                            : val.toFixed(1)}
+                          {dimension === 'distance' && (
+                            <span className="text-[8px] text-gray-500 ml-0.5">
+                              KM
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-gray-900/95" />
+                </div>
 
-            <div className={`text-[10px] w-full text-center transition-colors group-hover:text-primary ${
-              shouldShowLabel(i, chartData.length) ? 'text-gray-500' : 'text-transparent'
-            }`}>
-              {shouldShowLabel(i, chartData.length) ? d.label : '·'}
+                <div className="flex-1 w-full flex items-end justify-center gap-0.5 pb-3">
+                  {d.bars.map((val, yi) => (
+                    <div
+                      key={yi}
+                      className="flex-1 max-w-[20px] rounded-t origin-bottom transition-[height,transform,filter] duration-500 ease-out group-hover:scale-y-[1.04] bg-gradient-to-t opacity-80 group-hover:opacity-100 group-hover:brightness-110"
+                      style={{
+                        height: `${(val / comparisonMaxValue) * 100}%`,
+                        minHeight: val > 0 ? '3px' : '0',
+                      }}
+                    >
+                      <div
+                        className={`w-full h-full rounded-t bg-gradient-to-t ${YEAR_COLORS[yi % YEAR_COLORS.length]}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div
+                  className={`text-[10px] w-full text-center transition-colors group-hover:text-primary ${
+                    hasAnyValue ? 'text-gray-500' : 'text-transparent'
+                  }`}
+                >
+                  {d.label}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        // Single-series bar chart (default)
+        <div className="h-32 md:h-44 mb-6 flex items-end gap-2 border-b border-gray-800/50">
+          {chartData.map((d, i) => (
+            <div
+              key={i}
+              className="flex-1 flex flex-col items-center justify-end h-full group relative min-w-0"
+            >
+              {/* Tooltip */}
+              <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 bg-gray-900/95 backdrop-blur-sm border border-white/10 rounded-lg px-2.5 py-1.5 shadow-xl flex flex-col items-center pointer-events-none transition-all duration-200 ease-out z-10 -translate-y-1 group-hover:translate-y-0 min-w-[max-content]">
+                <span className="text-[10px] text-gray-400 font-medium mb-0.5">
+                  {timeSpan === 'month' ? `Day ${d.label}` : d.label}
+                </span>
+                <span className="text-xs font-mono text-white font-bold">
+                  {dimension === 'time'
+                    ? formatDuration(d.value * 60)
+                    : d.value.toFixed(1)}
+                  {dimension === 'distance' && (
+                    <span className="text-[8px] text-gray-500 ml-0.5">KM</span>
+                  )}
+                </span>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-gray-900/95" />
+              </div>
+
+              <div className="flex-1 w-full flex items-end justify-center pb-3">
+                <div
+                  className="w-full max-w-[32px] rounded-t origin-bottom transition-[height,transform,filter] duration-500 ease-out group-hover:scale-y-[1.04] bg-gradient-to-t from-[#4fc3f7] to-[#81d4fa] opacity-80 group-hover:opacity-100 group-hover:brightness-110"
+                  style={{
+                    height: `${(d.value / maxValue) * 100}%`,
+                    minHeight: d.value > 0 ? '4px' : '0',
+                  }}
+                ></div>
+              </div>
+
+              <div className={`text-[10px] w-full text-center transition-colors group-hover:text-primary ${
+                shouldShowLabel(i, chartData.length) ? 'text-gray-500' : 'text-transparent'
+              }`}>
+                {shouldShowLabel(i, chartData.length) ? d.label : '·'}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 pt-6 border-t border-gray-800/50">

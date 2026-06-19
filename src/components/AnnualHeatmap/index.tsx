@@ -13,6 +13,12 @@ interface AnnualHeatmapProps {
   animationKey?: string; // Used to trigger re-animation when year changes
 }
 
+// Animation timing constants (kept in sync with the CSS @keyframes duration)
+const ANIM_DURATION = 400; // ms, matches `heatmapFadeIn 0.4s`
+const WEEK_DELAY = 12; // ms delay per week column (left-to-right wave)
+const DAY_DELAY = 3; // ms delay per day row
+const ANIM_BUFFER = 100; // ms safety buffer for browser timing jitter
+
 const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
   year,
   data,
@@ -38,36 +44,6 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
                         animationKey !== playedAnimationKey &&
                         data.length > 0 &&
                         !isLoading;
-
-  // Mark animation as played after it starts
-  useEffect(() => {
-    if (shouldAnimate && animationKey !== undefined) {
-      // Use a timeout to ensure animation completes before marking as played
-      const timer = setTimeout(() => {
-        setPlayedAnimationKey(animationKey);
-      }, 600); // Slightly longer than animation duration
-      return () => clearTimeout(timer);
-    }
-  }, [shouldAnimate, animationKey]);
-
-  const getLegendIndex = (value: number) => {
-    if (value === 0) return -1;
-    if (value < 5) return 0;
-    if (value < 10) return 1;
-    if (value < 15) return 2;
-    if (value < 20) return 3;
-    if (value < 25) return 4;
-    return 5;
-  };
-
-  const legendItems = useMemo(() => [
-    { label: '< 5', title: '0 - 4.99 km', colorClass: 'bg-blue-400' },
-    { label: '5 ~ 10', title: '5 - 9.99 km', colorClass: 'bg-emerald-400' },
-    { label: '10 ~ 15', title: '10 - 14.99 km', colorClass: 'bg-yellow-400' },
-    { label: '15 ~ 20', title: '15 - 19.99 km', colorClass: 'bg-orange-400' },
-    { label: '20 ~ 25', title: '20 - 24.99 km', colorClass: 'bg-accent' },
-    { label: '≥ 25', title: '≥ 25 km', colorClass: 'bg-purple-500' },
-  ], []);
 
   // Group data by date string for O(1) lookup
   const dataMap = useMemo(() => {
@@ -114,6 +90,41 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
 
     return weeksArray;
   }, [year, dataMap]);
+
+  // Mark animation as played after it starts
+  useEffect(() => {
+    if (shouldAnimate && animationKey !== undefined) {
+      // Dynamically compute the full animation span so that no cell is cut off.
+      // The rightmost cell has the largest stagger delay; we must wait for its
+      // animation to fully complete before removing the `.heatmap-cell-anim` class,
+      // otherwise late cells snap to their final state (the "stiff ending" bug).
+      const maxDelay = (weeks.length - 1) * WEEK_DELAY + 6 * DAY_DELAY;
+      const totalDuration = maxDelay + ANIM_DURATION + ANIM_BUFFER;
+      const timer = setTimeout(() => {
+        setPlayedAnimationKey(animationKey);
+      }, totalDuration);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldAnimate, animationKey, weeks.length]);
+
+  const getLegendIndex = (value: number) => {
+    if (value === 0) return -1;
+    if (value < 5) return 0;
+    if (value < 10) return 1;
+    if (value < 15) return 2;
+    if (value < 20) return 3;
+    if (value < 25) return 4;
+    return 5;
+  };
+
+  const legendItems = useMemo(() => [
+    { label: '< 5', title: '0 - 4.99 km', colorClass: 'bg-blue-400' },
+    { label: '5 ~ 10', title: '5 - 9.99 km', colorClass: 'bg-emerald-400' },
+    { label: '10 ~ 15', title: '10 - 14.99 km', colorClass: 'bg-yellow-400' },
+    { label: '15 ~ 20', title: '15 - 19.99 km', colorClass: 'bg-orange-400' },
+    { label: '20 ~ 25', title: '20 - 24.99 km', colorClass: 'bg-accent' },
+    { label: '≥ 25', title: '≥ 25 km', colorClass: 'bg-purple-500' },
+  ], []);
 
   const handleMouseEnter = (
     e: React.MouseEvent,
@@ -176,7 +187,7 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
         @keyframes heatmapFadeIn {
           from {
             opacity: 0;
-            transform: scale(0.5);
+            transform: scale(0.6);
           }
           to {
             opacity: 1;
@@ -185,7 +196,7 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
         }
         .heatmap-cell-anim {
           /* animation-fill-mode: backwards ensures the 'from' state is applied before animation starts */
-          animation: heatmapFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+          animation: heatmapFadeIn 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
         }
       `}</style>
       <div className="min-w-max inline-block">
@@ -266,7 +277,7 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
                     className={`w-2.5 h-2.5 rounded-sm transition-all duration-200 relative ${cellClass} ${interactionClass}`}
                     style={
                       day.isCurrentYear && !isLoading && shouldAnimate
-                        ? { animationDelay: `${weekIdx * 20 + dayIdx * 5}ms` }
+                        ? { animationDelay: `${weekIdx * WEEK_DELAY + dayIdx * DAY_DELAY}ms` }
                         : {}
                     }
                     onMouseEnter={(e) => {
