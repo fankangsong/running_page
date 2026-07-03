@@ -10,6 +10,8 @@ Apple Health 数据导入脚本
 """
 
 import argparse
+import datetime
+import importlib.util
 import json
 import os
 import sys
@@ -20,12 +22,6 @@ from datetime import timedelta
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from config import JSON_FILE, SQL_FILE, GPX_FOLDER
-from generator import Generator
-from generator.db import (
-    Activity,
-    update_or_create_activity,
-    init_db,
-)
 
 from apple_health_parser import (
     AppleActivity,
@@ -37,6 +33,27 @@ from apple_health_parser import (
     FILENAME_PATTERN,
 )
 from synced_data_file_logger import save_synced_data_file_list, load_synced_file_list
+
+
+def _load_generator_db():
+    """Load generator.db module directly without triggering generator/__init__.py"""
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "generator", "db.py")
+    spec = importlib.util.spec_from_file_location("generator.db", db_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["generator.db"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+# Load the generator.db module lazily (avoids heavy generator/__init__.py imports)
+_generator_db = None
+
+
+def _get_generator_db():
+    global _generator_db
+    if _generator_db is None:
+        _generator_db = _load_generator_db()
+    return _generator_db
 
 
 def scan_activities(data_dir: str) -> list:
@@ -73,7 +90,7 @@ def filter_skipped(json_files: list, only_run: bool, force: bool, imported_list:
     return results
 
 
-def import_activity(data_dir: str, json_filename: str, session, generator: Generator) -> bool:
+def import_activity(data_dir: str, json_filename: str, session) -> bool:
     """导入单个活动，返回是否成功"""
     json_path = os.path.join(data_dir, json_filename)
 
@@ -141,7 +158,8 @@ def import_activity(data_dir: str, json_filename: str, session, generator: Gener
         )
 
         # 写入 activities 表
-        created = update_or_create_activity(session, run_activity)
+        db = _get_generator_db()
+        db.update_or_create_activity(session, run_activity)
 
         # 生成 Laps
         try:
@@ -167,6 +185,61 @@ def import_activity(data_dir: str, json_filename: str, session, generator: Gener
         print(f"  Import failed {json_filename}: {e}")
         session.rollback()
         return False
+
+
+def load_activities(session, only_run: bool) -> list:
+    """从数据库加载活动数据，附带 laps 和 streams"""
+    from polyline_processor import filter_out
+
+    db = _get_generator_db()
+    Activity = db.Activity
+    ActivityLap = db.ActivityLap
+    ActivityStream = db.ActivityStream
+
+    query = session.query(Activity).filter(Activity.distance > 0.1)
+    if only_run:
+        query = query.filter(Activity.type == "Run")
+
+    activities = query.order_by(Activity.start_date_local)
+    activity_list = []
+
+    streak = 0
+    last_date = None
+    for activity in activities:
+        date = datetime.datetime.strptime(
+            activity.start_date_local, "%Y-%m-%d %H:%M:%S"
+        ).date()
+        if last_date is None:
+            streak = 1
+        elif date == last_date:
+            pass
+        elif date == last_date + datetime.timedelta(days=1):
+            streak += 1
+        else:
+            assert date > last_date
+            streak = 1
+        activity.streak = streak
+        last_date = date
+        activity.summary_polyline = filter_out(activity.summary_polyline)
+
+        activity_dict = activity.to_dict()
+
+        laps = session.query(ActivityLap).filter_by(
+            activity_id=activity.run_id
+        ).order_by(ActivityLap.lap_index).all()
+        activity_dict["laps"] = [lap.to_dict() for lap in laps]
+
+        streams = session.query(ActivityStream).filter_by(
+            activity_id=activity.run_id
+        ).all()
+        streams_dict = {}
+        for stream in streams:
+            streams_dict[stream.stream_type] = stream.to_dict()
+        activity_dict["streams"] = streams_dict
+
+        activity_list.append(activity_dict)
+
+    return activity_list
 
 
 def main():
@@ -228,9 +301,8 @@ def main():
         return
 
     # 初始化数据库
-    session = init_db(SQL_FILE)
-    generator = Generator(SQL_FILE)
-    generator.only_run = args.only_run
+    db = _get_generator_db()
+    session = db.init_db(SQL_FILE)
 
     # 导入
     print(f"\nImporting {len(new_files)} new activities...")
@@ -239,7 +311,7 @@ def main():
     error_count = 0
 
     for f in new_files:
-        ok = import_activity(data_dir, f, session, generator)
+        ok = import_activity(data_dir, f, session)
         if ok:
             success_count += 1
             imported_names.append(f)
@@ -253,7 +325,7 @@ def main():
         save_synced_data_file_list(all_imported)
         print(f"\nExporting activities.json...")
 
-        activities_list = generator.load()
+        activities_list = load_activities(session, args.only_run)
         with open(JSON_FILE, "w", encoding="utf-8") as f:
             json.dump(activities_list, f, ensure_ascii=False, indent=2)
 
