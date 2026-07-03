@@ -25,3 +25,5 @@ config.yaml
 
 run-build.sh
 *.log
+
+apple-watch-out
