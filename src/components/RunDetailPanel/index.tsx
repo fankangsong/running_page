@@ -40,6 +40,7 @@ const RunDetailPanel = ({
   const elevHigh = run.elev_high;
   const elevLow = run.elev_low;
   const elevGain = run.elevation_gain ?? (elevHigh && elevLow ? elevHigh - elevLow : null);
+  const elevGainDisplay = elevGain !== null ? Math.round(elevGain) : null;
 
   const heartRate = currentHeartRate !== null ? `${currentHeartRate} bpm` : '~';
   const highlightedZone =
@@ -212,7 +213,7 @@ const RunDetailPanel = ({
             </span>
             <div className="flex items-baseline justify-start gap-1 mt-0.5 whitespace-nowrap">
               <div className="text-[29px] md:text-[36px] font-condensed font-black text-teal-400 tracking-tighter leading-none">
-                <CyclingText text={String(elevGain ?? '--')} hoverPlay={true} interval={50} className="text-teal-400" />
+                <CyclingText text={elevGainDisplay !== null ? String(elevGainDisplay) : '--'} hoverPlay={true} interval={50} className="text-teal-400" />
               </div>
               {elevHigh && elevLow && (
                 <div className="text-[9px] text-gray-500 font-medium ml-1">

@@ -13,8 +13,10 @@ git pull
 
 echo 'start syncing strava data.'
 
-echo "python run_page/strava_sync.py ${STRAVA_CLIENT_ID} ${STRAVA_CLIENT_SECRET} ${STRAVA_REFRESH_TOKEN}"
-python run_page/strava_sync.py ${STRAVA_CLIENT_ID} ${STRAVA_CLIENT_SECRET} ${STRAVA_REFRESH_TOKEN}
+python run_page/apple_health_sync.py
+
+# echo "python run_page/strava_sync.py ${STRAVA_CLIENT_ID} ${STRAVA_CLIENT_SECRET} ${STRAVA_REFRESH_TOKEN}"
+# python run_page/strava_sync.py ${STRAVA_CLIENT_ID} ${STRAVA_CLIENT_SECRET} ${STRAVA_REFRESH_TOKEN}
 
 
 # 生成 Grid 类型的 SVG

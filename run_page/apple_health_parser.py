@@ -248,11 +248,17 @@ def parse_activity(json_path: str, gpx_path: str, filename: str) -> "AppleActivi
     heart_rate_data = extract_heart_rate_data(json_path)
 
     # 计算速度/海拔统计
-    speeds = [p["speed"] for p in route_data if p.get("speed") is not None]
+    # 优先使用 JSON metadata 的 distance/duration（最准确）
+    # 不使用 route 速度积分，因为 route 数据可能有误差或缺失
     altitudes = [p["altitude"] for p in route_data if p.get("altitude") is not None]
 
-    average_speed = sum(speeds) / len(speeds) if speeds else 0
-    max_speed = max(speeds) if speeds else 0
+    # average_speed = JSON distance / duration（这是 Apple Watch 记录的真实值）
+    average_speed = distance_m / duration if duration > 0 else 0
+
+    # max_speed 从 route 数据提取
+    speeds_for_max = [p.get("speed", 0) for p in route_data if p.get("speed") is not None]
+    max_speed = max(speeds_for_max) if speeds_for_max else 0
+
     elev_high = max(altitudes) if altitudes else None
     elev_low = min(altitudes) if altitudes else None
 
@@ -264,6 +270,32 @@ def parse_activity(json_path: str, gpx_path: str, filename: str) -> "AppleActivi
             if diff > 0:
                 elevation_gain += diff
 
+    # 计算 moving_time（实际运动时间，排除暂停）
+    # 遍历 route，累计速度 > 0.3 m/s 的时间段
+    moving_time_seconds = 0
+    if len(route_data) > 1:
+        for i in range(1, len(route_data)):
+            prev_point = route_data[i - 1]
+            curr_point = route_data[i]
+
+            # 计算时间间隔
+            if prev_point.get("timestamp") and curr_point.get("timestamp"):
+                try:
+                    t1 = datetime.strptime(prev_point["timestamp"], "%Y-%m-%d %H:%M:%S %z")
+                    t2 = datetime.strptime(curr_point["timestamp"], "%Y-%m-%d %H:%M:%S %z")
+                    dt = (t2 - t1).total_seconds()
+
+                    # 如果速度 > 0.3 m/s，计入运动时间
+                    speed = prev_point.get("speed", 0)
+                    if speed > 0.3:
+                        moving_time_seconds += dt
+                except Exception:
+                    pass
+
+    # 如果无法从 route 计算 moving_time（如室内跑），使用 duration
+    if moving_time_seconds == 0:
+        moving_time_seconds = duration
+
     return AppleActivity(
         run_id=run_id,
         name=name,
@@ -272,7 +304,7 @@ def parse_activity(json_path: str, gpx_path: str, filename: str) -> "AppleActivi
         start_date=start_utc.strftime("%Y-%m-%d %H:%M:%S"),
         start_date_local=start_local.strftime("%Y-%m-%d %H:%M:%S"),
         distance=distance_m,
-        moving_time=int(duration),
+        moving_time=int(moving_time_seconds),
         elapsed_time=int(duration),
         average_heartrate=avg_hr,
         max_heartrate=max_hr,
@@ -298,10 +330,11 @@ def parse_activity(json_path: str, gpx_path: str, filename: str) -> "AppleActivi
 def generate_laps_from_route(activity: AppleActivity, session) -> list:
     """按每公里分割生成 ActivityLap 记录并写入数据库
 
-    计算每段的：
-    - 平均速度：从 route[].speed
-    - 平均心率：从 heartRateData[] 按时间范围匹配
-    - 海拔增益：分段内海拔变化（终点 - 起点）
+    由于 Apple Health 导出的 route 数据可能不完整（GPS丢失、采样率低），
+    直接用 route 累计距离会偏差较大。改用时间比例分段：
+    - 总距离：activity.distance（来自 JSON metadata）
+    - 总时间：activity.elapsed_time（来自 JSON duration）
+    - 每公里用时：elapsed_time / (distance_km)
     """
     route_data = activity.route_data
     if not route_data or activity.distance < 1000:
@@ -321,101 +354,89 @@ def generate_laps_from_route(activity: AppleActivity, session) -> list:
                 except Exception:
                     pass
 
+    # 活动开始时间
+    try:
+        start_dt = datetime.strptime(route_data[0]["timestamp"], "%Y-%m-%d %H:%M:%S %z")
+    except Exception:
+        start_dt = datetime.strptime(activity.start_date_local, "%Y-%m-%d %H:%M:%S")
+
+    # 计算每公里的时间间隔（秒）
+    total_distance_km = activity.distance / 1000.0
+    total_time_seconds = activity.elapsed_time
+    time_per_km = total_time_seconds / total_distance_km
+
+    # 生成每公里的分段
     laps = []
-    lap_index = 1
-    next_km = 1000.0
+    km_count = int(total_distance_km)  # 完整公里数
 
-    cumulative_distance = 0.0
-    lap_speeds = []
-    lap_altitudes = []  # 收集分段内的海拔值
-    lap_start_time = None
-    lap_start_altitude = None  # 分段起点海拔
+    for km in range(1, km_count + 1):
+        # 该公里的时间范围
+        start_time_offset = (km - 1) * time_per_km
+        end_time_offset = km * time_per_km
 
-    for i, point in enumerate(route_data):
-        if i == 0:
-            lap_start_time = point.get("timestamp")
-            lap_start_altitude = point.get("altitude")
+        # 转换为实际时间点
+        lap_start_dt = start_dt + timedelta(seconds=start_time_offset)
+        lap_end_dt = start_dt + timedelta(seconds=end_time_offset)
+        elapsed_time = int(time_per_km)
 
-        # 累计距离：speed(m/s) * time_delta(s)
-        if i > 0 and route_data[i-1].get("speed") is not None and point.get("timestamp") and route_data[i-1].get("timestamp"):
+        # 找到该时间范围内的 route 点，计算平均速度和海拔
+        lap_speeds = []
+        lap_altitudes = []
+
+        for point in route_data:
             try:
-                t1 = datetime.strptime(route_data[i-1]["timestamp"], "%Y-%m-%d %H:%M:%S %z")
-                t2 = datetime.strptime(point["timestamp"], "%Y-%m-%d %H:%M:%S %z")
-                dt = (t2 - t1).total_seconds()
-                speed = route_data[i-1].get("speed", 0)
-                cumulative_distance += speed * dt
+                point_time = datetime.strptime(point["timestamp"], "%Y-%m-%d %H:%M:%S %z")
+
+                if lap_start_dt <= point_time <= lap_end_dt:
+                    if point.get("speed") is not None:
+                        lap_speeds.append(point["speed"])
+                    if point.get("altitude") is not None:
+                        lap_altitudes.append(point["altitude"])
             except Exception:
-                speed = route_data[i-1].get("speed", 0)
-                cumulative_distance += speed * 2.0
+                pass
 
-        if point.get("speed") is not None:
-            lap_speeds.append(point["speed"])
+        # 计算平均速度（从 route 的速度值）
+        avg_speed = sum(lap_speeds) / len(lap_speeds) if lap_speeds else activity.average_speed
 
-        if point.get("altitude") is not None:
-            lap_altitudes.append(point["altitude"])
+        # 计算海拔增益
+        elevation_gain = 0.0
+        if len(lap_altitudes) >= 2:
+            elevation_gain = lap_altitudes[-1] - lap_altitudes[0]
 
-        if cumulative_distance >= next_km or i == len(route_data) - 1:
-            avg_speed = sum(lap_speeds) / len(lap_speeds) if lap_speeds else 0
+        # 计算平均心率
+        avg_heartrate = None
+        if hr_by_time:
+            lap_hr_values = []
+            for hr_time, hr_val in hr_by_time.items():
+                if lap_start_dt <= hr_time <= lap_end_dt:
+                    lap_hr_values.append(hr_val)
+            if lap_hr_values:
+                avg_heartrate = sum(lap_hr_values) / len(lap_hr_values)
 
-            try:
-                end_time = datetime.strptime(point["timestamp"], "%Y-%m-%d %H:%M:%S %z")
-                start_dt = datetime.strptime(lap_start_time, "%Y-%m-%d %H:%M:%S %z") if lap_start_time else end_time
-                elapsed = int((end_time - start_dt).total_seconds())
-            except Exception:
-                end_time = datetime.strptime(activity.start_date_local, "%Y-%m-%d %H:%M:%S")
-                start_dt = end_time
-                elapsed = 0
+        # 距离：每公里固定 1000m（最后一段可能不足）
+        lap_distance = 1000.0 if km < km_count else (activity.distance - (km_count - 1) * 1000)
 
-            lap_distance = min(cumulative_distance - (next_km - 1000.0), 1000.0)
+        lap_data = type("LapData", (), {
+            "distance": lap_distance,
+            "elapsed_time": elapsed_time,
+            "moving_time": elapsed_time,
+            "average_speed": avg_speed,
+            "average_heartrate": avg_heartrate,
+            "total_elevation_gain": elevation_gain,
+            "start_date": lap_start_dt,
+        })()
 
-            # 计算该分段内的平均心率
-            avg_heartrate = None
-            if hr_by_time and lap_start_time:
-                try:
-                    lap_start_dt = datetime.strptime(lap_start_time, "%Y-%m-%d %H:%M:%S %z")
-                    # 找到该时间段内的所有心率数据
-                    lap_hr_values = []
-                    for hr_time, hr_val in hr_by_time.items():
-                        if lap_start_dt <= hr_time <= end_time:
-                            lap_hr_values.append(hr_val)
-                    if lap_hr_values:
-                        avg_heartrate = sum(lap_hr_values) / len(lap_hr_values)
-                except Exception:
-                    pass
+        from generator.db import update_or_create_lap as _update_lap
+        _update_lap(session, activity.run_id, lap_data, km)
 
-            # 计算海拔增益：分段内最后一个海拔 - 第一个海拔
-            elevation_gain = 0.0
-            if len(lap_altitudes) >= 2:
-                elevation_gain = lap_altitudes[-1] - lap_altitudes[0]
-
-            lap_data = type("LapData", (), {
-                "distance": lap_distance,
-                "elapsed_time": elapsed,
-                "moving_time": elapsed,
-                "average_speed": avg_speed,
-                "average_heartrate": avg_heartrate,
-                "total_elevation_gain": elevation_gain,
-                "start_date": start_dt,
-            })()
-
-            from generator.db import update_or_create_lap as _update_lap
-            _update_lap(session, activity.run_id, lap_data, lap_index)
-
-            laps.append({
-                "lap_index": lap_index,
-                "distance": lap_distance,
-                "elapsed_time": elapsed,
-                "average_speed": avg_speed,
-                "average_heartrate": avg_heartrate,
-                "total_elevation_gain": elevation_gain,
-            })
-
-            lap_index += 1
-            next_km += 1000.0
-            lap_speeds = []
-            lap_altitudes = []
-            lap_start_time = point.get("timestamp")
-            lap_start_altitude = point.get("altitude")
+        laps.append({
+            "lap_index": km,
+            "distance": lap_distance,
+            "elapsed_time": elapsed_time,
+            "average_speed": avg_speed,
+            "average_heartrate": avg_heartrate,
+            "total_elevation_gain": elevation_gain,
+        })
 
     return laps
 
