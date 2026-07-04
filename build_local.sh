@@ -8,7 +8,7 @@ echo '=== 开始本地构建 ==='
 
 # 1. 导入 Apple Health 数据
 echo '>>> 导入运动数据...'
-python run_page/apple_health_sync.py --force
+python run_page/apple_health_sync.py 
 
 # 2. 构建前端
 echo '>>> 构建前端...'
@@ -21,3 +21,7 @@ git commit -m 'sync and update data' || echo '无变更需要提交'
 git push
 
 echo '=== 本地构建完成 ==='
+
+# 4. 同步代码到网站服务器
+coscli sync -r dist/ cos://hk/running/
+notify 'running page 发布完成 ✅'
