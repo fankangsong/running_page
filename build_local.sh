@@ -21,9 +21,9 @@ cd "$(dirname "$0")"
 
 echo '=== 开始本地构建 ==='
 
-# 1. 导入 Apple Health 数据
+# 1. 导入 Apple Health 数据（增量模式，依赖 imported.json 去重）
 echo '>>> 导入运动数据...'
-python run_page/apple_health_sync.py --force
+python run_page/apple_health_sync.py
 
 # 2. 构建前端
 echo '>>> 构建前端...'
