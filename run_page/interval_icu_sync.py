@@ -170,3 +170,44 @@ def fetch_activity_list(session: requests.Session, athlete_id: str,
         params = None  # params are embedded in next URL
 
     return all_activities
+
+
+# ── Polyline / Map ─────────────────────────────────────────
+
+
+def is_indoor_activity(sub_type: str) -> bool:
+    """Check if the sub_type indicates an indoor activity (no GPS route)."""
+    return sub_type in INDOOR_SUB_TYPES
+
+
+def fetch_polyline(session: requests.Session, activity_id: int,
+                   sub_type: str) -> str:
+    """
+    Fetch map latlngs from /map endpoint and encode as polyline string.
+
+    Args:
+        session: Authenticated requests.Session
+        activity_id: Numeric activity ID (from API response, without 'i' prefix)
+        sub_type: Activity sub_type for indoor check
+    Returns:
+        Encoded polyline string, or empty string if indoor/no data
+    """
+    if is_indoor_activity(sub_type):
+        return ""
+
+    resp = api_get(session, f"/activity/{activity_id}/map")
+    if resp is None:
+        return ""
+
+    latlngs = resp.get("latlngs", [])
+    if not latlngs or not isinstance(latlngs, list) or len(latlngs) == 0:
+        # Unknown sub_type returned empty latlngs — suggest whitelist update
+        print(f"\n  [INFO] Activity {activity_id} (sub_type={sub_type}) "
+              f"returned empty latlngs from /map. "
+              f"Consider adding to INDOOR_SUB_TYPES whitelist.")
+        return ""
+
+    # Encode coordinates to polyline
+    # polyline.encode expects [(lat, lng), ...]
+    encoded = polyline.encode(latlngs)
+    return encoded
