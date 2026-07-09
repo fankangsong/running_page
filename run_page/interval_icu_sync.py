@@ -331,3 +331,175 @@ def fetch_and_save_intervals(session: requests.Session,
         saved += 1
 
     return saved
+
+
+# ── Date Range Calculation ─────────────────────────────────
+
+
+def compute_date_range(
+    generator: Generator,
+    full: bool = False,
+    from_date: str | None = None,
+    to_date: str | None = None,
+) -> tuple[str, str]:
+    """
+    Compute the sync date range.
+
+    Returns:
+        Tuple of (oldest, newest) as ISO-8601 strings
+    """
+    now = datetime.now(timezone.utc)
+    newest = now.strftime("%Y-%m-%dT23:59:59")
+
+    if full:
+        print("  Mode: Full sync (from 2015-01-01)")
+        oldest = "2015-01-01T00:00:00"
+    elif from_date and to_date:
+        print(f"  Mode: Date range ({from_date} to {to_date})")
+        oldest = f"{from_date}T00:00:00"
+        newest = f"{to_date}T23:59:59"
+    else:
+        # Incremental mode: last activity date - 7 days
+        from sqlalchemy import func
+        from generator.db import Activity
+
+        last_date = generator.session.query(
+            func.max(Activity.start_date)
+        ).scalar()
+
+        if last_date:
+            last_dt = arrow.get(last_date)
+            oldest_dt = last_dt.shift(days=-7)
+            oldest = oldest_dt.format("YYYY-MM-DD") + "T00:00:00"
+            print(f"  Mode: Incremental (from {oldest_dt.format('YYYY-MM-DD')})")
+        else:
+            oldest = "2015-01-01T00:00:00"
+            print("  Mode: First sync (full history)")
+
+    return oldest, newest
+
+
+# ── Main Sync Logic ────────────────────────────────────────
+
+
+def sync_interval_icu(
+    athlete_id: str,
+    api_key: str,
+    full: bool = False,
+    from_date: str | None = None,
+    to_date: str | None = None,
+    only_run: bool = False,
+):
+    """
+    Main sync orchestration: fetch activities from Interval.icu,
+    save to local DB, and export to activities.json.
+
+    Args:
+        athlete_id: e.g. "i489589"
+        api_key: Interval.icu API key
+        full: If True, sync all historical data
+        from_date / to_date: Custom date range (YYYY-MM-DD format)
+        only_run: If True, only sync Run/VirtualRun/TrailRun types
+    """
+    print(f"\n{'='*60}")
+    print(f"  Interval.icu Sync")
+    print(f"  Athlete: {athlete_id}")
+    print(f"{'='*60}\n")
+
+    # Init generator (DB connection)
+    generator = Generator(SQL_FILE)
+    generator.only_run = only_run
+
+    # Compute date range
+    oldest, newest = compute_date_range(generator, full, from_date, to_date)
+
+    # Create API session
+    session = make_session(api_key)
+
+    # Fetch activity list
+    print(f"\n  Fetching activities from {oldest} to {newest}...")
+    activities = fetch_activity_list(session, athlete_id, oldest, newest)
+    print(f"  Found {len(activities)} activities.")
+
+    if not activities:
+        print("  No activities found, exiting.")
+        return
+
+    # ── Process each activity ──
+    total = len(activities)
+    synced_count = 0
+    updated_count = 0
+    skipped_count = 0
+    error_count = 0
+
+    for i, act_data in enumerate(activities):
+        sub_type = act_data.get("sub_type", "")
+        act_type = act_data.get("type", "")
+        api_id = act_data["id"].lstrip("i")
+
+        # Progress header
+        print(f"\n  [{i + 1}/{total}] {act_type} ({sub_type}) — id={api_id}")
+
+        # --only-run filter (client-side, before any API calls)
+        RUN_TYPES = {"Run", "VirtualRun", "TrailRun"}
+        if only_run and act_type not in RUN_TYPES:
+            print(f"    Skipped (type={act_type}, not in run types)")
+            skipped_count += 1
+            continue
+
+        try:
+            # Step 1: Fetch and encode polyline (skips for indoor)
+            polyline_str = fetch_polyline(session, int(api_id), sub_type)
+
+            # Step 2: Create adapter and write to DB
+            adapted = IntervalActivity(act_data, polyline_str)
+            created = update_or_create_activity(generator.session, adapted)
+            if created:
+                synced_count += 1
+                sys.stdout.write("+")
+            else:
+                updated_count += 1
+                sys.stdout.write(".")
+
+            sys.stdout.flush()
+
+            # Step 3: Streams
+            streams_saved = fetch_and_save_streams(
+                session, generator, int(api_id)
+            )
+            if streams_saved > 0:
+                print(f"    Streams: {streams_saved} types saved")
+
+            # Step 4: Intervals / Laps
+            laps_saved = fetch_and_save_intervals(
+                session, generator, int(api_id),
+                act_data.get("start_date_local", "")
+            )
+            if laps_saved > 0:
+                print(f"    Laps: {laps_saved} saved")
+
+        except Exception as e:
+            print(f"    [ERROR] {e}")
+            error_count += 1
+            generator.session.rollback()
+            sys.stdout.write("!")
+            sys.stdout.flush()
+            continue
+
+    # ── Summary ──
+    print(f"\n\n{'='*60}")
+    print(f"  Sync completed!")
+    print(f"  Total: {total}")
+    print(f"  New: {synced_count}")
+    print(f"  Updated: {updated_count}")
+    print(f"  Skipped: {skipped_count}")
+    print(f"  Errors: {error_count}")
+    print(f"{'='*60}")
+
+    # Commit and export
+    generator.session.commit()
+    print(f"\n  Exporting activities.json...")
+    activities_list = generator.load()
+    with open(JSON_FILE, "w", encoding="utf-8") as f:
+        json.dump(activities_list, f)
+    print(f"  Exported {len(activities_list)} activities to {JSON_FILE}")
