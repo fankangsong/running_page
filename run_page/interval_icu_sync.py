@@ -53,8 +53,9 @@ class IntervalActivity:
         self.elapsed_time = timedelta(seconds=data.get("elapsed_time", 0))
         self.type = data.get("type", "")
         self.subtype = data.get("sub_type", "")
-        self.start_date = data.get("start_date", "")
-        self.start_date_local = data.get("start_date_local", "")
+        # Interval.icu uses ISO-8601 format (T separator), DB expects space separator
+        self.start_date = data.get("start_date", "").replace("T", " ")
+        self.start_date_local = data.get("start_date_local", "").replace("T", " ")
 
         # stravalib compat: .map.summary_polyline
         self.map = MapProxy(polyline_str)
@@ -73,6 +74,10 @@ class IntervalActivity:
 
         self.elev_high = data.get("max_altitude")
         self.elev_low = data.get("min_altitude")
+
+        # stravalib compat: generator uses start_latlng for reverse geocoding
+        self.start_latlng = None
+        self.location_country = ""
 
     def __repr__(self):
         return f"IntervalActivity(id={self.id}, name={self.name})"
@@ -142,32 +147,22 @@ def fetch_activity_list(session: requests.Session, athlete_id: str,
     params = {"oldest": oldest, "newest": newest}
     all_activities = []
 
-    while True:
-        resp = api_get(session, endpoint, params=params)
-        if resp is None:
-            print(f"\n  [ERROR] Failed to fetch activities page, stopping.")
-            break
+    resp = api_get(session, endpoint, params=params)
+    if resp is None:
+        print(f"\n  [ERROR] Failed to fetch activities, stopping.")
+        return []
 
-        if not isinstance(resp, dict):
-            print(f"\n  [ERROR] Unexpected response type: {type(resp)}")
-            break
-
-        activities = resp.get("data", resp.get("activities", []))
-        if isinstance(activities, list):
-            all_activities.extend(activities)
-
-        # Check for next page
-        next_url = resp.get("next")
-        if not next_url:
-            break
-
-        # Use full URL for next request
-        # Remove API_BASE prefix if present to use with api_get
-        if next_url.startswith(API_BASE):
-            endpoint = next_url[len(API_BASE):]
-        else:
-            endpoint = next_url
-        params = None  # params are embedded in next URL
+    # API returns a list directly (no pagination wrapper)
+    if isinstance(resp, list):
+        all_activities = resp
+    elif isinstance(resp, dict):
+        # Try common wrapper keys; some APIs embed in 'data' or 'activities'
+        all_activities = resp.get("data", resp.get("activities", []))
+        if not isinstance(all_activities, list):
+            all_activities = []
+    else:
+        print(f"\n  [ERROR] Unexpected response type: {type(resp)}")
+        return []
 
     return all_activities
 
@@ -200,7 +195,7 @@ def fetch_polyline(session: requests.Session, activity_id: int,
         return ""
 
     latlngs = resp.get("latlngs", [])
-    if not latlngs or not isinstance(latlngs, list) or len(latlngs) == 0:
+    if not latlngs or latlngs is None or not isinstance(latlngs, list) or len(latlngs) == 0:
         # Unknown sub_type returned empty latlngs — suggest whitelist update
         print(f"\n  [INFO] Activity {activity_id} (sub_type={sub_type}) "
               f"returned empty latlngs from /map. "
@@ -435,10 +430,11 @@ def sync_interval_icu(
     for i, act_data in enumerate(activities):
         sub_type = act_data.get("sub_type", "")
         act_type = act_data.get("type", "")
-        api_id = act_data["id"].lstrip("i")
+        full_id = act_data["id"]  # e.g. "i164066467"
+        api_id = int(full_id.lstrip("i"))  # numeric ID for API calls
 
         # Progress header
-        print(f"\n  [{i + 1}/{total}] {act_type} ({sub_type}) — id={api_id}")
+        print(f"\n  [{i + 1}/{total}] {act_type} ({sub_type}) — id={full_id}")
 
         # --only-run filter (client-side, before any API calls)
         RUN_TYPES = {"Run", "VirtualRun", "TrailRun"}
@@ -449,7 +445,7 @@ def sync_interval_icu(
 
         try:
             # Step 1: Fetch and encode polyline (skips for indoor)
-            polyline_str = fetch_polyline(session, int(api_id), sub_type)
+            polyline_str = fetch_polyline(session, api_id, sub_type)
 
             # Step 2: Create adapter and write to DB
             adapted = IntervalActivity(act_data, polyline_str)
@@ -465,14 +461,14 @@ def sync_interval_icu(
 
             # Step 3: Streams
             streams_saved = fetch_and_save_streams(
-                session, generator, int(api_id)
+                session, generator, api_id
             )
             if streams_saved > 0:
                 print(f"    Streams: {streams_saved} types saved")
 
             # Step 4: Intervals / Laps
             laps_saved = fetch_and_save_intervals(
-                session, generator, int(api_id),
+                session, generator, api_id,
                 act_data.get("start_date_local", "")
             )
             if laps_saved > 0:
