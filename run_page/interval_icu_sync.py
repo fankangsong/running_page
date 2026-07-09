@@ -503,3 +503,88 @@ def sync_interval_icu(
     with open(JSON_FILE, "w", encoding="utf-8") as f:
         json.dump(activities_list, f)
     print(f"  Exported {len(activities_list)} activities to {JSON_FILE}")
+
+
+# ── CLI ────────────────────────────────────────────────────
+
+
+def parse_date_arg(s: str) -> str:
+    """Validate YYYY-MM-DD date format for argparse."""
+    try:
+        datetime.strptime(s, "%Y-%m-%d")
+        return s
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            f"Invalid date '{s}'. Expected format: YYYY-MM-DD"
+        )
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Sync activities from Intervals.icu to local database",
+    )
+    parser.add_argument(
+        "athlete_id",
+        nargs="?",
+        help="Athlete ID (e.g. i489589). Can also set via INTERVAL_ATHLETE_ID env var.",
+    )
+    parser.add_argument(
+        "api_key",
+        nargs="?",
+        help="API Key. Can also set via INTERVAL_API_KEY env var.",
+    )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Full sync from 2015-01-01 to today",
+    )
+    parser.add_argument(
+        "--from",
+        dest="from_date",
+        type=parse_date_arg,
+        help="Start date (YYYY-MM-DD)",
+    )
+    parser.add_argument(
+        "--to",
+        dest="to_date",
+        type=parse_date_arg,
+        help="End date (YYYY-MM-DD)",
+    )
+    parser.add_argument(
+        "--only-run",
+        action="store_true",
+        help="Only sync Run, VirtualRun, TrailRun activities",
+    )
+
+    args = parser.parse_args()
+
+    # Resolve credentials: CLI > env var
+    athlete_id = args.athlete_id or os.environ.get("INTERVAL_ATHLETE_ID")
+    api_key = args.api_key or os.environ.get("INTERVAL_API_KEY")
+
+    if not athlete_id or not api_key:
+        parser.error(
+            "athlete_id and api_key are required. "
+            "Provide via CLI arguments or INTERVAL_ATHLETE_ID / INTERVAL_API_KEY env vars."
+        )
+
+    # Validate mutual exclusion: --full and --from/--to
+    if args.full and (args.from_date or args.to_date):
+        parser.error("--full cannot be used with --from/--to")
+
+    # Validate: --from and --to must both be set or both unset
+    if bool(args.from_date) != bool(args.to_date):
+        parser.error("--from and --to must be specified together")
+
+    sync_interval_icu(
+        athlete_id=athlete_id,
+        api_key=api_key,
+        full=args.full,
+        from_date=args.from_date,
+        to_date=args.to_date,
+        only_run=args.only_run,
+    )
+
+
+if __name__ == "__main__":
+    main()
