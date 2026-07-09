@@ -1,4 +1,42 @@
-"""Sync activities from Intervals.icu API to local database."""
+"""
+Sync activities from Intervals.icu API to local database.
+
+Usage:
+    # 凭据通过环境变量传入
+    python run_page/interval_icu_sync.py
+
+    # 凭据通过 CLI 参数传入（优先级高于环境变量）
+    python run_page/interval_icu_sync.py <athlete_id> <api_key>
+
+    # 增量同步（默认）：从 DB 最新日期 - 7 天开始，到当日
+    python run_page/interval_icu_sync.py
+
+    # 全量同步：从 2015-01-01 到当日
+    python run_page/interval_icu_sync.py --full
+
+    # 指定日期范围同步
+    python run_page/interval_icu_sync.py --from 2024-01-01 --to 2024-06-30
+
+    # 仅同步跑步类型（Run / VirtualRun / TrailRun）
+    python run_page/interval_icu_sync.py --only-run
+
+环境变量:
+    INTERVAL_ATHLETE_ID    运动员 ID，如 i489589
+    INTERVAL_API_KEY       Intervals.icu API Key
+
+注:
+    - --full 与 --from/--to 互斥
+    - --from 和 --to 必须同时指定
+    - 同步完成后自动生成 src/static/activities.json
+
+API 端点:
+    GET /api/v1/athlete/{id}/activities    活动列表（元数据）
+    GET /api/v1/activity/{id}/map          路线坐标 → polyline
+    GET /api/v1/activity/{id}/streams      数据流（心率/速度/海拔等）
+    GET /api/v1/activity/{id}/intervals    分段/圈数据
+
+速率限制: 建议每请求间隔 1 秒（脚本已内置）。
+"""
 
 import argparse
 import json
@@ -175,14 +213,14 @@ def is_indoor_activity(sub_type: str) -> bool:
     return sub_type in INDOOR_SUB_TYPES
 
 
-def fetch_polyline(session: requests.Session, activity_id: int,
+def fetch_polyline(session: requests.Session, activity_id: str,
                    sub_type: str) -> str:
     """
     Fetch map latlngs from /map endpoint and encode as polyline string.
 
     Args:
         session: Authenticated requests.Session
-        activity_id: Numeric activity ID (from API response, without 'i' prefix)
+        activity_id: Full activity ID with 'i' prefix, e.g. "i164066467"
         sub_type: Activity sub_type for indoor check
     Returns:
         Encoded polyline string, or empty string if indoor/no data
@@ -202,9 +240,20 @@ def fetch_polyline(session: requests.Session, activity_id: int,
               f"Consider adding to INDOOR_SUB_TYPES whitelist.")
         return ""
 
+    # Filter out None entries (GPS gaps) before encoding
+    valid_latlngs = [
+        p for p in latlngs
+        if p is not None and isinstance(p, list) and len(p) >= 2
+        and p[0] is not None and p[1] is not None
+    ]
+    if len(valid_latlngs) == 0:
+        print(f"\n  [INFO] Activity {activity_id} (sub_type={sub_type}) "
+              f"all latlngs are invalid (None values).")
+        return ""
+
     # Encode coordinates to polyline
     # polyline.encode expects [(lat, lng), ...]
-    encoded = polyline.encode(latlngs)
+    encoded = polyline.encode(valid_latlngs)
     return encoded
 
 
@@ -222,20 +271,23 @@ def _safely_extract_stream_data(stream_json: dict, stream_type: str) -> list | N
 
 def fetch_and_save_streams(session: requests.Session,
                            generator: Generator,
-                           activity_id: int) -> int:
+                           activity_id: str) -> int:
     """
     Fetch stream data from /streams endpoint and save to DB.
 
     Args:
         session: Authenticated requests.Session
         generator: Generator instance with active DB session
-        activity_id: Numeric activity ID (from API response, no 'i' prefix)
+        activity_id: Full activity ID with 'i' prefix, e.g. "i164066467"
     Returns:
         Number of stream types saved
     """
     resp = api_get(session, f"/activity/{activity_id}/streams")
     if resp is None:
         return 0
+
+    # Compute numeric run_id for DB storage
+    db_activity_id = ID_OFFSET + int(activity_id.lstrip("i"))
 
     # Response can be a list of stream objects or a dict
     streams = resp if isinstance(resp, list) else resp.get("streams", [])
@@ -252,7 +304,7 @@ def fetch_and_save_streams(session: requests.Session,
 
         update_or_create_stream(
             generator.session,
-            ID_OFFSET + activity_id,
+            db_activity_id,
             stream_type,
             data,
         )
@@ -293,7 +345,7 @@ def _map_interval_to_lap(interval: dict, activity_start_local: str):
 
 def fetch_and_save_intervals(session: requests.Session,
                              generator: Generator,
-                             activity_id: int,
+                             activity_id: str,
                              start_date_local: str) -> int:
     """
     Fetch interval data from /intervals endpoint and save as laps.
@@ -301,7 +353,7 @@ def fetch_and_save_intervals(session: requests.Session,
     Args:
         session: Authenticated requests.Session
         generator: Generator instance with active DB session
-        activity_id: Numeric activity ID (from API response, no 'i' prefix)
+        activity_id: Full activity ID with 'i' prefix, e.g. "i164066467"
         start_date_local: Activity start time for computing lap times
     Returns:
         Number of intervals saved
@@ -309,6 +361,9 @@ def fetch_and_save_intervals(session: requests.Session,
     resp = api_get(session, f"/activity/{activity_id}/intervals")
     if resp is None:
         return 0
+
+    # Compute numeric run_id for DB storage
+    db_activity_id = ID_OFFSET + int(activity_id.lstrip("i"))
 
     intervals = resp.get("icu_intervals", [])
     if not isinstance(intervals, list) or len(intervals) == 0:
@@ -319,7 +374,7 @@ def fetch_and_save_intervals(session: requests.Session,
         lap_data = _map_interval_to_lap(interval, start_date_local)
         update_or_create_lap(
             generator.session,
-            ID_OFFSET + activity_id,
+            db_activity_id,
             lap_data,
             idx,
         )
@@ -431,7 +486,9 @@ def sync_interval_icu(
         sub_type = act_data.get("sub_type", "")
         act_type = act_data.get("type", "")
         full_id = act_data["id"]  # e.g. "i164066467"
-        api_id = int(full_id.lstrip("i"))  # numeric ID for API calls
+        # IMPORTANT: activity-specific endpoints (/map, /streams, /intervals)
+        # require the full ID with 'i' prefix (e.g. "i164066467"), not the numeric ID.
+        # The numeric ID is only used for storage (ID_OFFSET).
 
         # Progress header
         print(f"\n  [{i + 1}/{total}] {act_type} ({sub_type}) — id={full_id}")
@@ -443,9 +500,12 @@ def sync_interval_icu(
             skipped_count += 1
             continue
 
+        # Use savepoint to isolate per-activity changes.
+        # If this activity fails, only its changes are rolled back.
+        savepoint = generator.session.begin_nested()
         try:
             # Step 1: Fetch and encode polyline (skips for indoor)
-            polyline_str = fetch_polyline(session, api_id, sub_type)
+            polyline_str = fetch_polyline(session, full_id, sub_type)
 
             # Step 2: Create adapter and write to DB
             adapted = IntervalActivity(act_data, polyline_str)
@@ -461,14 +521,14 @@ def sync_interval_icu(
 
             # Step 3: Streams
             streams_saved = fetch_and_save_streams(
-                session, generator, api_id
+                session, generator, full_id
             )
             if streams_saved > 0:
                 print(f"    Streams: {streams_saved} types saved")
 
             # Step 4: Intervals / Laps
             laps_saved = fetch_and_save_intervals(
-                session, generator, api_id,
+                session, generator, full_id,
                 act_data.get("start_date_local", "")
             )
             if laps_saved > 0:
@@ -477,7 +537,7 @@ def sync_interval_icu(
         except Exception as e:
             print(f"    [ERROR] {e}")
             error_count += 1
-            generator.session.rollback()
+            savepoint.rollback()
             sys.stdout.write("!")
             sys.stdout.flush()
             continue

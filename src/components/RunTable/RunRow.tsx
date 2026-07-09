@@ -7,6 +7,7 @@ import {
   Activity,
   RunIds,
   dayOfWeek,
+  convertMovingTime2Sec,
 } from '@/utils/utils';
 import styles from './style.module.scss';
 
@@ -28,7 +29,8 @@ const RunRow = ({
   setRunIndex,
 }: IRunRowProperties) => {
   const distance = (run.distance / 1000.0).toFixed(2);
-  const paceParts = run.average_speed ? formatPace(run.average_speed) : null;
+  const movingSeconds = convertMovingTime2Sec(run.moving_time);
+  const paceParts = movingSeconds > 0 ? formatPace(run.distance / movingSeconds) : null;
   const heartRate = run.average_heartrate;
   const runTime = formatRunTime(run.moving_time);
   const handleClick = () => {

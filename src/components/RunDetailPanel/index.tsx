@@ -4,6 +4,7 @@ import {
   formatRunTime,
   isRun,
   formatElevation,
+  convertMovingTime2Sec,
 } from '@/utils/utils';
 import CyclingText from '@/components/CyclingText';
 
@@ -26,7 +27,8 @@ const RunDetailPanel = ({
 }) => {
   const distanceKm = (run.distance / 1000).toFixed(2);
   const runTime = formatRunTime(run.moving_time);
-  const pace = run.average_speed ? formatPace(run.average_speed) : `0'00"`;
+  const movingSeconds = convertMovingTime2Sec(run.moving_time);
+  const pace = movingSeconds > 0 ? formatPace(run.distance / movingSeconds) : `0'00"`;
   const currentHeartRate = Number.isFinite(run.average_heartrate)
     ? Math.round(run.average_heartrate as number)
     : null;
