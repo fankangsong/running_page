@@ -216,6 +216,15 @@ def fetch_polyline(session: requests.Session, activity_id: int,
 # ── Streams ────────────────────────────────────────────────
 
 
+def _safely_extract_stream_data(stream_json: dict, stream_type: str) -> list | None:
+    """Safely extract stream data array from stream JSON.
+    Returns None if data is missing, empty, or wrong type."""
+    data = stream_json.get("data")
+    if not isinstance(data, list) or len(data) == 0:
+        return None
+    return data
+
+
 def fetch_and_save_streams(session: requests.Session,
                            generator: Generator,
                            activity_id: int) -> int:
@@ -242,8 +251,8 @@ def fetch_and_save_streams(session: requests.Session,
         if stream_type not in STREAM_TYPES:
             continue
 
-        data = stream_obj.get("data", [])
-        if not isinstance(data, list) or len(data) == 0:
+        data = _safely_extract_stream_data(stream_obj, stream_type)
+        if data is None:
             continue
 
         update_or_create_stream(
@@ -260,8 +269,7 @@ def fetch_and_save_streams(session: requests.Session,
 # ── Intervals / Laps ───────────────────────────────────────
 
 
-def _map_interval_to_lap(interval: dict, activity_start_local: str,
-                         idx: int) -> dict:
+def _map_interval_to_lap(interval: dict, activity_start_local: str):
     """
     Map an Interval.icu interval to a lap dict compatible with
     update_or_create_lap(). Returns a dict with stravalib-like attributes.
@@ -281,7 +289,8 @@ def _map_interval_to_lap(interval: dict, activity_start_local: str,
         activity_dt = arrow.get(activity_start_local)
         lap_dt = activity_dt.shift(seconds=offset_seconds)
         lap.start_date = lap_dt.format("YYYY-MM-DD HH:mm:ss")
-    except Exception:
+    except Exception as e:
+        print(f"  [WARN] Failed to compute lap start_date: {e}")
         lap.start_date = None
 
     return lap
@@ -312,7 +321,7 @@ def fetch_and_save_intervals(session: requests.Session,
 
     saved = 0
     for idx, interval in enumerate(intervals, start=1):
-        lap_data = _map_interval_to_lap(interval, start_date_local, idx)
+        lap_data = _map_interval_to_lap(interval, start_date_local)
         update_or_create_lap(
             generator.session,
             ID_OFFSET + activity_id,
