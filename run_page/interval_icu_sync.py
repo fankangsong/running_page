@@ -211,3 +211,114 @@ def fetch_polyline(session: requests.Session, activity_id: int,
     # polyline.encode expects [(lat, lng), ...]
     encoded = polyline.encode(latlngs)
     return encoded
+
+
+# ── Streams ────────────────────────────────────────────────
+
+
+def fetch_and_save_streams(session: requests.Session,
+                           generator: Generator,
+                           activity_id: int) -> int:
+    """
+    Fetch stream data from /streams endpoint and save to DB.
+
+    Args:
+        session: Authenticated requests.Session
+        generator: Generator instance with active DB session
+        activity_id: Numeric activity ID (from API response, no 'i' prefix)
+    Returns:
+        Number of stream types saved
+    """
+    resp = api_get(session, f"/activity/{activity_id}/streams")
+    if resp is None:
+        return 0
+
+    # Response can be a list of stream objects or a dict
+    streams = resp if isinstance(resp, list) else resp.get("streams", [])
+
+    saved = 0
+    for stream_obj in streams:
+        stream_type = stream_obj.get("type", "")
+        if stream_type not in STREAM_TYPES:
+            continue
+
+        data = stream_obj.get("data", [])
+        if not isinstance(data, list) or len(data) == 0:
+            continue
+
+        update_or_create_stream(
+            generator.session,
+            ID_OFFSET + activity_id,
+            stream_type,
+            data,
+        )
+        saved += 1
+
+    return saved
+
+
+# ── Intervals / Laps ───────────────────────────────────────
+
+
+def _map_interval_to_lap(interval: dict, activity_start_local: str,
+                         idx: int) -> dict:
+    """
+    Map an Interval.icu interval to a lap dict compatible with
+    update_or_create_lap(). Returns a dict with stravalib-like attributes.
+    """
+    lap = type("Lap", (), {})()
+
+    lap.distance = interval.get("distance", 0) or 0
+    lap.moving_time = interval.get("moving_time", 0)
+    lap.elapsed_time = interval.get("elapsed_time", 0)
+    lap.average_speed = interval.get("average_speed")
+    lap.average_heartrate = interval.get("average_heartrate")
+    lap.total_elevation_gain = interval.get("total_elevation_gain")
+
+    # start_time is seconds offset from activity start; compute absolute time
+    offset_seconds = interval.get("start_time", 0)
+    try:
+        activity_dt = arrow.get(activity_start_local)
+        lap_dt = activity_dt.shift(seconds=offset_seconds)
+        lap.start_date = lap_dt.format("YYYY-MM-DD HH:mm:ss")
+    except Exception:
+        lap.start_date = None
+
+    return lap
+
+
+def fetch_and_save_intervals(session: requests.Session,
+                             generator: Generator,
+                             activity_id: int,
+                             start_date_local: str) -> int:
+    """
+    Fetch interval data from /intervals endpoint and save as laps.
+
+    Args:
+        session: Authenticated requests.Session
+        generator: Generator instance with active DB session
+        activity_id: Numeric activity ID (from API response, no 'i' prefix)
+        start_date_local: Activity start time for computing lap times
+    Returns:
+        Number of intervals saved
+    """
+    resp = api_get(session, f"/activity/{activity_id}/intervals")
+    if resp is None:
+        return 0
+
+    intervals = resp.get("icu_intervals", [])
+    if not isinstance(intervals, list) or len(intervals) == 0:
+        return 0
+
+    saved = 0
+    for idx, interval in enumerate(intervals, start=1):
+        lap_data = _map_interval_to_lap(interval, start_date_local, idx)
+        update_or_create_lap(
+            generator.session,
+            ID_OFFSET + activity_id,
+            lap_data,
+            idx,
+        )
+        saved += 1
+
+    return saved
