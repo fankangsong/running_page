@@ -120,3 +120,53 @@ def api_get(session: requests.Session, endpoint: str, params: dict | None = None
     except requests.exceptions.RequestException as e:
         print(f"\n  [ERROR] GET {endpoint}: {e}")
         return None
+
+
+# ── Activity List Fetching ─────────────────────────────────
+
+def fetch_activity_list(session: requests.Session, athlete_id: str,
+                        oldest: str, newest: str) -> list[dict]:
+    """
+    Fetch all activities for an athlete within a date range.
+    Handles pagination automatically via the 'next' field in the response.
+
+    Args:
+        session: Authenticated requests.Session
+        athlete_id: e.g. "i489589"
+        oldest: ISO-8601 start date, e.g. "2024-01-01T00:00:00"
+        newest: ISO-8601 end date, e.g. "2024-12-31T23:59:59"
+    Returns:
+        List of activity dicts (empty list if none)
+    """
+    endpoint = f"/athlete/{athlete_id}/activities"
+    params = {"oldest": oldest, "newest": newest}
+    all_activities = []
+
+    while True:
+        resp = api_get(session, endpoint, params=params)
+        if resp is None:
+            print(f"\n  [ERROR] Failed to fetch activities page, stopping.")
+            break
+
+        if not isinstance(resp, dict):
+            print(f"\n  [ERROR] Unexpected response type: {type(resp)}")
+            break
+
+        activities = resp.get("data", resp.get("activities", []))
+        if isinstance(activities, list):
+            all_activities.extend(activities)
+
+        # Check for next page
+        next_url = resp.get("next")
+        if not next_url:
+            break
+
+        # Use full URL for next request
+        # Remove API_BASE prefix if present to use with api_get
+        if next_url.startswith(API_BASE):
+            endpoint = next_url[len(API_BASE):]
+        else:
+            endpoint = next_url
+        params = None  # params are embedded in next URL
+
+    return all_activities
