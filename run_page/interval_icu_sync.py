@@ -76,3 +76,47 @@ class IntervalActivity:
 
     def __repr__(self):
         return f"IntervalActivity(id={self.id}, name={self.name})"
+
+
+# ── HTTP Client ────────────────────────────────────────────
+
+def make_session(api_key: str) -> requests.Session:
+    """Create a requests Session with Basic Auth and retry adapter."""
+    s = requests.Session()
+    s.auth = ("API_KEY", api_key)
+
+    # Retry on connection/read/timeout with backoff
+    retry = Retry(
+        total=3,
+        backoff_factor=2,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"],
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    s.mount("https://", adapter)
+    return s
+
+
+def api_get(session: requests.Session, endpoint: str, params: dict | None = None,
+            delay: float = 1.0) -> dict | list | None:
+    """
+    GET request to Interval.icu API with rate-limiting delay.
+
+    Args:
+        session: Authenticated requests.Session
+        endpoint: API path suffix, e.g. "/athlete/i489589/activities"
+        params: Query parameters
+        delay: Sleep time BEFORE the request (seconds)
+    Returns:
+        Parsed JSON response, or None on failure
+    """
+    url = f"{API_BASE}{endpoint}"
+    time.sleep(delay)
+
+    try:
+        resp = session.get(url, params=params, timeout=30)
+        resp.raise_for_status()
+        return resp.json()
+    except requests.exceptions.RequestException as e:
+        print(f"\n  [ERROR] GET {endpoint}: {e}")
+        return None
