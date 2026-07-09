@@ -15,6 +15,9 @@ echo 'start syncing strava data.'
 
 python run_page/apple_health_sync.py
 
+echo 'start syncing interval.icu data.'
+python run_page/interval_icu_sync.py --only-run
+
 # echo "python run_page/strava_sync.py ${STRAVA_CLIENT_ID} ${STRAVA_CLIENT_SECRET} ${STRAVA_REFRESH_TOKEN}"
 # python run_page/strava_sync.py ${STRAVA_CLIENT_ID} ${STRAVA_CLIENT_SECRET} ${STRAVA_REFRESH_TOKEN}
 
