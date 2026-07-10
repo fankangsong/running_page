@@ -1,22 +1,43 @@
 #!/bin/bash
+set -e
 
-PATH=/root/.volta/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
-
-cd /root/share/code-server/workspace/running_page
+# 获取脚本所在目录（兼容软链接）
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
 # Load environment variables
 if [ -f .env ]; then
   export $(cat .env | xargs)
 fi
 
+# 检测 Python 命令（需要 3.10+，支持 dict | None 语法）
+# 优先使用 mise 安装的 Python（避免 Homebrew 的 PEP 668 限制）
+for py in ~/.local/share/mise/installs/python/*/bin/python3 python3.13 python3.12 python3.11 python3.10 python3 python; do
+  if command -v "$py" &> /dev/null; then
+    ver=$("$py" -c 'import sys; print(sys.version_info[:2])' 2>/dev/null)
+    major=$(echo "$ver" | grep -o '[0-9]*' | head -1)
+    minor=$(echo "$ver" | grep -o '[0-9]*' | tail -1)
+    if [ "$major" -ge 3 ] && [ "$minor" -ge 10 ]; then
+      PYTHON="$py"
+      break
+    fi
+  fi
+done
+
+if [ -z "$PYTHON" ]; then
+  echo "Error: Python 3.10+ not found"
+  exit 1
+fi
+echo "Using $PYTHON ($($PYTHON --version))"
+
 git pull
 
 echo 'start syncing strava data.'
 
-python run_page/apple_health_sync.py
+$PYTHON run_page/apple_health_sync.py
 
 echo 'start syncing interval.icu data.'
-python run_page/interval_icu_sync.py --only-run
+$PYTHON run_page/interval_icu_sync.py --only-run
 
 # echo "python run_page/strava_sync.py ${STRAVA_CLIENT_ID} ${STRAVA_CLIENT_SECRET} ${STRAVA_REFRESH_TOKEN}"
 # python run_page/strava_sync.py ${STRAVA_CLIENT_ID} ${STRAVA_CLIENT_SECRET} ${STRAVA_REFRESH_TOKEN}
