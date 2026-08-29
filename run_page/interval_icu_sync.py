@@ -89,7 +89,11 @@ class IntervalActivity:
         self.distance = data.get("distance", 0) or 0
         self.moving_time = timedelta(seconds=data.get("moving_time", 0))
         self.elapsed_time = timedelta(seconds=data.get("elapsed_time", 0))
-        self.type = data.get("type", "")
+        # 归一化跑步类型：VirtualRun/TrailRun 统一为 Run。
+        # 原因：前端 isRun() 只认 "Run"，且导出 activities.json 时
+        # only_run 模式也只过滤 type == "Run"，否则数据会丢（只进 DB 不进前端）。
+        _raw_type = data.get("type", "")
+        self.type = "Run" if _raw_type in ("Run", "VirtualRun", "TrailRun") else _raw_type
         self.subtype = data.get("sub_type", "")
         # Interval.icu uses ISO-8601 format (T separator), DB expects space separator
         self.start_date = data.get("start_date", "").replace("T", " ")
