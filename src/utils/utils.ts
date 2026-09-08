@@ -4,10 +4,14 @@ import { WebMercatorViewport } from 'viewport-mercator-project';
 import { chinaGeojson } from '@/static/run_countries';
 import { chinaCities } from '@/static/city';
 import {
+  HIKE_TITLES,
+  HIKING_TITLE,
   IS_CHINESE,
   MUNICIPALITY_CITIES_ARR,
   NEED_FIX_MAP,
   RUN_TITLES,
+  WALK_TITLES,
+  WALKING_TITLE,
   WEEK_TITLE,
   WEEK_TITLE_EN,
 } from './const';
@@ -81,6 +85,19 @@ export interface ActivityStreams {
 }
 
 export const isRun = (type: string) => type === RUN_TYPE;
+export const isHike = (type: string) => type === HIKE_TYPE;
+export const isWalk = (type: string) => type === WALK_TYPE;
+export const isRideLike = (type: string) =>
+  type === RIDE_TYPE || type === VIRTUAL_RIDE_TYPE || type === EBIKE_RIDE_TYPE;
+
+// Tracks 页 tab 与活动类型匹配：Ride tab 匹配骑行组（Ride/VirtualRide/EBikeRide），其余精确匹配
+export const matchActivityType = (
+  activityType: string,
+  tabType: string
+): boolean => {
+  if (tabType === RIDE_TYPE) return isRideLike(activityType);
+  return activityType === tabType;
+};
 
 const titleForShow = (run: Activity): string => {
   const date = run.start_date_local.slice(0, 11);
@@ -241,31 +258,54 @@ const geoJsonForRuns = (runs: Activity[]): FeatureCollection<LineString> => ({
 
 const geoJsonForMap = () => chinaGeojson;
 
+type TimePeriod = 'MORNING' | 'MIDDAY' | 'AFTERNOON' | 'EVENING' | 'NIGHT';
+
+const getTimePeriodTitle = (
+  titles: Record<TimePeriod, string>,
+  hour: number
+): string => {
+  if (hour >= 0 && hour <= 10) return titles.MORNING;
+  if (hour > 10 && hour <= 14) return titles.MIDDAY;
+  if (hour > 14 && hour <= 18) return titles.AFTERNOON;
+  if (hour > 18 && hour <= 21) return titles.EVENING;
+  return titles.NIGHT;
+};
+
 const titleForRun = (run: Activity): string => {
+  const runHour = +run.start_date_local.slice(11, 13);
+  if (isHike(run.type)) {
+    if (!run.summary_polyline) {
+      return HIKING_TITLE;
+    }
+    return getTimePeriodTitle(HIKE_TITLES, runHour);
+  }
+  if (isWalk(run.type)) {
+    if (!run.summary_polyline) {
+      return WALKING_TITLE;
+    }
+    return getTimePeriodTitle(WALK_TITLES, runHour);
+  }
+  // Run 及其他类型维持原逻辑
   if (!run.summary_polyline) {
     return RUN_TITLES.INDOOR_RUN_TITLE;
   }
   const runDistance = run.distance / 1000;
-  const runHour = +run.start_date_local.slice(11, 13);
   if (runDistance > 20 && runDistance < 40) {
     return RUN_TITLES.HALF_MARATHON_RUN_TITLE;
   }
   if (runDistance >= 40) {
     return RUN_TITLES.FULL_MARATHON_RUN_TITLE;
   }
-  if (runHour >= 0 && runHour <= 10) {
-    return RUN_TITLES.MORNING_RUN_TITLE;
-  }
-  if (runHour > 10 && runHour <= 14) {
-    return RUN_TITLES.MIDDAY_RUN_TITLE;
-  }
-  if (runHour > 14 && runHour <= 18) {
-    return RUN_TITLES.AFTERNOON_RUN_TITLE;
-  }
-  if (runHour > 18 && runHour <= 21) {
-    return RUN_TITLES.EVENING_RUN_TITLE;
-  }
-  return RUN_TITLES.NIGHT_RUN_TITLE;
+  return getTimePeriodTitle(
+    {
+      MORNING: RUN_TITLES.MORNING_RUN_TITLE,
+      MIDDAY: RUN_TITLES.MIDDAY_RUN_TITLE,
+      AFTERNOON: RUN_TITLES.AFTERNOON_RUN_TITLE,
+      EVENING: RUN_TITLES.EVENING_RUN_TITLE,
+      NIGHT: RUN_TITLES.NIGHT_RUN_TITLE,
+    },
+    runHour
+  );
 };
 
 export interface IViewState {

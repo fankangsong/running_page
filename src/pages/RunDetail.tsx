@@ -67,7 +67,7 @@ const RunDetail = () => {
         />
 
         {/* Second screen - Curves and splits */}
-        {isRun(run.type) && (run.streams?.heartrate || run.streams?.velocity_smooth || run.streams?.altitude) && (
+        {(run.streams?.heartrate || run.streams?.velocity_smooth || run.streams?.altitude) && (
           <div className="mt-4 bg-card rounded-card shadow-lg border border-gray-800/50 p-4 md:p-6 mx-auto sm:max-w-[480px]">
             <ActivityCurves
               streams={run.streams}
@@ -78,7 +78,7 @@ const RunDetail = () => {
         )}
 
         {/* Second screen - Splits table */}
-        {isRun(run.type) && (run.laps && run.laps.length > 0) && (
+        {(run.laps && run.laps.length > 0) && (
           <div className="mt-4 bg-card rounded-card shadow-lg border border-gray-800/50 p-4 md:p-6 mx-auto sm:max-w-[480px]">
             <span className="font-sans text-[9px] md:text-[10px] font-bold text-secondary uppercase tracking-wider mb-3 block text-center">
               分段数据

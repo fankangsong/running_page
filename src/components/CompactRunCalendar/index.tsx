@@ -5,10 +5,16 @@ import {
   Coordinate,
   convertMovingTime2Sec,
   formatPace,
+  HIKE_TYPE,
+  isHike,
+  isRideLike,
+  isRun,
+  isWalk,
   pathForRun,
   RUN_TYPE,
   sortDateFunc,
   scrollToMap,
+  WALK_TYPE,
 } from '@/utils/utils';
 import ActivityIcon from '@/components/ActivityIcon';
 
@@ -21,7 +27,7 @@ const monthLabel = (month: number) => pad2(month);
 const dayKey = (year: string, month: number, day: number) =>
   `${year}-${pad2(month)}-${pad2(day)}`;
 
-const WALK_LIKE_TYPES = new Set(['Hike', 'Walk']);
+const WALK_LIKE_TYPES = new Set([HIKE_TYPE, WALK_TYPE]);
 
 const ACTIVITY_TYPE_DISPLAY_NAMES: Record<string, string> = {
   Run: 'Running',
@@ -102,22 +108,18 @@ const computePolylinePoints = (
 };
 
 const typeStrokeClass = (type: string) => {
-  if (type === RUN_TYPE) return 'text-emerald-400';
-  if (type === 'Hike') return 'text-amber-400';
-  if (type === 'Walk') return 'text-sky-400';
-  if (type === 'Ride' || type === 'VirtualRide' || type === 'EBikeRide') {
-    return 'text-violet-400';
-  }
+  if (isRun(type)) return 'text-emerald-400';
+  if (isHike(type)) return 'text-amber-400';
+  if (isWalk(type)) return 'text-sky-400';
+  if (isRideLike(type)) return 'text-violet-400';
   return 'text-gray-300';
 };
 
 const typeTextClass = (type: string) => {
-  if (type === RUN_TYPE) return 'text-emerald-300';
-  if (type === 'Hike') return 'text-amber-300';
-  if (type === 'Walk') return 'text-sky-300';
-  if (type === 'Ride' || type === 'VirtualRide' || type === 'EBikeRide') {
-    return 'text-violet-300';
-  }
+  if (isRun(type)) return 'text-emerald-300';
+  if (isHike(type)) return 'text-amber-300';
+  if (isWalk(type)) return 'text-sky-300';
+  if (isRideLike(type)) return 'text-violet-300';
   return 'text-gray-200';
 };
 

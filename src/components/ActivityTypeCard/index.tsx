@@ -5,6 +5,8 @@ import {
   RUN_TYPE,
   HIKE_TYPE,
   WALK_TYPE,
+  RIDE_TYPE,
+  matchActivityType,
   sortDateFunc,
   pathForRun,
   convertMovingTime2Sec,
@@ -25,7 +27,11 @@ const formatTooltipDate = (dateStr: string) => {
 };
 
 interface ActivityTypeCardProps {
-  type: typeof RUN_TYPE | typeof HIKE_TYPE | typeof WALK_TYPE;
+  type:
+    | typeof RUN_TYPE
+    | typeof HIKE_TYPE
+    | typeof WALK_TYPE
+    | typeof RIDE_TYPE;
   activities: Activity[];
   onActivityClick?: (_activity: Activity) => void;
   year?: string;
@@ -53,6 +59,13 @@ const TYPE_CONFIG = {
     numberColor: 'text-amber-400',
     accent: '#FBBF24',
     glow: 'rgba(251, 191, 36, 0.5)',
+  },
+  [RIDE_TYPE]: {
+    title: 'RIDING',
+    gradient: 'from-rose-400 to-pink-500',
+    numberColor: 'text-rose-400',
+    accent: '#FB7185',
+    glow: 'rgba(251, 113, 133, 0.5)',
   },
 };
 
@@ -181,7 +194,7 @@ const ActivityTypeCard = ({
   // Filter activities by type and sort by date
   const filteredActivities = useMemo(() => {
     return activities
-      .filter((a) => a.type === type)
+      .filter((a) => matchActivityType(a.type, type))
       .sort(sortDateFunc);
   }, [activities, type]);
 

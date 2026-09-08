@@ -28,6 +28,12 @@ const SHENZHEN_VIEW_STATE: IViewState = {
 const Maps = () => {
   const { activities, thisYear, years } = useActivities();
 
+  // Maps 页保持跑步口径：仅统计/展示跑步活动（徒步与骑行在 Hiking 页查看）
+  const runningActivities = useMemo(
+    () => activities.filter((run) => isRun(run.type)),
+    [activities]
+  );
+
   const { availableYearMonths, availableYearMonthList } = useMemo(() => {
     const yearMonths: Record<string, Set<number>> = {};
     
@@ -72,7 +78,7 @@ const Maps = () => {
   const [month, setMonth] = useState<number>(initialSelection.month);
   const [runs, setActivity] = useState(
     filterAndSortRuns(
-      activities,
+      runningActivities,
       `${initialSelection.year}-${pad2(initialSelection.month)}`,
       filterYearMonthRuns,
       sortDateFunc
@@ -102,7 +108,7 @@ const Maps = () => {
     setMonth(m);
     const ym = `${y}-${pad2(m)}`;
     setActivity(
-      filterAndSortRuns(activities, ym, filterYearMonthRuns, sortDateFunc)
+      filterAndSortRuns(runningActivities, ym, filterYearMonthRuns, sortDateFunc)
     );
     setTitle(`${ym} Running Heatmap`);
     setSelectedRunId(null);

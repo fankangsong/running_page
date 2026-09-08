@@ -7,16 +7,23 @@ import {
   RUN_TYPE,
   HIKE_TYPE,
   WALK_TYPE,
+  RIDE_TYPE,
   Activity,
+  matchActivityType,
 } from '@/utils/utils';
 import ActivityIcon from '@/components/ActivityIcon';
 
-type ActivityType = typeof RUN_TYPE | typeof HIKE_TYPE | typeof WALK_TYPE;
+type ActivityType =
+  | typeof RUN_TYPE
+  | typeof HIKE_TYPE
+  | typeof WALK_TYPE
+  | typeof RIDE_TYPE;
 
 const TYPE_TABS: { type: ActivityType; label: string; gradient: string; iconColor: string }[] = [
   { type: RUN_TYPE, label: 'RUNNING', gradient: 'from-cyan-400 to-blue-500', iconColor: 'text-cyan-400' },
   { type: HIKE_TYPE, label: 'HIKING', gradient: 'from-violet-400 to-purple-500', iconColor: 'text-violet-400' },
   { type: WALK_TYPE, label: 'WALKING', gradient: 'from-amber-400 to-orange-500', iconColor: 'text-amber-400' },
+  { type: RIDE_TYPE, label: 'RIDING', gradient: 'from-rose-400 to-pink-500', iconColor: 'text-rose-400' },
 ];
 
 // Map URL param to activity type
@@ -28,6 +35,10 @@ const typeParamToType = (param: string | null): ActivityType => {
     case 'walk':
     case 'walking':
       return WALK_TYPE;
+    case 'ride':
+    case 'riding':
+    case 'cycling':
+      return RIDE_TYPE;
     case 'run':
     case 'running':
     default:
@@ -42,6 +53,8 @@ const typeToParam = (type: ActivityType): string => {
       return 'hike';
     case WALK_TYPE:
       return 'walk';
+    case RIDE_TYPE:
+      return 'ride';
     case RUN_TYPE:
     default:
       return 'run';
@@ -61,7 +74,7 @@ const Tracks = () => {
   // Filter activities by type and sort by date
   const filteredActivities = useMemo(() => {
     return activities
-      .filter((a) => a.type === activeType)
+      .filter((a) => matchActivityType(a.type, activeType))
       .sort((a, b) => new Date(b.start_date_local).getTime() - new Date(a.start_date_local).getTime());
   }, [activities, activeType]);
 
@@ -89,7 +102,9 @@ const Tracks = () => {
     const newParams = new URLSearchParams();
     newParams.set('type', typeToParam(type));
     // Reset to default year for new type
-    const typeActivities = activities.filter((a) => a.type === type);
+    const typeActivities = activities.filter((a) =>
+      matchActivityType(a.type, type)
+    );
     const typeYears = new Set<string>();
     typeActivities.forEach((a) => typeYears.add(a.start_date_local.slice(0, 4)));
     const sortedYears = Array.from(typeYears).sort((a, b) => Number(b[0]) - Number(a[0]));

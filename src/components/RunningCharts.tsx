@@ -6,7 +6,9 @@ import {
   convertMovingTime2Sec,
   groupRunsByDate,
   HIKE_TYPE,
+  matchActivityType,
   pathForRun,
+  RIDE_TYPE,
   RUN_TYPE,
   sortDateFunc,
   WALK_TYPE,
@@ -317,7 +319,7 @@ const RunningChartsContent = ({
 }: RunningChartsProps) => {
   const totalPolylines = useMemo(() => {
     const filtered = [...runs]
-      .filter((r) => r.type === selectedType)
+      .filter((r) => matchActivityType(r.type, selectedType))
       .sort(sortDateFunc);
     return filtered
       .map((r) => {
@@ -335,7 +337,8 @@ const RunningChartsContent = ({
     if (year === 'Total') return [];
     return runs.filter(
       (run) =>
-        run.start_date_local?.slice(0, 4) === year && run.type === selectedType
+        run.start_date_local?.slice(0, 4) === year &&
+        matchActivityType(run.type, selectedType)
     );
   }, [runs, selectedType, year]);
 
@@ -413,6 +416,18 @@ const RunningChartsContent = ({
                 title="Walk"
               >
                 <ActivityIcon type={WALK_TYPE} />
+              </button>
+              <button
+                type="button"
+                onClick={() => onSelectType(RIDE_TYPE)}
+                className={`p-2 transition-all duration-200 relative ${
+                  selectedType === RIDE_TYPE
+                    ? 'bg-gray-700/80 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+                title="Ride"
+              >
+                <ActivityIcon type={RIDE_TYPE} />
               </button>
             </div>
           </div>
