@@ -34,10 +34,17 @@ git pull
 
 echo 'start syncing strava data.'
 
+# 不带 --only-run：导入全部类型（Hike/Walk/Ride 等），
+# 且导出 activities.json 时不会被 only_run 过滤（否则 hiking 页数据会缺失）
 $PYTHON run_page/apple_health_sync.py
 
 echo 'start syncing interval.icu data.'
-$PYTHON run_page/interval_icu_sync.py --only-run
+# 不带 --only-run：增量同步全部类型；only_run=True 会导致导出时剔除非 Run 类型
+$PYTHON run_page/interval_icu_sync.py
+
+echo 'start exporting workout (strength training) data.'
+# 独立导出 WeightTraining/Workout 到 workout.json（力量训练 distance=0，不在 activities.json 链路中）
+$PYTHON run_page/workout_export.py
 
 # echo "python run_page/strava_sync.py ${STRAVA_CLIENT_ID} ${STRAVA_CLIENT_SECRET} ${STRAVA_REFRESH_TOKEN}"
 # python run_page/strava_sync.py ${STRAVA_CLIENT_ID} ${STRAVA_CLIENT_SECRET} ${STRAVA_REFRESH_TOKEN}

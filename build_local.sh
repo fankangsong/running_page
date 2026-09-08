@@ -22,8 +22,13 @@ cd "$(dirname "$0")"
 echo '=== 开始本地构建 ==='
 
 # 1. 导入 Apple Health 数据（增量模式，依赖 imported.json 去重）
+#    不带 --only-run：确保 Hike/Walk/Ride 等类型正常导入与导出
 echo '>>> 导入运动数据...'
 python run_page/apple_health_sync.py
+
+# 1.5 导出力量训练数据到 workout.json（WeightTraining/Workout）
+echo '>>> 导出力量训练数据...'
+python run_page/workout_export.py
 
 # 2. 构建前端
 echo '>>> 构建前端...'
