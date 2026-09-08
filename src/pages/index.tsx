@@ -5,6 +5,7 @@ import YearSelector from '@/components/YearSelector';
 import AnnualHeatmap, { HeatmapData } from '@/components/AnnualHeatmap';
 import ActivityStats from '@/components/ActivityStats';
 import DashboardStats from '@/components/DashboardStats';
+import StrengthStats from '@/components/StrengthStats';
 import CyclingText from '@/components/CyclingText';
 import FlowingLinesBackground from '@/components/DashboardStats/FlowingLinesBackground';
 import useActivities from '@/hooks/useActivities';
@@ -259,6 +260,9 @@ const Index = () => {
 
         {/* Activity Stats Module */}
         <ActivityStats activities={runningActivities} />
+
+        {/* Workout / Strength Training Module */}
+        <StrengthStats />
       </div>
     </Layout>
   );

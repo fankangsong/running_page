@@ -11,6 +11,10 @@ interface AnnualHeatmapProps {
   onDayClick?: (date: string, value: number) => void;
   isLoading?: boolean;
   animationKey?: string; // Used to trigger re-animation when year changes
+  unit?: string; // Tooltip value unit (default 'km')
+  thresholds?: number[]; // Legend bucket thresholds (default km thresholds)
+  legendItems?: { label: string; title: string; colorClass: string }[];
+  formatTooltip?: (value: number, date: string) => string[]; // Custom multi-line tooltip for encoded values
 }
 
 // Animation timing constants (kept in sync with the CSS @keyframes duration)
@@ -19,12 +23,27 @@ const WEEK_DELAY = 12; // ms delay per week column (left-to-right wave)
 const DAY_DELAY = 3; // ms delay per day row
 const ANIM_BUFFER = 100; // ms safety buffer for browser timing jitter
 
+const DEFAULT_THRESHOLDS = [5, 10, 15, 20, 25];
+
+const DEFAULT_LEGEND_ITEMS = [
+  { label: '< 5', title: '0 - 4.99 km', colorClass: 'bg-blue-400' },
+  { label: '5 ~ 10', title: '5 - 9.99 km', colorClass: 'bg-emerald-400' },
+  { label: '10 ~ 15', title: '10 - 14.99 km', colorClass: 'bg-yellow-400' },
+  { label: '15 ~ 20', title: '15 - 19.99 km', colorClass: 'bg-orange-400' },
+  { label: '20 ~ 25', title: '20 - 24.99 km', colorClass: 'bg-accent' },
+  { label: '≥ 25', title: '≥ 25 km', colorClass: 'bg-purple-500' },
+];
+
 const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
   year,
   data,
   onDayClick,
   isLoading,
   animationKey,
+  unit = 'km',
+  thresholds = DEFAULT_THRESHOLDS,
+  legendItems = DEFAULT_LEGEND_ITEMS,
+  formatTooltip,
 }) => {
   const [hoveredDay, setHoveredDay] = useState<{
     date: string;
@@ -109,22 +128,12 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
 
   const getLegendIndex = (value: number) => {
     if (value === 0) return -1;
-    if (value < 5) return 0;
-    if (value < 10) return 1;
-    if (value < 15) return 2;
-    if (value < 20) return 3;
-    if (value < 25) return 4;
-    return 5;
+    let idx = 0;
+    for (let i = 0; i < thresholds.length; i++) {
+      if (value >= thresholds[i]) idx = i + 1;
+    }
+    return idx;
   };
-
-  const legendItems = useMemo(() => [
-    { label: '< 5', title: '0 - 4.99 km', colorClass: 'bg-blue-400' },
-    { label: '5 ~ 10', title: '5 - 9.99 km', colorClass: 'bg-emerald-400' },
-    { label: '10 ~ 15', title: '10 - 14.99 km', colorClass: 'bg-yellow-400' },
-    { label: '15 ~ 20', title: '15 - 19.99 km', colorClass: 'bg-orange-400' },
-    { label: '20 ~ 25', title: '20 - 24.99 km', colorClass: 'bg-accent' },
-    { label: '≥ 25', title: '≥ 25 km', colorClass: 'bg-purple-500' },
-  ], []);
 
   const handleMouseEnter = (
     e: React.MouseEvent,
@@ -251,7 +260,9 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
                 } else if (day.value === 0) {
                   cellClass = 'bg-card border border-gray-800';
                 } else {
-                  const baseColor = legendItems[cellLegendIdx].colorClass;
+                  const baseColor =
+                    legendItems[cellLegendIdx]?.colorClass ??
+                    'bg-card border border-gray-800';
                   if (isCurrentLegendHovered) {
                     cellClass = `${baseColor} opacity-100 ring-1 ring-primary z-10`;
                   } else if (isHidden) {
@@ -310,15 +321,12 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
         </div>
         </div>
 
-        {/* Legend */}
+        {/* Legend - swatches only; name floats in on hover to keep spacing uniform */}
         <div className="flex justify-end mt-6">
-          <div className="flex gap-1">
+          <div className="flex items-center gap-1">
             {isLoading ? (
               [...Array(6)].map((_, i) => (
-                <div key={i} className="flex flex-col items-center gap-1">
-                  <div className="w-8 h-2 rounded-sm bg-gray-800/70 animate-pulse"></div>
-                  <span className="text-[10px] text-gray-800/50 animate-pulse font-medium">...</span>
-                </div>
+                <div key={i} className="w-8 h-2 rounded-sm bg-gray-800/70 animate-pulse"></div>
               ))
             ) : (
               <>
@@ -328,24 +336,29 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
                   const isOtherHovered = hoveredLegendIndex !== null && hoveredLegendIndex !== i;
 
                   return (
-                    <div 
-                      key={i} 
-                      className={`flex flex-col items-center gap-1 cursor-pointer transition-opacity duration-200 ${isOtherHovered ? 'opacity-40' : 'opacity-100'}`}
+                    <div
+                      key={i}
+                      className={`relative cursor-pointer transition-opacity duration-200 ${isOtherHovered ? 'opacity-40' : 'opacity-100'}`}
                       onMouseEnter={() => setHoveredLegendIndex(i)}
                       onMouseLeave={() => setHoveredLegendIndex(null)}
                       onClick={() => {
-                        setHiddenLegendIndices(prev => 
+                        setHiddenLegendIndices(prev =>
                           prev.includes(i) ? prev.filter(idx => idx !== i) : [...prev, i]
                         );
                       }}
                     >
-                      <div 
-                        className={`w-8 h-2 rounded-sm transition-all duration-200 ${isHidden && !isHovered ? 'bg-card border border-gray-800' : item.colorClass} ${isHovered ? 'ring-1 ring-primary' : ''}`} 
-                        title={item.title}
-                      ></div>
-                      <span className={`text-[10px] font-sans tracking-wider transition-colors duration-200 ${isHidden ? 'text-gray-800/50' : 'text-secondary'}`}>
+                      {/* Floating name shown on hover only (absolute, no layout impact) */}
+                      <span
+                        className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-1.5 py-0.5 rounded-md bg-gray-900/95 border border-gray-800 text-[10px] font-medium text-primary whitespace-nowrap shadow-lg transition-opacity duration-200 pointer-events-none ${
+                          isHovered ? 'opacity-100' : 'opacity-0'
+                        }`}
+                      >
                         {item.label}
                       </span>
+                      <div
+                        className={`w-8 h-2 rounded-sm transition-all duration-200 ${isHidden && !isHovered ? 'bg-card border border-gray-800' : item.colorClass} ${isHovered ? 'ring-1 ring-primary' : ''}`}
+                        title={item.title}
+                      ></div>
                     </div>
                   );
                 })}
@@ -365,11 +378,18 @@ const AnnualHeatmap: React.FC<AnnualHeatmapProps> = ({
           }}
         >
           <div className="font-bold mb-1">{hoveredDay.date}</div>
-          <div>
-            {hoveredDay.value > 0
-              ? `${hoveredDay.value.toFixed(1)} km`
-              : 'No activity'}
-          </div>
+          {hoveredDay.value > 0 ? (
+            (formatTooltip
+              ? formatTooltip(hoveredDay.value, hoveredDay.date)
+              : [`${hoveredDay.value.toFixed(1)} ${unit}`]
+            ).map((line, i) => (
+              <div key={i} className={i > 0 ? 'mt-0.5 text-secondary' : ''}>
+                {line}
+              </div>
+            ))
+          ) : (
+            <div>No activity</div>
+          )}
         </div>
       )}
     </div>
