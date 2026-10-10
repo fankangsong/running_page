@@ -30,6 +30,16 @@ if [ -z "$PYTHON" ]; then
 fi
 echo "Using $PYTHON ($($PYTHON --version))"
 
+# 检测 pnpm（经 mise 安装，systemd 最小 PATH 下不可见，显式定位）
+if ! command -v pnpm &> /dev/null; then
+  for pp in ~/.local/share/pnpm/pnpm ~/.local/share/mise/installs/node/*/bin/pnpm; do
+    if [ -x "$pp" ]; then
+      export PATH="$(dirname "$pp"):$PATH"
+      break
+    fi
+  done
+fi
+
 git pull
 
 echo 'start syncing strava data.'
