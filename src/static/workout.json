@@ -4253,5 +4253,28 @@
     "elevation_gain": 0.0,
     "elev_high": null,
     "elev_low": null
+  },
+  {
+    "run_id": 297971697,
+    "name": "功能性力量训练",
+    "distance": 0.0,
+    "moving_time": "0:24:00",
+    "elapsed_time": "0:24:00",
+    "type": "WeightTraining",
+    "subtype": "WeightTraining",
+    "start_date": "2026-10-16 04:39:46Z",
+    "start_date_local": "2026-10-16 12:39:46",
+    "location_country": "",
+    "summary_polyline": "",
+    "average_heartrate": 86.0,
+    "max_heartrate": 119.0,
+    "average_speed": 0.0,
+    "max_speed": null,
+    "average_cadence": null,
+    "calories": 68.0,
+    "device_name": "Watch6,3",
+    "elevation_gain": 0.0,
+    "elev_high": null,
+    "elev_low": null
   }
 ]
