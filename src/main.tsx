@@ -14,14 +14,10 @@ import {
   USE_GOOGLE_ANALYTICS,
 } from './utils/const';
 import '@/styles/index.scss';
+import '@/styles/fonts.css';
 import '@/styles/tailwind.css';
 import 'material-icons/iconfont/material-icons.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
-import '@fontsource/roboto-condensed/400.css';
-import '@fontsource/roboto-condensed/700.css';
-import '@fontsource/roboto-condensed/900.css';
+import { revealAppAfterFontsReady } from './utils/fontReady';
 import { withOptionalGAPageTracking } from './utils/trackRoute';
 
 if (USE_GOOGLE_ANALYTICS) {
@@ -54,6 +50,9 @@ const routes = createHashRouter([
     element: withOptionalGAPageTracking(<NotFound />),
   },
 ]);
+
+// 先启动字体加载（与 React 挂载并行），字体就绪后再揭示页面，避免换字抖动
+revealAppAfterFontsReady();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

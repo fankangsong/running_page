@@ -1,0 +1,84 @@
+/*
+ * 自托管 Web 字体（仅 latin 子集，woff2 单文件）
+ *
+ * 为什么不用 @fontsource 的完整 CSS：
+ * 它的 400.css / 900.css 会为 cyrillic / greek / vietnamese / latin-ext / latin
+ * 各生成一条 @font-face（5 条 x 6 个字重 = 30 条规则），浏览器要解析全部规则，
+ * 遇到 em dash、上标、引号等字符时还会额外触发 latin-ext 文件的下载，
+ * 多一次下载就多一次字体切换（= 一次布局抖动）。
+ * 这里只保留实际用到的 latin 子集，一个字重一个文件，下载与切换次数最少。
+ */
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  /* swap: 先显示后备字体，字体到位后替换。
+     若追求"绝对零位移"，可改为 optional（见下方说明）。 */
+  font-display: swap;
+  src: url('../assets/fonts/roboto-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-condensed-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-condensed-latin-700-normal.woff2') format('woff2');
+}
+
+/* 首页大数字用的 900 字重，是最容易看出抖动的一部分，也放在 preload 里 */
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-condensed-latin-900-normal.woff2') format('woff2');
+}
+
+/*
+ * 首帧字体闸门：
+ * <html class="fonts-pending"> 由 index.html 直接写上（不依赖 JS），
+ * 字体就绪后由 src/utils/fontReady.ts 移除该类，内容 220ms 淡入。
+ * 这样"系统字体 → Roboto"的替换发生在不可见状态下，用户看不到重排。
+ * 2s 的兜底动画保证即使字体请求挂死（弱网/被墙），页面也不会一直空白。
+ */
+html.fonts-pending #root {
+  opacity: 0;
+  animation: fonts-failsafe-reveal 1ms linear 2s forwards;
+}
+
+#root {
+  opacity: 1;
+  transition: opacity 220ms ease-out;
+}
+
+@keyframes fonts-failsafe-reveal {
+  to {
+    opacity: 1;
+  }
+}

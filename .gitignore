@@ -8,6 +8,9 @@ yarn-error.log
 # Build directory
 /build
 /dist
+
+# Generated device dashboard data (export_dashboard.py)
+/dashboard/
 .DS_Store
 .sass-cache/
 _posts/

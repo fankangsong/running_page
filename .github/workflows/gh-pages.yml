@@ -75,6 +75,16 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Export device dashboard JSON
+        run: |
+          pip install polyline
+          python run_page/export_dashboard.py --input src/static/activities.json --out dashboard/v1
+
       - uses: pnpm/action-setup@v2
         name: Install pnpm
         with:
@@ -98,6 +108,9 @@ jobs:
         run: pnpm install
       - name: Build
         run: PATH_PREFIX=/${{ github.event.repository.name }} pnpm build
+
+      - name: Bundle device dashboard data
+        run: cp -r dashboard ./dist/dashboard
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2

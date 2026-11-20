@@ -1,11 +1,26 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="fonts-pending">
 
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title></title>
+
+  <!--
+    字体预加载：把 @font-face 的发现提前到 HTML 解析阶段。
+    不加 preload 时，字体要等 CSS 解析 + React 挂载出文字后才开始下载，
+    必然晚于首屏绘制 -> 出现 FOUT 与布局抖动。
+    crossorigin 是字体预加载的硬性要求（字体按 CORS 模式请求）。
+  -->
+  <link rel="preload" href="/src/assets/fonts/roboto-latin-400-normal.woff2" as="font" type="font/woff2"
+    crossorigin />
+  <link rel="preload" href="/src/assets/fonts/roboto-latin-500-normal.woff2" as="font" type="font/woff2"
+    crossorigin />
+  <link rel="preload" href="/src/assets/fonts/roboto-latin-700-normal.woff2" as="font" type="font/woff2"
+    crossorigin />
+  <link rel="preload" href="/src/assets/fonts/roboto-condensed-latin-900-normal.woff2" as="font" type="font/woff2"
+    crossorigin />
 </head>
 
 <body>
