@@ -28,5 +28,6 @@ config.yaml
 
 run-build.sh
 *.log
+coscli_output/
 
 apple-watch-out
